@@ -2867,13 +2867,19 @@ function sendDashboardMessage() {
     // Show typing indicator
     showDashboardTyping();
     
+    // Use voice-optimized endpoint if voice mode is enabled
+    const endpoint = isVoiceModeEnabled ? '/api/voice/chat' : '/chat';
+    
     // Send to server
-    fetch('/chat', {
+    fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ message: message })
+        body: JSON.stringify({ 
+            message: message,
+            context: { voiceMode: isVoiceModeEnabled }
+        })
     })
     .then(response => response.json())
     .then(data => {
@@ -3364,3 +3370,713 @@ document.addEventListener('DOMContentLoaded', () => {
     // Refresh notifications every 30 seconds
     setInterval(loadNotifications, 30000);
 });
+
+// ============================================
+// Edit Profile Modal Functions
+// ============================================
+
+function openEditProfileModal() {
+    const modal = document.getElementById('editProfileModal');
+    if (modal) {
+        // Load current student data
+        fetch('/api/student/profile')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const student = data.student;
+                    document.getElementById('editFirstName').value = student.firstName || '';
+                    document.getElementById('editLastName').value = student.lastName || '';
+                    document.getElementById('editEmail').value = student.email || '';
+                    document.getElementById('editPhone').value = student.phone || '';
+                    
+                    // Update photo preview if exists
+                    const photoDisplay = document.getElementById('currentPhotoDisplay');
+                    if (student.profilePhoto) {
+                        photoDisplay.innerHTML = `<img src="${student.profilePhoto}" alt="Profile">`;
+                    } else {
+                        photoDisplay.innerHTML = '<i class="fas fa-user"></i>';
+                    }
+                }
+            })
+            .catch(error => console.error('Error loading profile:', error));
+        
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeEditProfileModal() {
+    const modal = document.getElementById('editProfileModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        // Reset form
+        document.getElementById('editProfileForm').reset();
+    }
+}
+
+function previewProfilePhoto(event) {
+    const file = event.target.files[0];
+    if (file) {
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('File size too large. Max 5MB allowed.', 'error');
+            return;
+        }
+        
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            showToast('Invalid file type. Use JPG, PNG, or GIF.', 'error');
+            return;
+        }
+        
+        // Preview the image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const photoDisplay = document.getElementById('currentPhotoDisplay');
+            photoDisplay.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function saveProfileChanges(event) {
+    event.preventDefault();
+    
+    const formData = new FormData();
+    formData.append('firstName', document.getElementById('editFirstName').value);
+    formData.append('lastName', document.getElementById('editLastName').value);
+    formData.append('phone', document.getElementById('editPhone').value);
+    
+    const photoInput = document.getElementById('profilePhotoInput');
+    if (photoInput.files[0]) {
+        formData.append('profilePhoto', photoInput.files[0]);
+    }
+    
+    fetch('/api/student/update-profile', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Profile updated successfully!', 'success');
+            closeEditProfileModal();
+            // Refresh student info on dashboard
+            loadStudentInfo();
+        } else {
+            showToast(data.message || 'Failed to update profile', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating profile:', error);
+        showToast('An error occurred. Please try again.', 'error');
+    });
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeEditProfileModal();
+    }
+});
+
+// ============================================
+// Resources Section Functions
+// ============================================
+
+// Online Books Data
+const onlineBooks = {
+    python: {
+        title: "Python Programming",
+        author: "Dr. John Smith",
+        pages: 450,
+        description: "Complete guide covering Python basics to advanced topics including OOP, file handling, and web development.",
+        chapters: ["Introduction to Python", "Variables & Data Types", "Control Flow", "Functions", "OOP", "File Handling", "Web Development"]
+    },
+    javascript: {
+        title: "JavaScript Mastery",
+        author: "Sarah Johnson",
+        pages: 380,
+        description: "From ES6 fundamentals to modern frameworks. Learn DOM manipulation, async programming, and more.",
+        chapters: ["JS Basics", "ES6+ Features", "DOM Manipulation", "Async Programming", "React Basics", "Node.js"]
+    },
+    algorithms: {
+        title: "Data Structures & Algorithms",
+        author: "Prof. Michael Chen",
+        pages: 520,
+        description: "Master algorithms with visual explanations. Covers sorting, searching, graphs, and dynamic programming.",
+        chapters: ["Arrays & Strings", "Linked Lists", "Stacks & Queues", "Trees", "Graphs", "Sorting", "Dynamic Programming"]
+    },
+    'machine-learning': {
+        title: "Machine Learning Fundamentals",
+        author: "Dr. Emily Davis",
+        pages: 410,
+        description: "Introduction to ML, neural networks, deep learning with Python and TensorFlow examples.",
+        chapters: ["ML Basics", "Supervised Learning", "Unsupervised Learning", "Neural Networks", "Deep Learning", "TensorFlow"]
+    }
+};
+
+// Study Notes Data
+const studyNotes = {
+    'html-basics': {
+        title: "HTML & CSS Basics",
+        category: "beginner",
+        pages: 24,
+        description: "Complete beginner's guide to web development"
+    },
+    'math-fundamentals': {
+        title: "Mathematics Fundamentals",
+        category: "beginner",
+        pages: 32,
+        description: "Algebra, Geometry & Calculus basics"
+    },
+    'data-structures': {
+        title: "Data Structures Guide",
+        category: "intermediate",
+        pages: 45,
+        description: "Arrays, Linked Lists, Trees & Graphs"
+    },
+    'database-systems': {
+        title: "Database Systems",
+        category: "intermediate",
+        pages: 38,
+        description: "SQL, NoSQL & Database Design"
+    },
+    'ml-algorithms': {
+        title: "Machine Learning Algorithms",
+        category: "advanced",
+        pages: 52,
+        description: "Deep Learning & Neural Networks"
+    },
+    'cybersecurity': {
+        title: "Cybersecurity Advanced",
+        category: "advanced",
+        pages: 48,
+        description: "Ethical Hacking & Security Protocols"
+    }
+};
+
+// Open E-Books Modal
+function openEbooksModal() {
+    showToast('E-Books Library - Loading 50,000+ digital books...', 'info');
+    // In a real app, this would open a modal with the full library
+    setTimeout(() => {
+        showToast('E-Books library loaded successfully!', 'success');
+    }, 1500);
+}
+
+// Open Video Lectures Modal
+function openVideoLecturesModal() {
+    showToast('Video Lectures - Loading recorded classes...', 'info');
+    setTimeout(() => {
+        showToast('Video lectures loaded!', 'success');
+    }, 1000);
+}
+
+// Open Study Notes Modal
+function openStudyNotesModal() {
+    showToast('Study Notes - Organized by student level', 'info');
+}
+
+// Open Practice Tests Modal
+function openPracticeTestsModal() {
+    showToast('Practice Tests - Mock exams & quizzes', 'info');
+}
+
+// Open Book Reader
+function openBook(bookId) {
+    const book = onlineBooks[bookId];
+    if (!book) {
+        showToast('Book not found', 'error');
+        return;
+    }
+    
+    // Create and show book modal
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-book-open"></i> ${book.title}</h3>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="color: #64748b; margin-bottom: 1rem;">${book.description}</p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                        <i class="fas fa-user" style="color: #667eea; margin-bottom: 0.5rem;"></i>
+                        <div style="font-size: 0.75rem; color: #64748b;">Author</div>
+                        <div style="font-weight: 600;">${book.author}</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                        <i class="fas fa-file-alt" style="color: #667eea; margin-bottom: 0.5rem;"></i>
+                        <div style="font-size: 0.75rem; color: #64748b;">Pages</div>
+                        <div style="font-weight: 600;">${book.pages}</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                        <i class="fas fa-list" style="color: #667eea; margin-bottom: 0.5rem;"></i>
+                        <div style="font-size: 0.75rem; color: #64748b;">Chapters</div>
+                        <div style="font-weight: 600;">${book.chapters.length}</div>
+                    </div>
+                </div>
+                <h4 style="margin-bottom: 0.75rem;">Chapters</h4>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    ${book.chapters.map((chapter, i) => `
+                        <div style="padding: 0.75rem; background: #f8fafc; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; cursor: pointer;" 
+                             onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#f8fafc'">
+                            <span style="width: 28px; height: 28px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">${i + 1}</span>
+                            <span>${chapter}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="this.closest('.modal').remove()">Close</button>
+                <button class="btn-primary" onclick="showToast('Starting book reader...', 'success')">
+                    <i class="fas fa-book-reader"></i> Start Reading
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Filter Study Notes
+function filterNotes(category) {
+    // Update active tab
+    document.querySelectorAll('.category-tabs .tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.toLowerCase() === category || (category === 'all' && btn.textContent === 'All')) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Filter notes
+    const notes = document.querySelectorAll('.note-card');
+    notes.forEach(note => {
+        if (category === 'all' || note.dataset.category === category) {
+            note.style.display = 'flex';
+            note.style.animation = 'fadeIn 0.3s ease';
+        } else {
+            note.style.display = 'none';
+        }
+    });
+}
+
+// Download Note
+function downloadNote(noteId) {
+    const note = studyNotes[noteId];
+    if (!note) {
+        showToast('Note not found', 'error');
+        return;
+    }
+    
+    showToast(`Downloading "${note.title}"...`, 'info');
+    
+    // Simulate download
+    setTimeout(() => {
+        showToast(`"${note.title}" downloaded successfully!`, 'success');
+    }, 1500);
+}
+
+// Add CSS animation
+const resourcesStyle = document.createElement('style');
+resourcesStyle.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+`;
+document.head.appendChild(resourcesStyle);
+
+// ============================================
+// AI Video Lectures Functions
+// ============================================
+
+const videoLectures = {
+    'python-basics': {
+        title: 'Python Programming Basics',
+        instructor: 'AI Tutor - EduBot',
+        duration: '45:30',
+        description: 'Learn Python programming from scratch with interactive AI tutoring.',
+        chapters: [
+            { time: '00:00', title: 'Introduction to Python' },
+            { time: '05:30', title: 'Variables and Data Types' },
+            { time: '15:00', title: 'Control Flow Statements' },
+            { time: '25:00', title: 'Functions and Modules' },
+            { time: '35:00', title: 'Object-Oriented Programming' }
+        ]
+    },
+    'web-dev-intro': {
+        title: 'Web Development Introduction',
+        instructor: 'AI Tutor - EduBot',
+        duration: '38:15',
+        description: 'Complete guide to HTML, CSS, and JavaScript fundamentals.',
+        chapters: [
+            { time: '00:00', title: 'HTML5 Basics' },
+            { time: '12:00', title: 'CSS3 Styling' },
+            { time: '25:00', title: 'JavaScript Fundamentals' }
+        ]
+    },
+    'react-course': {
+        title: 'React.js Complete Course',
+        instructor: 'AI Tutor - EduBot',
+        duration: '1:15:00',
+        description: 'Build modern web applications with React.js framework.',
+        chapters: [
+            { time: '00:00', title: 'React Introduction' },
+            { time: '15:00', title: 'Components & Props' },
+            { time: '35:00', title: 'State Management' },
+            { time: '55:00', title: 'Hooks & Effects' }
+        ]
+    },
+    'database-design': {
+        title: 'Database Design & SQL',
+        instructor: 'AI Tutor - EduBot',
+        duration: '52:45',
+        description: 'Master database concepts, SQL queries, and optimization.',
+        chapters: [
+            { time: '00:00', title: 'Database Fundamentals' },
+            { time: '15:00', title: 'SQL Basics' },
+            { time: '30:00', title: 'Advanced Queries' },
+            { time: '42:00', title: 'Database Optimization' }
+        ]
+    },
+    'ai-ml-course': {
+        title: 'AI & Machine Learning',
+        instructor: 'AI Tutor - EduBot',
+        duration: '2:30:00',
+        description: 'Deep dive into AI, machine learning, and neural networks.',
+        chapters: [
+            { time: '00:00', title: 'ML Introduction' },
+            { time: '30:00', title: 'Supervised Learning' },
+            { time: '1:00:00', title: 'Neural Networks' },
+            { time: '1:45:00', title: 'Deep Learning' }
+        ]
+    },
+    'cloud-architecture': {
+        title: 'Cloud Architecture (AWS)',
+        instructor: 'AI Tutor - EduBot',
+        duration: '1:45:30',
+        description: 'Design and deploy scalable cloud solutions on AWS.',
+        chapters: [
+            { time: '00:00', title: 'Cloud Computing Basics' },
+            { time: '25:00', title: 'AWS Core Services' },
+            { time: '55:00', title: 'Architecture Patterns' },
+            { time: '1:25:00', title: 'Deployment Strategies' }
+        ]
+    }
+};
+
+// Filter Videos
+function filterVideos(category) {
+    // Update active tab
+    document.querySelectorAll('.category-tabs .tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.toLowerCase() === category || (category === 'all' && btn.textContent === 'All')) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Filter videos
+    const videos = document.querySelectorAll('.video-card');
+    videos.forEach(video => {
+        if (category === 'all' || video.dataset.category === category) {
+            video.style.display = 'block';
+            video.style.animation = 'fadeIn 0.3s ease';
+        } else {
+            video.style.display = 'none';
+        }
+    });
+}
+
+// Play Video
+function playVideo(videoId) {
+    const video = videoLectures[videoId];
+    if (!video) {
+        showToast('Video not found', 'error');
+        return;
+    }
+    
+    // Create video player modal
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+        <div class="modal-content video-player-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-robot" style="color: #8b5cf6;"></i> ${video.title}</h3>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="video-player-container">
+                    <div class="video-player-placeholder">
+                        <i class="fas fa-play-circle"></i>
+                        <h4>AI Video Lecture</h4>
+                        <p>Instructor: ${video.instructor}</p>
+                        <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">${video.description}</p>
+                        <button class="btn-primary" style="margin-top: 1.5rem;" onclick="showToast('Starting AI lecture playback...', 'success')">
+                            <i class="fas fa-play"></i> Start Lecture
+                        </button>
+                    </div>
+                </div>
+                <div class="video-controls">
+                    <button class="btn-icon" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <div class="video-progress">
+                        <div class="video-progress-bar"></div>
+                    </div>
+                    <span style="color: white; font-size: 0.875rem;">00:00 / ${video.duration}</span>
+                </div>
+                <div style="margin-top: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem;">Chapters</h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        ${video.chapters.map((chapter, i) => `
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px; cursor: pointer;" 
+                                 onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#f8fafc'">
+                                <span style="color: #667eea; font-weight: 600; font-family: monospace;">${chapter.time}</span>
+                                <span style="flex: 1;">${chapter.title}</span>
+                                <i class="fas fa-play-circle" style="color: #667eea;"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    showToast('Loading AI video lecture...', 'info');
+}
+
+// ============================================
+// Mock Tests Functions
+// ============================================
+
+const mockTests = {
+    'python-basics': {
+        title: 'Python Basics Quiz',
+        questions: 20,
+        duration: 30,
+        questionsList: [
+            { q: 'What is the output of print(2 + 3)?', options: ['5', '23', 'Error', 'None'], correct: 0 },
+            { q: 'Which function is used to get the length of a list?', options: ['size()', 'length()', 'len()', 'count()'], correct: 2 },
+            { q: 'What is the correct file extension for Python files?', options: ['.py', '.python', '.pt', '.p'], correct: 0 },
+            { q: 'Which keyword is used to define a function in Python?', options: ['func', 'def', 'function', 'define'], correct: 1 }
+        ]
+    },
+    'javascript-fundamentals': {
+        title: 'JavaScript Fundamentals',
+        questions: 25,
+        duration: 35,
+        questionsList: [
+            { q: 'What is the correct way to declare a variable in JavaScript?', options: ['var name;', 'variable name;', 'v name;', 'declare name;'], correct: 0 },
+            { q: 'Which symbol is used for single-line comments in JavaScript?', options: ['//', '/*', '#', '--'], correct: 0 }
+        ]
+    },
+    'data-structures': {
+        title: 'Data Structures',
+        questions: 30,
+        duration: 45,
+        questionsList: [
+            { q: 'What is the time complexity of binary search?', options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'], correct: 1 },
+            { q: 'Which data structure follows LIFO?', options: ['Queue', 'Stack', 'Array', 'Linked List'], correct: 1 }
+        ]
+    },
+    'aptitude-test': {
+        title: 'Aptitude & Reasoning',
+        questions: 40,
+        duration: 60,
+        questionsList: [
+            { q: 'If 2 + 3 = 10, 7 + 2 = 63, 6 + 5 = 66, then 8 + 4 = ?', options: ['96', '48', '32', '24'], correct: 0 },
+            { q: 'What comes next in the series: 2, 6, 12, 20, 30, ?', options: ['40', '42', '44', '46'], correct: 1 }
+        ]
+    }
+};
+
+let currentTest = null;
+let currentQuestionIndex = 0;
+let testAnswers = [];
+let testTimer = null;
+let timeRemaining = 0;
+
+// View All Tests
+function viewAllTests() {
+    showToast('Loading all available tests...', 'info');
+}
+
+// Start Test
+function startTest(testId) {
+    const test = mockTests[testId];
+    if (!test) {
+        showToast('Test not found', 'error');
+        return;
+    }
+    
+    currentTest = test;
+    currentQuestionIndex = 0;
+    testAnswers = new Array(test.questionsList.length).fill(null);
+    timeRemaining = test.duration * 60; // Convert to seconds
+    
+    // Create test interface modal
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'testModal';
+    modal.innerHTML = `
+        <div class="modal-overlay"></div>
+        <div class="modal-content test-interface">
+            <div class="modal-header">
+                <h3><i class="fas fa-clipboard-check" style="color: #f59e0b;"></i> ${test.title}</h3>
+                <div class="test-timer">
+                    <i class="fas fa-clock"></i>
+                    <span id="testTimer">${formatTime(timeRemaining)}</span>
+                </div>
+            </div>
+            <div class="modal-body" id="testBody">
+                ${renderQuestion()}
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                <span id="questionCounter" style="color: #64748b;">Question 1 of ${test.questionsList.length}</span>
+                <button class="btn-primary" id="nextBtn" onclick="nextQuestion()">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="btn-success" id="submitBtn" onclick="submitTest()" style="display: none;">
+                    <i class="fas fa-check"></i> Submit Test
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Start timer
+    startTestTimer();
+    showToast('Test started! Good luck!', 'success');
+}
+
+// Render Question
+function renderQuestion() {
+    const question = currentTest.questionsList[currentQuestionIndex];
+    return `
+        <div class="question-container">
+            <div class="question-number">Question ${currentQuestionIndex + 1} of ${currentTest.questionsList.length}</div>
+            <div class="question-text">${question.q}</div>
+            <div class="options-list">
+                ${question.options.map((option, i) => `
+                    <div class="option-item ${testAnswers[currentQuestionIndex] === i ? 'selected' : ''}" onclick="selectOption(${i})">
+                        <div class="option-letter">${String.fromCharCode(65 + i)}</div>
+                        <span>${option}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Select Option
+function selectOption(optionIndex) {
+    testAnswers[currentQuestionIndex] = optionIndex;
+    updateQuestionDisplay();
+}
+
+// Update Question Display
+function updateQuestionDisplay() {
+    document.getElementById('testBody').innerHTML = renderQuestion();
+    document.getElementById('questionCounter').textContent = `Question ${currentQuestionIndex + 1} of ${currentTest.questionsList.length}`;
+    
+    // Update button states
+    document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+    
+    if (currentQuestionIndex === currentTest.questionsList.length - 1) {
+        document.getElementById('nextBtn').style.display = 'none';
+        document.getElementById('submitBtn').style.display = 'inline-flex';
+    } else {
+        document.getElementById('nextBtn').style.display = 'inline-flex';
+        document.getElementById('submitBtn').style.display = 'none';
+    }
+}
+
+// Next Question
+function nextQuestion() {
+    if (currentQuestionIndex < currentTest.questionsList.length - 1) {
+        currentQuestionIndex++;
+        updateQuestionDisplay();
+    }
+}
+
+// Previous Question
+function previousQuestion() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        updateQuestionDisplay();
+    }
+}
+
+// Start Test Timer
+function startTestTimer() {
+    testTimer = setInterval(() => {
+        timeRemaining--;
+        document.getElementById('testTimer').textContent = formatTime(timeRemaining);
+        
+        if (timeRemaining <= 0) {
+            clearInterval(testTimer);
+            submitTest();
+        }
+    }, 1000);
+}
+
+// Format Time
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Submit Test
+function submitTest() {
+    clearInterval(testTimer);
+    
+    // Calculate score
+    let correct = 0;
+    testAnswers.forEach((answer, i) => {
+        if (answer === currentTest.questionsList[i].correct) {
+            correct++;
+        }
+    });
+    
+    const score = Math.round((correct / currentTest.questionsList.length) * 100);
+    
+    // Show results
+    const modal = document.getElementById('testModal');
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+        <div class="modal-content" style="max-width: 500px; text-align: center;">
+            <div class="modal-body" style="padding: 2rem;">
+                <div style="width: 120px; height: 120px; background: ${score >= 70 ? '#dcfce7' : score >= 40 ? '#fef3c7' : '#fee2e2'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fas ${score >= 70 ? 'fa-trophy' : score >= 40 ? 'fa-check' : 'fa-times'}" style="font-size: 3rem; color: ${score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444'};"></i>
+                </div>
+                <h2 style="margin-bottom: 0.5rem;">Test Completed!</h2>
+                <p style="color: #64748b; margin-bottom: 1.5rem;">${currentTest.title}</p>
+                <div style="font-size: 3rem; font-weight: 700; color: ${score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444'}; margin-bottom: 0.5rem;">${score}%</div>
+                <p style="color: #64748b; margin-bottom: 1.5rem;">You got ${correct} out of ${currentTest.questionsList.length} questions correct</p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button class="btn-secondary" onclick="this.closest('.modal').remove()">Close</button>
+                    <button class="btn-primary" onclick="location.reload()">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    showToast(`Test completed! Your score: ${score}%`, score >= 70 ? 'success' : 'info');
+}

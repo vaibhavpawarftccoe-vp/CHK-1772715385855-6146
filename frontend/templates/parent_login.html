@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Login - EduBot</title>
+    <title>Parent Login - EduBot</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/auth.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .teacher-icon {
-            background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+        .parent-icon {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
         }
-        .teacher-portal-title {
-            color: #d97706;
+        .parent-portal-title {
+            color: #059669;
         }
         .login-type-switch {
             display: flex;
@@ -37,29 +37,29 @@
             background: #6366f1;
             color: white;
         }
-        .login-type-btn.teacher {
+        .login-type-btn.parent {
             background: #6366f1;
             color: white;
         }
         .demo-credentials {
-            background: #fef3c7;
-            border: 1px solid #fbbf24;
+            background: #d1fae5;
+            border: 1px solid #10b981;
             border-radius: 8px;
             padding: 1rem;
             margin-top: 1.5rem;
             font-size: 0.85rem;
         }
         .demo-credentials h4 {
-            color: #92400e;
+            color: #065f46;
             margin-bottom: 0.5rem;
             font-size: 0.9rem;
         }
         .demo-credentials p {
-            color: #78350f;
+            color: #047857;
             margin: 0.25rem 0;
         }
         .demo-credentials code {
-            background: #fde68a;
+            background: #a7f3d0;
             padding: 0.1rem 0.4rem;
             border-radius: 4px;
             font-family: monospace;
@@ -88,19 +88,19 @@
             <div class="auth-header">
                 <div class="login-type-switch">
                     <a href="/login" class="login-type-btn student">Student</a>
-                    <span class="login-type-btn teacher">Teacher</span>
+                    <span class="login-type-btn parent">Parent</span>
                 </div>
-                <div class="auth-icon teacher-icon">
-                    <i class="fas fa-chalkboard-teacher"></i>
+                <div class="auth-icon parent-icon">
+                    <i class="fas fa-user-friends"></i>
                 </div>
-                <h2 class="teacher-portal-title">Teacher Portal</h2>
-                <p>Manage student attendance and academic records</p>
+                <h2 class="parent-portal-title">Parent Portal</h2>
+                <p>Monitor your child's academic progress and attendance</p>
             </div>
 
             <!-- Login Form -->
             <div id="loginForm" class="auth-form active">
-                <h3>Teacher Login</h3>
-                <form onsubmit="handleTeacherLogin(event)">
+                <h3>Parent Login</h3>
+                <form onsubmit="handleParentLogin(event)">
                     <div class="form-group">
                         <label for="loginEmail">Email Address</label>
                         <div class="input-group">
@@ -125,18 +125,18 @@
                         </label>
                         <a href="#" class="forgot-password">Forgot password?</a>
                     </div>
-                    <button type="submit" class="btn-auth" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <button type="submit" class="btn-auth" style="background: linear-gradient(135deg, #10b981, #059669);">
                         <i class="fas fa-sign-in-alt"></i>
-                        Login as Teacher
+                        Login as Parent
                     </button>
                 </form>
                 
                 <!-- Demo Credentials -->
                 <div class="demo-credentials">
-                    <h4><i class="fas fa-info-circle"></i> Demo Teacher Accounts</h4>
-                    <p><strong>Teacher 1:</strong> <code>teacher1@edubot.edu</code> / <code>teacher123</code></p>
-                    <p><strong>Teacher 2:</strong> <code>teacher2@edubot.edu</code> / <code>teacher123</code></p>
-                    <p><strong>Teacher 3:</strong> <code>teacher3@edubot.edu</code> / <code>teacher123</code></p>
+                    <h4><i class="fas fa-info-circle"></i> Demo Parent Accounts</h4>
+                    <p><strong>Parent 1:</strong> <code>parent1@edubot.edu</code> / <code>parent123</code></p>
+                    <p><strong>Parent 2:</strong> <code>parent2@edubot.edu</code> / <code>parent123</code></p>
+                    <p><strong>Parent 3:</strong> <code>parent3@edubot.edu</code> / <code>parent123</code></p>
                 </div>
             </div>
         </div>
@@ -178,15 +178,15 @@
             }, 3000);
         }
 
-        // Handle teacher login
-        async function handleTeacherLogin(event) {
+        // Handle parent login
+        async function handleParentLogin(event) {
             event.preventDefault();
             
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             
             try {
-                const response = await fetch('/api/teacher/login', {
+                const response = await fetch('/api/parent/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -199,7 +199,7 @@
                 if (data.success) {
                     showToast('Login successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        window.location.href = '/teacher-dashboard';
+                        window.location.href = '/parent-dashboard';
                     }, 1000);
                 } else {
                     showToast(data.message || 'Login failed', 'error');

@@ -3,58 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard - EduBot</title>
+    <title>Parent Dashboard - EduBot</title>
     <link rel="stylesheet" href="/static/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --teacher-primary: #f59e0b;
-            --teacher-secondary: #d97706;
-            --teacher-light: #fef3c7;
+            --parent-primary: #10b981;
+            --parent-secondary: #059669;
+            --parent-light: #d1fae5;
         }
         
-        .teacher-theme .sidebar {
+        .parent-theme .sidebar {
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
         }
         
-        .teacher-theme .nav-item:hover,
-        .teacher-theme .nav-item.active {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fbbf24;
+        .parent-theme .nav-item:hover,
+        .parent-theme .nav-item.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
         }
         
-        .teacher-theme .nav-item.active::before {
-            background: #f59e0b;
+        .parent-theme .nav-item.active::before {
+            background: #10b981;
         }
         
-        .teacher-theme .btn-primary {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+        .parent-theme .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
         }
         
-        .teacher-theme .btn-primary:hover {
-            background: linear-gradient(135deg, #d97706, #b45309);
+        .parent-theme .btn-primary:hover {
+            background: linear-gradient(135deg, #059669, #047857);
         }
         
-        .teacher-theme .stat-icon.blue {
-            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        .parent-theme .stat-icon.blue {
+            background: linear-gradient(135deg, #10b981, #34d399);
         }
         
-        .teacher-theme .badge {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+        .parent-theme .badge {
+            background: linear-gradient(135deg, #10b981, #059669);
         }
         
-        .teacher-info {
+        .parent-info {
             text-align: center;
             padding: 1.5rem;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
-        .teacher-avatar {
+        .parent-avatar {
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, #10b981, #059669);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -63,20 +63,20 @@
             color: white;
         }
         
-        .teacher-name {
+        .parent-name {
             font-weight: 600;
             color: white;
             margin-bottom: 0.25rem;
         }
         
-        .teacher-role {
+        .parent-role {
             font-size: 0.8rem;
             color: #94a3b8;
         }
         
-        .teacher-id {
+        .parent-id {
             font-size: 0.75rem;
-            color: #fbbf24;
+            color: #34d399;
             margin-top: 0.5rem;
             font-family: monospace;
         }
@@ -315,17 +315,17 @@
         }
     </style>
 </head>
-<body class="teacher-theme">
+<body class="parent-theme">
     <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="teacher-info">
-                <div class="teacher-avatar">
-                    <i class="fas fa-chalkboard-teacher"></i>
+            <div class="parent-info">
+                <div class="parent-avatar">
+                    <i class="fas fa-user-friends"></i>
                 </div>
-                <div class="teacher-name" id="teacherName">Loading...</div>
-                <div class="teacher-role" id="teacherRole">Loading...</div>
-                <div class="teacher-id" id="teacherId">Loading...</div>
+                <div class="parent-name" id="parentName">Loading...</div>
+                <div class="parent-role" id="parentRole">Loading...</div>
+                <div class="parent-id" id="parentId">Loading...</div>
             </div>
             
             <nav class="sidebar-nav">
@@ -333,17 +333,22 @@
                     <i class="fas fa-home"></i>
                     <span>Overview</span>
                 </a>
+                <a href="#live-progress" class="nav-item" onclick="showSection('live-progress')">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Live Progress</span>
+                    <span class="nav-badge live">LIVE</span>
+                </a>
                 <a href="#attendance" class="nav-item" onclick="showSection('attendance')">
                     <i class="fas fa-clipboard-check"></i>
-                    <span>Mark Attendance</span>
+                    <span>Attendance</span>
                 </a>
-                <a href="#reports" class="nav-item" onclick="showSection('reports')">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Attendance Reports</span>
+                <a href="#grades" class="nav-item" onclick="showSection('grades')">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Grades & Marks</span>
                 </a>
-                <a href="#students" class="nav-item" onclick="showSection('students')">
-                    <i class="fas fa-users"></i>
-                    <span>Student List</span>
+                <a href="#activity" class="nav-item" onclick="showSection('activity')">
+                    <i class="fas fa-history"></i>
+                    <span>Activity Log</span>
                 </a>
             </nav>
             
@@ -438,6 +443,104 @@
                                 <span>Student List</span>
                             </button>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Live Progress Section -->
+            <section id="live-progress" class="content-section">
+                <div class="dashboard-card">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title">
+                                <i class="fas fa-chart-line" style="color: #10b981;"></i> 
+                                Live Student Progress
+                            </h2>
+                            <p style="color: #64748b; margin-top: 0.25rem;">Real-time monitoring of your child's academic journey</p>
+                        </div>
+                        <div class="live-indicator">
+                            <span class="live-dot"></span>
+                            <span class="live-text">LIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- Child Info Card -->
+                    <div class="child-info-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="child-avatar-large" style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div>
+                                <h3 id="childNameDisplay" style="font-size: 1.25rem; margin-bottom: 0.25rem;">Loading...</h3>
+                                <p id="childIdDisplay" style="opacity: 0.9; font-size: 0.875rem;">Student ID: Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Stats Grid -->
+                    <div class="live-stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="live-stat-card" style="background: #f0fdf4; padding: 1.25rem; border-radius: 10px; border-left: 4px solid #10b981;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                <i class="fas fa-percentage" style="color: #10b981; font-size: 1.25rem;"></i>
+                                <span style="color: #64748b; font-size: 0.875rem;">Overall Progress</span>
+                            </div>
+                            <div id="liveProgressPercent" style="font-size: 1.75rem; font-weight: 700; color: #059669;">--%</div>
+                            <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">
+                                <i class="fas fa-arrow-up"></i> Updated now
+                            </div>
+                        </div>
+
+                        <div class="live-stat-card" style="background: #eff6ff; padding: 1.25rem; border-radius: 10px; border-left: 4px solid #3b82f6;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                <i class="fas fa-book-open" style="color: #3b82f6; font-size: 1.25rem;"></i>
+                                <span style="color: #64748b; font-size: 0.875rem;">Courses Active</span>
+                            </div>
+                            <div id="liveCoursesCount" style="font-size: 1.75rem; font-weight: 700; color: #2563eb;">--</div>
+                            <div style="font-size: 0.75rem; color: #3b82f6; margin-top: 0.25rem;">In progress</div>
+                        </div>
+
+                        <div class="live-stat-card" style="background: #fef3c7; padding: 1.25rem; border-radius: 10px; border-left: 4px solid #f59e0b;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                <i class="fas fa-tasks" style="color: #f59e0b; font-size: 1.25rem;"></i>
+                                <span style="color: #64748b; font-size: 0.875rem;">Assignments</span>
+                            </div>
+                            <div id="liveAssignmentsCount" style="font-size: 1.75rem; font-weight: 700; color: #d97706;">--</div>
+                            <div style="font-size: 0.75rem; color: #f59e0b; margin-top: 0.25rem;">Pending</div>
+                        </div>
+
+                        <div class="live-stat-card" style="background: #f3e8ff; padding: 1.25rem; border-radius: 10px; border-left: 4px solid #8b5cf6;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                <i class="fas fa-trophy" style="color: #8b5cf6; font-size: 1.25rem;"></i>
+                                <span style="color: #64748b; font-size: 0.875rem;">Current Rank</span>
+                            </div>
+                            <div id="liveRank" style="font-size: 1.75rem; font-weight: 700; color: #7c3aed;">--</div>
+                            <div style="font-size: 0.75rem; color: #8b5cf6; margin-top: 0.25rem;">In class</div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="recent-activity" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px;">
+                        <h4 style="margin-bottom: 1rem; color: #1e293b;">
+                            <i class="fas fa-clock" style="color: #10b981;"></i> 
+                            Recent Activity
+                        </h4>
+                        <div id="liveActivityFeed" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div class="activity-item" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: white; border-radius: 8px;">
+                                <div class="activity-icon" style="width: 36px; height: 36px; background: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 500; color: #1e293b;">Started new lesson</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">Introduction to Python - 5 minutes ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Auto-refresh indicator -->
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; padding: 0.75rem; background: #f0fdf4; border-radius: 8px;">
+                        <i class="fas fa-sync-alt" id="refreshIcon" style="color: #10b981;"></i>
+                        <span style="font-size: 0.875rem; color: #059669;">Auto-refreshing every 10 seconds</span>
                     </div>
                 </div>
             </section>
@@ -925,6 +1028,221 @@
             attendanceData = {};
             renderAttendanceTable(getFilteredStudents());
         });
+
+        // ============================================
+        // LIVE PROGRESS FUNCTIONS FOR PARENTS
+        // ============================================
+        
+        let liveProgressInterval = null;
+        let childStudentId = null;
+        
+        // Load parent's child info
+        async function loadParentChildInfo() {
+            try {
+                const response = await fetch('/api/parent/info');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const parent = data.parent;
+                    childStudentId = parent.child_id;
+                    
+                    // Update sidebar info
+                    document.getElementById('parentName').textContent = parent.name;
+                    document.getElementById('parentRole').textContent = parent.relationship + ' of ' + parent.child_name;
+                    document.getElementById('parentId').textContent = parent.parent_id;
+                    
+                    // Load initial progress
+                    loadChildProgress();
+                    
+                    // Start auto-refresh when on live-progress section
+                    startLiveProgressRefresh();
+                }
+            } catch (error) {
+                console.error('Error loading parent info:', error);
+            }
+        }
+        
+        // Load child's live progress
+        async function loadChildProgress() {
+            try {
+                const response = await fetch('/api/parent/child-progress');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateLiveProgressUI(data);
+                }
+            } catch (error) {
+                console.error('Error loading child progress:', error);
+            }
+        }
+        
+        // Update live progress UI
+        function updateLiveProgressUI(data) {
+            const child = data.child;
+            const metrics = data.liveMetrics;
+            
+            // Update child info
+            document.getElementById('childNameDisplay').textContent = child.name;
+            document.getElementById('childIdDisplay').textContent = 'Student ID: ' + child.studentId;
+            
+            // Update live metrics with animation
+            animateValue('liveProgressPercent', metrics.overallProgress, '%');
+            animateValue('liveCoursesCount', metrics.activeCourses, '');
+            animateValue('liveAssignmentsCount', metrics.pendingAssignments, '');
+            document.getElementById('liveRank').textContent = metrics.currentRank;
+            
+            // Update activity feed
+            updateActivityFeed(data.recentActivity);
+            
+            // Add pulse effect to show update
+            document.querySelectorAll('.live-stat-card').forEach(card => {
+                card.classList.add('live-update-pulse');
+                setTimeout(() => card.classList.remove('live-update-pulse'), 1000);
+            });
+        }
+        
+        // Animate number value
+        function animateValue(elementId, value, suffix) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const current = parseInt(element.textContent) || 0;
+            const target = parseInt(value) || 0;
+            
+            if (current === target) {
+                element.textContent = value + suffix;
+                return;
+            }
+            
+            const duration = 500;
+            const start = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                const currentValue = Math.round(current + (target - current) * easeProgress);
+                element.textContent = currentValue + suffix;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+        
+        // Update activity feed
+        function updateActivityFeed(activities) {
+            const feed = document.getElementById('liveActivityFeed');
+            if (!feed || !activities) return;
+            
+            feed.innerHTML = activities.map(activity => `
+                <div class="activity-item" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: white; border-radius: 8px; animation: fadeIn 0.3s ease;">
+                    <div class="activity-icon" style="width: 36px; height: 36px; background: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+                        <i class="fas ${activity.icon}"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; color: #1e293b;">${activity.description}</div>
+                        <div style="font-size: 0.75rem; color: #64748b;">${formatTimeAgo(activity.timestamp)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Format time ago
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return 'Just now';
+            
+            const date = new Date(timestamp);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+            return Math.floor(seconds / 86400) + ' days ago';
+        }
+        
+        // Start live progress auto-refresh
+        function startLiveProgressRefresh() {
+            if (liveProgressInterval) return;
+            
+            // Refresh every 10 seconds
+            liveProgressInterval = setInterval(() => {
+                // Only refresh if on live-progress section
+                const liveSection = document.getElementById('live-progress');
+                if (liveSection && liveSection.classList.contains('active')) {
+                    loadChildProgress();
+                    
+                    // Rotate refresh icon
+                    const icon = document.getElementById('refreshIcon');
+                    if (icon) {
+                        icon.style.animation = 'spin 1s linear';
+                        setTimeout(() => icon.style.animation = '', 1000);
+                    }
+                }
+            }, 10000); // 10 seconds
+        }
+        
+        // Stop live progress refresh
+        function stopLiveProgressRefresh() {
+            if (liveProgressInterval) {
+                clearInterval(liveProgressInterval);
+                liveProgressInterval = null;
+            }
+        }
+        
+        // Load parent info on page load
+        document.addEventListener('DOMContentLoaded', loadParentChildInfo);
+        
+        // Add CSS animation for live updates
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes live-update-pulse {
+                0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+                50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+                100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            }
+            .live-update-pulse {
+                animation: live-update-pulse 0.6s ease;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            .live-dot {
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                background: #ef4444;
+                border-radius: 50%;
+                animation: pulse 2s infinite;
+                margin-right: 6px;
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+            .live-text {
+                color: #ef4444;
+                font-weight: 600;
+                font-size: 0.75rem;
+            }
+            .nav-badge.live {
+                background: #ef4444;
+                color: white;
+                font-size: 0.65rem;
+                padding: 2px 6px;
+                border-radius: 10px;
+                margin-left: auto;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

@@ -1088,6 +1088,292 @@ What would you like to learn today?"""
         if self.is_error_help(message):
             return self.generate_error_help(message)
         
+        # Topic: HTML (Direct check before general topic extraction)
+        if any(word in message_lower for word in ['html', 'html5', 'teach me html', 'learn html']):
+            return """**HTML - The Foundation of Web Development**
+
+**HTML (HyperText Markup Language)** is the standard language for creating web pages. It describes the structure of a webpage using markup.
+
+**What You'll Learn Today:**
+
+📋 **Basic HTML Document Structure**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My First Page</title>
+</head>
+<body>
+    <h1>Hello World!</h1>
+    <p>This is my first webpage.</p>
+</body>
+</html>
+```
+
+🏷️ **Essential HTML Tags:**
+
+**1. Heading Tags (h1 to h6)**
+```html
+<h1>Main Heading</h1>
+<h2>Sub Heading</h2>
+<h3>Smaller Heading</h3>
+```
+
+**2. Paragraph Tag**
+```html
+<p>This is a paragraph of text.</p>
+```
+
+**3. Link Tag (Anchor)**
+```html
+<a href="https://google.com">Click here to visit Google</a>
+```
+
+**4. Image Tag**
+```html
+<img src="photo.jpg" alt="My Photo" width="300">
+```
+
+**5. List Tags**
+```html
+<!-- Unordered List (bullets) -->
+<ul>
+    <li>Apple</li>
+    <li>Banana</li>
+    <li>Orange</li>
+</ul>
+
+<!-- Ordered List (numbers) -->
+<ol>
+    <li>Step 1</li>
+    <li>Step 2</li>
+    <li>Step 3</li>
+</ol>
+```
+
+**6. Division & Section Tags**
+```html
+<div class="container">
+    <section>
+        <h2>About Me</h2>
+        <p>I love coding!</p>
+    </section>
+</div>
+```
+
+🎨 **Create Your First Webpage:**
+
+Copy this code into a file named `index.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>👋 Welcome to My Page</h1>
+    
+    <div class="card">
+        <h2>About Me</h2>
+        <p>Hello! I'm learning HTML and web development.</p>
+        
+        <h3>My Skills</h3>
+        <ul>
+            <li>HTML5</li>
+            <li>Learning CSS</li>
+            <li>Future: JavaScript</li>
+        </ul>
+        
+        <h3>Contact</h3>
+        <p>Email: <a href="mailto:me@example.com">me@example.com</a></p>
+    </div>
+</body>
+</html>
+```
+
+✅ **Next Steps:**
+1. Open Notepad or any text editor
+2. Copy the code above
+3. Save as `index.html`
+4. Double-click to open in browser
+5. Edit and experiment!
+
+**What to Learn Next:**
+• 🎨 CSS - Make it beautiful
+• ⚡ JavaScript - Add interactivity
+• 📱 Responsive Design - Mobile-friendly
+
+Want me to explain any specific HTML tag or show you CSS styling?"""
+
+        # Topic: CSS (Direct check before general topic extraction)
+        if any(word in message_lower for word in ['css', 'css3', 'cascading style sheets', 'teach me css', 'learn css', 'styling', 'styles']):
+            return """**CSS - Making Websites Beautiful**
+
+**CSS (Cascading Style Sheets)** is used to style and layout web pages — change colors, fonts, spacing, and positioning.
+
+**3 Ways to Add CSS:**
+
+**1. Inline CSS (inside HTML tag)**
+```html
+<p style="color: blue; font-size: 18px;">Blue text</p>
+```
+
+**2. Internal CSS (in head section)**
+```html
+<head>
+    <style>
+        p { color: blue; }
+    </style>
+</head>
+```
+
+**3. External CSS (recommended)**
+```html
+<!-- In HTML -->
+<link rel="stylesheet" href="style.css">
+```
+```css
+/* In style.css file */
+p { color: blue; }
+```
+
+🎨 **Essential CSS Properties:**
+
+**Colors & Backgrounds**
+```css
+body {
+    background-color: #f0f0f0;
+    color: #333333;
+}
+
+.button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+```
+
+**Text Styling**
+```css
+h1 {
+    font-family: 'Arial', sans-serif;
+    font-size: 32px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: underline;
+}
+```
+
+**Box Model (Spacing)**
+```css
+.card {
+    margin: 20px;        /* Space outside */
+    padding: 20px;       /* Space inside */
+    border: 2px solid #333;
+    border-radius: 10px; /* Rounded corners */
+}
+```
+
+**Layout - Flexbox**
+```css
+.container {
+    display: flex;
+    justify-content: center; /* Horizontal center */
+    align-items: center;     /* Vertical center */
+    gap: 20px;               /* Space between items */
+}
+```
+
+**Layout - Grid**
+```css
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* 3 equal columns */
+    gap: 20px;
+}
+```
+
+📱 **Responsive Design (Mobile-Friendly)**
+```css
+/* Desktop styles */
+.container {
+    width: 1200px;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+}
+```
+
+🎯 **Complete Example - Styled Button:**
+```css
+.btn-primary {
+    /* Colors */
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    
+    /* Size & Spacing */
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    
+    /* Text */
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    
+    /* Animation */
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+```
+
+**CSS Learning Path:**
+1. Selectors (class, id, element)
+2. Colors & Typography
+3. Box Model
+4. Flexbox
+5. Grid
+6. Responsive Design
+7. Animations
+
+Want to learn about Flexbox layout or CSS animations?"""
+
         # Extract topic
         topic = self.extract_topic(message)
         
@@ -1509,36 +1795,572 @@ Computing refers to the use of computers to process, store, and manage informati
 
 Would you like to dive deeper into any specific type of computing?"""
 
+        # Topic: Algorithms (General)
+        if any(word in message_lower for word in ['algorithm', 'algorithms', 'what is algorithm', 'algorithm means']):
+            return """**Algorithms - The Heart of Computer Science**
+
+An **algorithm** is a step-by-step procedure or formula for solving a problem. It's like a recipe that tells the computer exactly what to do.
+
+**Key Characteristics:**
+
+📋 **Input** → Algorithm receives data
+⚙️ **Processing** → Steps transform the data  
+📤 **Output** → Produces a result
+✅ **Finiteness** → Must terminate after finite steps
+
+**Why Algorithms Matter:**
+• 🚀 **Efficiency**: Solve problems faster
+• 💾 **Optimization**: Use less memory
+• 🎯 **Accuracy**: Get correct results
+• 🔧 **Reusability**: Use same solution for similar problems
+
+**Example - Finding Maximum Number:**
+```
+Algorithm: FindMax
+Input: List of numbers [5, 2, 9, 1, 7]
+
+Step 1: Assume first number (5) is maximum
+Step 2: Compare with next number (2) → 5 is larger
+Step 3: Compare with next number (9) → 9 is larger  
+Step 4: Compare with next number (1) → 9 is larger
+Step 5: Compare with last number (7) → 9 is larger
+Output: Maximum is 9
+```
+
+**Types of Algorithms:**
+
+| Type | Use Case | Example |
+|------|----------|---------|
+| **Sorting** | Arrange data | Quick Sort, Merge Sort |
+| **Searching** | Find items | Binary Search, Linear Search |
+| **Graph** | Networks, maps | Dijkstra's, BFS, DFS |
+| **Dynamic Programming** | Optimization | Fibonacci, Knapsack |
+| **Greedy** | Best immediate choice | Huffman Coding |
+
+**Real-World Examples:**
+• 🗺️ Google Maps - Shortest path algorithm
+• 🔍 Google Search - PageRank algorithm  
+• 📱 Facebook - Friend recommendation algorithm
+• 🛒 Amazon - Product recommendation algorithm
+• 🚗 Uber - Ride matching algorithm
+
+**Learning Path:**
+1. Start with simple algorithms (searching, sorting)
+2. Learn time/space complexity (Big O notation)
+3. Practice on LeetCode, HackerRank
+4. Study advanced algorithms (DP, Graph)
+
+Would you like me to explain a specific algorithm like Binary Search or Quick Sort?"""
+
+        # Topic: Programming Basics
+        if any(word in message_lower for word in ['programming', 'coding', 'what is programming', 'how to code']):
+            return """**Programming - Giving Instructions to Computers**
+
+**Programming** is the process of creating a set of instructions that tell a computer how to perform a task.
+
+**How Programming Works:**
+
+👨‍💻 **You Write Code** → Using programming language (Python, Java, etc.)
+🔄 **Compiler/Interpreter** → Translates to machine language
+⚙️ **Computer Executes** → Performs the instructions
+📤 **You Get Output** → Results of the program
+
+**Popular Programming Languages:**
+
+| Language | Best For | Difficulty |
+|----------|----------|------------|
+| **Python** | Beginners, AI/ML, Data Science | ⭐ Easy |
+| **JavaScript** | Web development | ⭐⭐ Medium |
+| **Java** | Enterprise, Android apps | ⭐⭐ Medium |
+| **C++** | Games, System software | ⭐⭐⭐ Hard |
+| **SQL** | Database management | ⭐⭐ Medium |
+
+**Basic Programming Concepts:**
+
+1. **Variables** - Store data
+   ```python
+   name = "John"
+   age = 20
+   ```
+
+2. **Conditionals** - Make decisions
+   ```python
+   if age >= 18:
+       print("Adult")
+   else:
+       print("Minor")
+   ```
+
+3. **Loops** - Repeat actions
+   ```python
+   for i in range(5):
+       print(i)  # Prints 0,1,2,3,4
+   ```
+
+4. **Functions** - Reusable code blocks
+   ```python
+   def greet(name):
+       return f"Hello, {name}!"
+   ```
+
+**First Program - Hello World:**
+```python
+print("Hello, World!")
+```
+
+**Learning Path for Beginners:**
+1. Choose a language (Python recommended)
+2. Learn basics (variables, loops, functions)
+3. Practice with small projects
+4. Learn data structures
+5. Build real applications
+
+**Free Resources:**
+• Codecademy (Interactive tutorials)
+• freeCodeCamp (Free certification)
+• W3Schools (Reference)
+• YouTube tutorials
+
+Want to start with Python or another specific language?"""
+
+        # Topic: Data Structures
+        if any(word in message_lower for word in ['data structure', 'data structures', 'what is data structure']):
+            return """**Data Structures - Organizing Data Efficiently**
+
+A **data structure** is a way of organizing and storing data so that it can be accessed and modified efficiently.
+
+**Why Data Structures Matter:**
+• ⚡ **Speed**: Faster operations (search, insert, delete)
+• 💾 **Memory**: Use space efficiently  
+• 🎯 **Organization**: Structure data logically
+• 🔧 **Problem Solving**: Right tool for the right problem
+
+**Common Data Structures:**
+
+📊 **Arrays**
+• Store elements in contiguous memory
+• Fast access by index: O(1)
+• Fixed size
+• Use for: Lists, matrices
+
+🔗 **Linked Lists**
+• Elements connected by pointers
+• Dynamic size
+• Fast insertion/deletion: O(1)
+• Use for: Stacks, queues
+
+🌳 **Trees**
+• Hierarchical structure
+• Binary Search Tree: O(log n) search
+• Use for: File systems, databases
+
+📚 **Stacks (LIFO)**
+• Last In, First Out
+• Operations: push, pop, peek
+• Use for: Undo, browser history
+
+🎫 **Queues (FIFO)**
+• First In, First Out
+• Operations: enqueue, dequeue
+• Use for: Print queues, BFS
+
+🔍 **Hash Tables**
+• Key-value pairs
+• O(1) average search time
+• Use for: Dictionaries, caching
+
+**Comparison Table:**
+
+| Data Structure | Access | Search | Insert | Delete |
+|----------------|--------|--------|--------|--------|
+| Array | O(1) | O(n) | O(n) | O(n) |
+| Linked List | O(n) | O(n) | O(1) | O(1) |
+| BST | O(log n) | O(log n) | O(log n) | O(log n) |
+| Hash Table | O(1) | O(1) | O(1) | O(1) |
+
+**Real-World Examples:**
+• 📱 Phone contacts - Hash table
+• 🌐 Browser back button - Stack
+• 🖨️ Printer queue - Queue
+• 🗂️ File system - Tree
+• 🎵 Music playlist - Linked List
+
+**Which data structure would you like to learn about in detail?**"""
+
+        # Topic: HTML
+        if any(word in message_lower for word in ['html', 'html5', 'hypertext markup language', 'teach me html', 'learn html']):
+            return """**HTML - The Foundation of Web Development**
+
+**HTML (HyperText Markup Language)** is the standard language for creating web pages. It describes the structure of a webpage using markup.
+
+**What You'll Learn Today:**
+
+📋 **Basic HTML Document Structure**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My First Page</title>
+</head>
+<body>
+    <h1>Hello World!</h1>
+    <p>This is my first webpage.</p>
+</body>
+</html>
+```
+
+🏷️ **Essential HTML Tags:**
+
+**1. Heading Tags (h1 to h6)**
+```html
+<h1>Main Heading</h1>
+<h2>Sub Heading</h2>
+<h3>Smaller Heading</h3>
+```
+
+**2. Paragraph Tag**
+```html
+<p>This is a paragraph of text.</p>
+```
+
+**3. Link Tag (Anchor)**
+```html
+<a href="https://google.com">Click here to visit Google</a>
+```
+
+**4. Image Tag**
+```html
+<img src="photo.jpg" alt="My Photo" width="300">
+```
+
+**5. List Tags**
+```html
+<!-- Unordered List (bullets) -->
+<ul>
+    <li>Apple</li>
+    <li>Banana</li>
+    <li>Orange</li>
+</ul>
+
+<!-- Ordered List (numbers) -->
+<ol>
+    <li>Step 1</li>
+    <li>Step 2</li>
+    <li>Step 3</li>
+</ol>
+```
+
+**6. Division & Section Tags**
+```html
+<div class="container">
+    <section>
+        <h2>About Me</h2>
+        <p>I love coding!</p>
+    </section>
+</div>
+```
+
+🎨 **Create Your First Webpage:**
+
+Copy this code into a file named `index.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>👋 Welcome to My Page</h1>
+    
+    <div class="card">
+        <h2>About Me</h2>
+        <p>Hello! I'm learning HTML and web development.</p>
+        
+        <h3>My Skills</h3>
+        <ul>
+            <li>HTML5</li>
+            <li>Learning CSS</li>
+            <li>Future: JavaScript</li>
+        </ul>
+        
+        <h3>Contact</h3>
+        <p>Email: <a href="mailto:me@example.com">me@example.com</a></p>
+    </div>
+</body>
+</html>
+```
+
+✅ **Next Steps:**
+1. Open Notepad or any text editor
+2. Copy the code above
+3. Save as `index.html`
+4. Double-click to open in browser
+5. Edit and experiment!
+
+**What to Learn Next:**
+• 🎨 CSS - Make it beautiful
+• ⚡ JavaScript - Add interactivity
+• 📱 Responsive Design - Mobile-friendly
+
+Want me to explain any specific HTML tag or show you CSS styling?"""
+
+        # Topic: CSS
+        if any(word in message_lower for word in ['css', 'css3', 'cascading style sheets', 'styling', 'style']):
+            return """**CSS - Making Websites Beautiful**
+
+**CSS (Cascading Style Sheets)** is used to style and layout web pages — change colors, fonts, spacing, and positioning.
+
+**3 Ways to Add CSS:**
+
+**1. Inline CSS (inside HTML tag)**
+```html
+<p style="color: blue; font-size: 18px;">Blue text</p>
+```
+
+**2. Internal CSS (in head section)**
+```html
+<head>
+    <style>
+        p { color: blue; }
+    </style>
+</head>
+```
+
+**3. External CSS (recommended)**
+```html
+<!-- In HTML -->
+<link rel="stylesheet" href="style.css">
+```
+```css
+/* In style.css file */
+p { color: blue; }
+```
+
+🎨 **Essential CSS Properties:**
+
+**Colors & Backgrounds**
+```css
+body {
+    background-color: #f0f0f0;
+    color: #333333;
+}
+
+.button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+```
+
+**Text Styling**
+```css
+h1 {
+    font-family: 'Arial', sans-serif;
+    font-size: 32px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: underline;
+}
+```
+
+**Box Model (Spacing)**
+```css
+.card {
+    margin: 20px;        /* Space outside */
+    padding: 20px;       /* Space inside */
+    border: 2px solid #333;
+    border-radius: 10px; /* Rounded corners */
+}
+```
+
+**Layout - Flexbox**
+```css
+.container {
+    display: flex;
+    justify-content: center; /* Horizontal center */
+    align-items: center;     /* Vertical center */
+    gap: 20px;               /* Space between items */
+}
+```
+
+**Layout - Grid**
+```css
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* 3 equal columns */
+    gap: 20px;
+}
+```
+
+📱 **Responsive Design (Mobile-Friendly)**
+```css
+/* Desktop styles */
+.container {
+    width: 1200px;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+}
+```
+
+🎯 **Complete Example - Styled Button:**
+```css
+.btn-primary {
+    /* Colors */
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    
+    /* Size & Spacing */
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    
+    /* Text */
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    
+    /* Animation */
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+```
+
+**CSS Learning Path:**
+1. Selectors (class, id, element)
+2. Colors & Typography
+3. Box Model
+4. Flexbox
+5. Grid
+6. Responsive Design
+7. Animations
+
+Want to learn about Flexbox layout or CSS animations?"""
+
+        # Topic: Computer Science
+        if any(word in message_lower for word in ['computer science', 'cs', 'what is cs', 'computer engineering']):
+            return """**Computer Science - The Study of Computation**
+
+**Computer Science (CS)** is the study of computers and computational systems, including their theory, design, development, and application.
+
+**Core Areas of CS:**
+
+💻 **Programming & Software Development**
+• Writing code to create software
+• Languages: Python, Java, C++, JavaScript
+• Software engineering principles
+
+🧮 **Algorithms & Data Structures**
+• Efficient problem-solving methods
+• Organizing and processing data
+• Performance optimization
+
+🗄️ **Databases**
+• Storing and retrieving data
+• SQL and NoSQL systems
+• Data modeling
+
+🌐 **Computer Networks**
+• How computers communicate
+• Internet protocols (TCP/IP)
+• Network security
+
+🤖 **Artificial Intelligence**
+• Machine Learning
+• Natural Language Processing
+• Computer Vision
+
+🔒 **Cybersecurity**
+• Protecting systems and data
+• Encryption, authentication
+• Ethical hacking
+
+🎮 **Computer Graphics**
+• Game development
+• 3D modeling
+• Animation
+
+**CS Career Paths:**
+
+| Role | Salary (India) | Skills Needed |
+|------|----------------|---------------|
+| Software Developer | ₹6-25 LPA | Programming, Problem-solving |
+| Data Scientist | ₹8-35 LPA | Python, ML, Statistics |
+| Cybersecurity Expert | ₹8-40 LPA | Networks, Security tools |
+| Cloud Architect | ₹15-50 LPA | AWS/Azure, DevOps |
+| AI Engineer | ₹12-45 LPA | ML, Deep Learning, Python |
+
+**Why Study CS?**
+• 💰 High-paying jobs
+• 🌍 Global opportunities
+• 🚀 Constant innovation
+• 🏠 Remote work options
+• 🎯 Solve real-world problems
+
+**Getting Started:**
+1. Learn a programming language (Python)
+2. Understand algorithms & data structures
+3. Build projects
+4. Contribute to open source
+5. Intern at tech companies
+
+Would you like to know about CS courses, careers, or specific topics?"""
+
         # Try to provide a helpful general response instead of confusion
-        return f"""I'd be happy to help you with "{message}"!
+        return f"""I'd be happy to help you learn about "{message}"!
 
-As your AI learning assistant, I can help you with:
+Let me provide a comprehensive explanation. Could you tell me which aspect interests you most?
 
-📚 **Academic Topics**
-• Programming (Python, Java, C++, JavaScript)
-• Data Structures & Algorithms
-• Computer Science concepts
-• Mathematics & Statistics
+**I can explain:**
+• Basic concepts and definitions
+• How it works (step-by-step)
+• Real-world examples and applications
+• Code examples and implementations
+• Comparisons with similar topics
 
-🎓 **Education Support**
-• Course recommendations
-• Study strategies
-• Project guidance
-• Interview preparation
-
-💻 **Technical Skills**
-• Web development
-• Machine Learning & AI
-• Database systems
-• Cloud computing
-
-Could you please provide more details about what you'd like to learn? For example:
-• "Explain {message} in simple terms"
+**Or ask me specifically:**
+• "What is {message} in simple terms?"
 • "How does {message} work?"
-• "Give me examples of {message}"
-• "Compare {message} with alternatives"
+• "Show me an example of {message}"
+• "Why is {message} important?"
 
-I'm here to make your learning journey easier! 🚀"""
+I'm here to make complex topics easy to understand! What would you like to know? 🎓"""
 
 
 # Global bot instance

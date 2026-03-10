@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, jsonify, session, send_file
 from chatbot import get_response
 import json
 import os
+import random
 from datetime import datetime, timedelta
 from contextlib import suppress
 from werkzeug.utils import secure_filename
@@ -29,8 +30,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # Student database file
 STUDENTS_FILE = os.path.join(BASE_DIR, "students.json")
 
-# Teacher database file
-TEACHERS_FILE = os.path.join(BASE_DIR, "teachers.json")
+# Parent database file
+PARENTS_FILE = os.path.join(BASE_DIR, "parents.json")
 
 # Initialize students database
 def init_students_db():
@@ -38,44 +39,44 @@ def init_students_db():
         with open(STUDENTS_FILE, "w") as f:
             json.dump({}, f)
 
-# Initialize teachers database
-def init_teachers_db():
-    if not os.path.exists(TEACHERS_FILE):
-        # Create default teacher accounts
-        default_teachers = {
-            "teacher1@edubot.edu": {
-                "name": "Dr. Rajesh Kumar",
-                "email": "teacher1@edubot.edu",
-                "password": "teacher123",
-                "teacher_id": "TCH20260001",
-                "department": "Computer Science & Engineering",
-                "designation": "Professor",
-                "subjects": ["Data Structures", "Algorithms", "Database Systems"],
-                "joined_date": "2020-06-15"
+# Initialize parents database
+def init_parents_db():
+    if not os.path.exists(PARENTS_FILE):
+        # Create default parent accounts
+        default_parents = {
+            "parent1@edubot.edu": {
+                "name": "Mr. Rajesh Sharma",
+                "email": "parent1@edubot.edu",
+                "password": "parent123",
+                "parent_id": "PRT20260001",
+                "child_name": "Rahul Sharma",
+                "child_id": "STU20260001",
+                "phone": "+91 9876543210",
+                "relationship": "Father"
             },
-            "teacher2@edubot.edu": {
-                "name": "Prof. Priya Sharma",
-                "email": "teacher2@edubot.edu",
-                "password": "teacher123",
-                "teacher_id": "TCH20260002",
-                "department": "Computer Science & Engineering",
-                "designation": "Associate Professor",
-                "subjects": ["Web Development", "Machine Learning", "Cloud Computing"],
-                "joined_date": "2019-08-20"
+            "parent2@edubot.edu": {
+                "name": "Mrs. Priya Patel",
+                "email": "parent2@edubot.edu",
+                "password": "parent123",
+                "parent_id": "PRT20260002",
+                "child_name": "Neha Patel",
+                "child_id": "STU20260002",
+                "phone": "+91 9876543211",
+                "relationship": "Mother"
             },
-            "teacher3@edubot.edu": {
-                "name": "Dr. Amit Patel",
-                "email": "teacher3@edubot.edu",
-                "password": "teacher123",
-                "teacher_id": "TCH20260003",
-                "department": "Computer Science & Engineering",
-                "designation": "Assistant Professor",
-                "subjects": ["Operating Systems", "Computer Networks", "Cyber Security"],
-                "joined_date": "2021-01-10"
+            "parent3@edubot.edu": {
+                "name": "Mr. Amit Kumar",
+                "email": "parent3@edubot.edu",
+                "password": "parent123",
+                "parent_id": "PRT20260003",
+                "child_name": "Vikram Kumar",
+                "child_id": "STU20260003",
+                "phone": "+91 9876543212",
+                "relationship": "Father"
             }
         }
-        with open(TEACHERS_FILE, "w") as f:
-            json.dump(default_teachers, f, indent=2)
+        with open(PARENTS_FILE, "w") as f:
+            json.dump(default_parents, f, indent=2)
 
 # Load students data
 def load_students():
@@ -87,6 +88,17 @@ def load_students():
 def save_students(students):
     with open(STUDENTS_FILE, "w") as f:
         json.dump(students, f, indent=2)
+
+# Load parents data
+def load_parents():
+    init_parents_db()
+    with open(PARENTS_FILE, "r") as f:
+        return json.load(f)
+
+# Save parents data
+def save_parents(parents):
+    with open(PARENTS_FILE, "w") as f:
+        json.dump(parents, f, indent=2)
 
 # Load teachers data
 def load_teachers():
@@ -166,13 +178,13 @@ def home():
 def login_page():
     return render_template("login.html")
 
-@app.route("/teacher-login")
-def teacher_login_page():
-    return render_template("teacher_login.html")
+@app.route("/parent-login")
+def parent_login_page():
+    return render_template("parent_login.html")
 
-@app.route("/teacher-dashboard")
-def teacher_dashboard():
-    return render_template("teacher_dashboard.html")
+@app.route("/parent-dashboard")
+def parent_dashboard():
+    return render_template("parent_dashboard.html")
 
 @app.route("/dashboard")
 def dashboard():
@@ -183,6 +195,81 @@ def chat():
     user_message = request.json["message"]
     reply = get_response(user_message)
     return jsonify({"reply": reply})
+
+
+# API: Voice Assistant Chat - Enhanced Professional Responses
+@app.route("/api/voice/chat", methods=["POST"])
+def voice_chat():
+    """
+    Voice Assistant endpoint with enhanced professional responses.
+    Provides structured, speech-optimized answers for voice interaction.
+    """
+    data = request.json
+    user_message = data.get("message", "")
+    voice_context = data.get("context", {})  # Optional conversation context
+    
+    # Get base response from chatbot
+    base_response = get_response(user_message)
+    
+    # Enhance response for voice (make it more conversational)
+    enhanced_response = enhance_voice_response(base_response, user_message)
+    
+    return jsonify({
+        "reply": enhanced_response,
+        "voice_optimized": True,
+        "timestamp": datetime.now().isoformat()
+    })
+
+
+def enhance_voice_response(base_response, user_message):
+    """
+    Enhance chatbot response for voice output:
+    - Add conversational openings/closings
+    - Structure for better speech flow
+    - Add voice-specific cues
+    """
+    import re
+    
+    # Remove markdown formatting that's hard to speak
+    clean_response = base_response
+    
+    # Replace markdown headers with spoken equivalents
+    clean_response = re.sub(r'\*\*(.+?)\*\*', r'\1', clean_response)  # Remove bold
+    clean_response = re.sub(r'\*(.+?)\*', r'\1', clean_response)  # Remove italic
+    clean_response = re.sub(r'`{3}[\w]*\n?', '', clean_response)  # Remove code block markers
+    clean_response = re.sub(r'`(.+?)`', r'\1', clean_response)  # Remove inline code
+    
+    # Replace symbols with spoken words
+    clean_response = clean_response.replace('•', 'First,').replace('→', 'leads to')
+    clean_response = clean_response.replace('|', ',').replace('---', '')
+    
+    # Add conversational opening based on query type
+    user_lower = user_message.lower()
+    
+    if any(word in user_lower for word in ['teach', 'learn', 'explain', 'what is']):
+        opening = "I'd be happy to help you with that! "
+    elif any(word in user_lower for word in ['how to', 'how do', 'steps']):
+        opening = "Here's how you can do that: "
+    elif any(word in user_lower for word in ['compare', 'difference', 'vs']):
+        opening = "Let me explain the differences: "
+    elif any(word in user_lower for word in ['error', 'bug', 'fix', 'problem']):
+        opening = "I can help you solve this issue. "
+    else:
+        opening = "Great question! "
+    
+    # Add helpful closing
+    closings = [
+        " Does that help? Feel free to ask if you need more details!",
+        " I hope that clarifies things for you!",
+        " Let me know if you'd like me to explain any part in more detail!",
+        " Would you like me to show you a code example or go deeper into any topic?"
+    ]
+    closing = random.choice(closings)
+    
+    # Combine with the base response
+    enhanced = opening + clean_response + closing
+    
+    return enhanced
 
 # API: Student Registration
 @app.route("/api/register", methods=["POST"])
@@ -426,27 +513,27 @@ def logout():
     session.clear()
     return jsonify({"success": True})
 
-# API: Teacher Login
-@app.route("/api/teacher/login", methods=["POST"])
-def teacher_login():
+# API: Parent Login
+@app.route("/api/parent/login", methods=["POST"])
+def parent_login():
     data = request.json
-    teachers = load_teachers()
+    parents = load_parents()
     
-    # Find teacher by email
-    if data["email"] in teachers:
-        teacher = teachers[data["email"]]
-        if teacher.get("password") == data["password"]:
+    # Find parent by email
+    if data["email"] in parents:
+        parent = parents[data["email"]]
+        if parent.get("password") == data["password"]:
             # Store in session
-            session["teacher_email"] = data["email"]
-            session["user_type"] = "teacher"
+            session["parent_email"] = data["email"]
+            session["user_type"] = "parent"
             
             return jsonify({
                 "success": True,
-                "teacherId": teacher["teacher_id"],
-                "name": teacher["name"],
-                "email": teacher["email"],
-                "department": teacher["department"],
-                "designation": teacher["designation"],
+                "parentId": parent["parent_id"],
+                "name": parent["name"],
+                "email": parent["email"],
+                "childName": parent["child_name"],
+                "childId": parent["child_id"],
                 "message": "Login successful!"
             })
         else:
@@ -460,25 +547,139 @@ def teacher_login():
         "message": "Email not found. Please contact admin."
     })
 
-# API: Get Teacher Info
-@app.route("/api/teacher/info", methods=["GET"])
-def get_teacher_info():
-    if "teacher_email" not in session:
+# API: Get Parent Info
+@app.route("/api/parent/info", methods=["GET"])
+def get_parent_info():
+    if "parent_email" not in session:
         return jsonify({"success": False, "message": "Not logged in"})
     
-    teachers = load_teachers()
-    teacher_email = session["teacher_email"]
+    parents = load_parents()
+    parent_email = session["parent_email"]
     
-    if teacher_email in teachers:
-        teacher = teachers[teacher_email]
-        # Return teacher data without password
-        teacher_data = {k: v for k, v in teacher.items() if k != "password"}
+    if parent_email in parents:
+        parent = parents[parent_email]
+        # Return parent data without password
+        parent_data = {k: v for k, v in parent.items() if k != "password"}
         return jsonify({
             "success": True,
-            "teacher": teacher_data
+            "parent": parent_data
         })
     
-    return jsonify({"success": False, "message": "Teacher not found"})
+    return jsonify({"success": False, "message": "Parent not found"})
+
+# API: Get Child's Live Progress (Parent only)
+@app.route("/api/parent/child-progress", methods=["GET"])
+def get_child_progress():
+    """Get real-time progress of parent's child using student ID"""
+    if "parent_email" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    parents = load_parents()
+    parent_email = session["parent_email"]
+    
+    if parent_email not in parents:
+        return jsonify({"success": False, "message": "Parent not found"})
+    
+    parent = parents[parent_email]
+    child_id = parent.get("child_id")
+    
+    if not child_id:
+        return jsonify({"success": False, "message": "No child linked to this account"})
+    
+    students = load_students()
+    
+    if child_id not in students:
+        return jsonify({"success": False, "message": "Student not found"})
+    
+    student = students[child_id]
+    
+    # Calculate live metrics
+    progress_data = {
+        "success": True,
+        "child": {
+            "studentId": child_id,
+            "name": f"{student.get('firstName', '')} {student.get('lastName', '')}",
+            "email": student.get("email", ""),
+            "course": student.get("course", "Computer Science"),
+            "rollNumber": student.get("rollNumber", ""),
+        },
+        "liveMetrics": {
+            "overallProgress": calculate_overall_progress(student),
+            "activeCourses": len(student.get("enrolledCourses", [])),
+            "pendingAssignments": count_pending_assignments(student),
+            "currentRank": student.get("rank", "--"),
+            "attendancePercentage": calculate_attendance_percentage(student),
+            "lastActive": student.get("lastActive", "Just now"),
+            "studyStreak": calculate_study_streak(student.get("activityLog", [])),
+        },
+        "recentActivity": generate_recent_activity(student),
+        "grades": student.get("grades", {}),
+        "attendance": student.get("attendance", {}),
+        "timestamp": datetime.now().isoformat()
+    }
+    
+    return jsonify(progress_data)
+
+
+def calculate_overall_progress(student):
+    """Calculate student's overall progress percentage"""
+    # Get all enrolled courses progress
+    courses = student.get("enrolledCourses", [])
+    if not courses:
+        return 0
+    
+    total_progress = sum(course.get("progress", 0) for course in courses)
+    return round(total_progress / len(courses), 1)
+
+
+def count_pending_assignments(student):
+    """Count pending assignments"""
+    assignments = student.get("assignments", [])
+    return sum(1 for a in assignments if a.get("status") == "pending")
+
+
+def calculate_attendance_percentage(student):
+    """Calculate attendance percentage"""
+    attendance = student.get("attendance", {})
+    if not attendance:
+        return 100
+    
+    total_days = len(attendance)
+    present_days = sum(1 for a in attendance.values() if a.get("status") == "present")
+    
+    return round((present_days / total_days) * 100, 1) if total_days > 0 else 100
+
+
+def generate_recent_activity(student):
+    """Generate recent activity feed"""
+    activities = []
+    
+    # Get from activity log
+    activity_log = student.get("activityLog", [])
+    
+    for activity in activity_log[-5:]:  # Last 5 activities
+        activities.append({
+            "type": activity.get("type", "general"),
+            "description": activity.get("description", ""),
+            "timestamp": activity.get("timestamp", ""),
+            "icon": get_activity_icon(activity.get("type", "general"))
+        })
+    
+    return activities
+
+
+def get_activity_icon(activity_type):
+    """Get Font Awesome icon for activity type"""
+    icons = {
+        "lesson": "fa-play",
+        "assignment": "fa-tasks",
+        "quiz": "fa-question-circle",
+        "login": "fa-sign-in-alt",
+        "achievement": "fa-trophy",
+        "general": "fa-circle"
+    }
+    return icons.get(activity_type, "fa-circle")
+
 
 # API: Get All Students (for teacher attendance management)
 @app.route("/api/teacher/students", methods=["GET"])
@@ -2273,6 +2474,96 @@ def generate_live_notifications(student):
     all_notifications.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
     
     return all_notifications[:20]  # Return last 20
+
+
+# API: Get Student Profile
+@app.route("/api/student/profile", methods=["GET"])
+def get_student_profile():
+    """Get current student's profile information"""
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id not in students:
+        return jsonify({"success": False, "message": "Student not found"})
+    
+    student = students[student_id]
+    
+    return jsonify({
+        "success": True,
+        "student": {
+            "firstName": student.get("firstName", ""),
+            "lastName": student.get("lastName", ""),
+            "email": student.get("email", ""),
+            "phone": student.get("phone", ""),
+            "profilePhoto": student.get("profilePhoto", None)
+        }
+    })
+
+
+# API: Update Student Profile
+@app.route("/api/student/update-profile", methods=["POST"])
+def update_student_profile():
+    """Update student profile information and photo"""
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id not in students:
+        return jsonify({"success": False, "message": "Student not found"})
+    
+    student = students[student_id]
+    
+    # Update text fields
+    if "firstName" in request.form:
+        student["firstName"] = request.form["firstName"]
+    if "lastName" in request.form:
+        student["lastName"] = request.form["lastName"]
+    if "phone" in request.form:
+        student["phone"] = request.form["phone"]
+    
+    # Handle profile photo upload
+    if "profilePhoto" in request.files:
+        photo = request.files["profilePhoto"]
+        if photo.filename:
+            # Validate file type
+            allowed_extensions = {"jpg", "jpeg", "png", "gif"}
+            file_ext = photo.filename.rsplit(".", 1)[1].lower() if "." in photo.filename else ""
+            
+            if file_ext not in allowed_extensions:
+                return jsonify({"success": False, "message": "Invalid file type. Use JPG, PNG, or GIF."})
+            
+            # Create uploads directory for profile photos
+            profile_uploads = os.path.join(UPLOAD_FOLDER, "profiles")
+            os.makedirs(profile_uploads, exist_ok=True)
+            
+            # Save file with student ID as filename
+            filename = f"{student_id}.{file_ext}"
+            filepath = os.path.join(profile_uploads, filename)
+            photo.save(filepath)
+            
+            # Store relative path in student record
+            student["profilePhoto"] = f"/uploads/profiles/{filename}"
+    
+    # Save updated student data
+    save_students(students)
+    
+    return jsonify({
+        "success": True,
+        "message": "Profile updated successfully",
+        "student": {
+            "firstName": student.get("firstName", ""),
+            "lastName": student.get("lastName", ""),
+            "email": student.get("email", ""),
+            "phone": student.get("phone", ""),
+            "profilePhoto": student.get("profilePhoto", None)
+        }
+    })
+
 
 if __name__ == "__main__":
     app.run(debug=True)

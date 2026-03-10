@@ -20,8 +20,13 @@
         </div>
         
         <div class="student-profile">
-            <div class="profile-avatar">
-                <i class="fas fa-user"></i>
+            <div class="profile-avatar-container">
+                <div class="profile-avatar" id="profileAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <button class="edit-profile-btn" onclick="openEditProfileModal()" title="Edit Profile">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
             </div>
             <div class="profile-info">
                 <h4 id="studentName">Loading...</h4>
@@ -1045,35 +1050,420 @@
         <section id="resources" class="content-section">
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h3>Study Resources</h3>
+                    <h3><i class="fas fa-graduation-cap"></i> Study Resources</h3>
                 </div>
                 <div class="resources-grid">
-                    <div class="resource-card">
-                        <i class="fas fa-book"></i>
-                        <h4>E-Books</h4>
+                    <div class="resource-card" onclick="openEbooksModal()">
+                        <div class="resource-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h4>E-Books Library</h4>
                         <p>Access 50,000+ digital books</p>
+                        <span class="resource-badge">New</span>
                     </div>
-                    <div class="resource-card">
-                        <i class="fas fa-video"></i>
+                    <div class="resource-card" onclick="openVideoLecturesModal()">
+                        <div class="resource-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                            <i class="fas fa-video"></i>
+                        </div>
                         <h4>Video Lectures</h4>
                         <p>Recorded classes & tutorials</p>
                     </div>
-                    <div class="resource-card">
-                        <i class="fas fa-file-pdf"></i>
+                    <div class="resource-card" onclick="openStudyNotesModal()">
+                        <div class="resource-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
                         <h4>Study Notes</h4>
-                        <p>Downloadable PDF notes</p>
+                        <p>Categorized by student level</p>
+                        <span class="resource-badge">Popular</span>
                     </div>
-                    <div class="resource-card">
-                        <i class="fas fa-question-circle"></i>
+                    <div class="resource-card" onclick="openPracticeTestsModal()">
+                        <div class="resource-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
                         <h4>Practice Tests</h4>
                         <p>Mock exams & quizzes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Online Books Section -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-book-reader"></i> Online Books</h3>
+                    <button class="btn-secondary btn-sm" onclick="openEbooksModal()">
+                        <i class="fas fa-external-link-alt"></i> View All
+                    </button>
+                </div>
+                <div class="books-grid" id="onlineBooksGrid">
+                    <!-- Books will be loaded dynamically -->
+                    <div class="book-card" onclick="openBook('python')">
+                        <div class="book-cover" style="background: linear-gradient(135deg, #3776ab, #ffd43b);">
+                            <i class="fab fa-python"></i>
+                        </div>
+                        <div class="book-info">
+                            <h5>Python Programming</h5>
+                            <p>Complete guide for beginners</p>
+                            <span class="book-tag">Programming</span>
+                        </div>
+                    </div>
+                    <div class="book-card" onclick="openBook('javascript')">
+                        <div class="book-cover" style="background: linear-gradient(135deg, #f7df1e, #323330);">
+                            <i class="fab fa-js"></i>
+                        </div>
+                        <div class="book-info">
+                            <h5>JavaScript Mastery</h5>
+                            <p>From basics to advanced</p>
+                            <span class="book-tag">Web Dev</span>
+                        </div>
+                    </div>
+                    <div class="book-card" onclick="openBook('algorithms')">
+                        <div class="book-cover" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="book-info">
+                            <h5>Data Structures</h5>
+                            <p>Algorithms & Problem Solving</p>
+                            <span class="book-tag">CS Core</span>
+                        </div>
+                    </div>
+                    <div class="book-card" onclick="openBook('machine-learning')">
+                        <div class="book-cover" style="background: linear-gradient(135deg, #ff6b6b, #ee5a6f);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="book-info">
+                            <h5>Machine Learning</h5>
+                            <p>AI & Deep Learning basics</p>
+                            <span class="book-tag">AI/ML</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Notes by Category -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-sticky-note"></i> Study Notes by Category</h3>
+                    <div class="category-tabs">
+                        <button class="tab-btn active" onclick="filterNotes('all')">All</button>
+                        <button class="tab-btn" onclick="filterNotes('beginner')">Beginner</button>
+                        <button class="tab-btn" onclick="filterNotes('intermediate')">Intermediate</button>
+                        <button class="tab-btn" onclick="filterNotes('advanced')">Advanced</button>
+                    </div>
+                </div>
+                <div class="notes-grid" id="studyNotesGrid">
+                    <!-- Beginner Notes -->
+                    <div class="note-card" data-category="beginner">
+                        <div class="note-icon" style="background: #dcfce7;">
+                            <i class="fas fa-seedling" style="color: #22c55e;"></i>
+                        </div>
+                        <div class="note-content">
+                            <h5>HTML & CSS Basics</h5>
+                            <p>Complete beginner's guide to web development</p>
+                            <div class="note-meta">
+                                <span class="note-level beginner">Beginner</span>
+                                <span class="note-pages">24 pages</span>
+                            </div>
+                        </div>
+                        <button class="btn-download" onclick="downloadNote('html-basics')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                    <div class="note-card" data-category="beginner">
+                        <div class="note-icon" style="background: #dbeafe;">
+                            <i class="fas fa-calculator" style="color: #3b82f6;"></i>
+                        </div>
+                        <div class="note-content">
+                            <h5>Mathematics Fundamentals</h5>
+                            <p>Algebra, Geometry & Calculus basics</p>
+                            <div class="note-meta">
+                                <span class="note-level beginner">Beginner</span>
+                                <span class="note-pages">32 pages</span>
+                            </div>
+                        </div>
+                        <button class="btn-download" onclick="downloadNote('math-fundamentals')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                    <!-- Intermediate Notes -->
+                    <div class="note-card" data-category="intermediate">
+                        <div class="note-icon" style="background: #fef3c7;">
+                            <i class="fas fa-code-branch" style="color: #f59e0b;"></i>
+                        </div>
+                        <div class="note-content">
+                            <h5>Data Structures Guide</h5>
+                            <p>Arrays, Linked Lists, Trees & Graphs</p>
+                            <div class="note-meta">
+                                <span class="note-level intermediate">Intermediate</span>
+                                <span class="note-pages">45 pages</span>
+                            </div>
+                        </div>
+                        <button class="btn-download" onclick="downloadNote('data-structures')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                    <div class="note-card" data-category="intermediate">
+                        <div class="note-icon" style="background: #fce7f3;">
+                            <i class="fas fa-database" style="color: #ec4899;"></i>
+                        </div>
+                        <div class="note-content">
+                            <h5>Database Systems</h5>
+                            <p>SQL, NoSQL & Database Design</p>
+                            <div class="note-meta">
+                                <span class="note-level intermediate">Intermediate</span>
+                                <span class="note-pages">38 pages</span>
+                            </div>
+                        </div>
+                        <button class="btn-download" onclick="downloadNote('database-systems')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                    <!-- Advanced Notes -->
+                    <div class="note-card" data-category="advanced">
+                        <div class="note-icon" style="background: #fee2e2;">
+                            <i class="fas fa-brain" style="color: #ef4444;"></i>
+                        </div>
+                        <div class="note-content">
+                            <h5>Machine Learning Algorithms</h5>
+                            <p>Deep Learning & Neural Networks</p>
+                            <div class="note-meta">
+                                <span class="note-level advanced">Advanced</span>
+                                <span class="note-pages">52 pages</span>
+                            </div>
+                        </div>
+                        <button class="btn-download" onclick="downloadNote('ml-algorithms')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                    <div class="note-card" data-category="advanced">
+                        <div class="note-icon" style="background: #e0e7ff;">
+                            <i class="fas fa-shield-alt" style="color: #6366f1;"></i>
+                        </div>
+                        <div class="note-content">
+                            <h5>Cybersecurity Advanced</h5>
+                            <p>Ethical Hacking & Security Protocols</p>
+                            <div class="note-meta">
+                                <span class="note-level advanced">Advanced</span>
+                                <span class="note-pages">48 pages</span>
+                            </div>
+                        </div>
+                        <button class="btn-download" onclick="downloadNote('cybersecurity')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Video Lectures Section -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-robot" style="color: #8b5cf6;"></i> AI Video Lectures</h3>
+                    <div class="category-tabs">
+                        <button class="tab-btn active" onclick="filterVideos('all')">All</button>
+                        <button class="tab-btn" onclick="filterVideos('beginner')">Beginner</button>
+                        <button class="tab-btn" onclick="filterVideos('intermediate')">Intermediate</button>
+                        <button class="tab-btn" onclick="filterVideos('advanced')">Advanced</button>
+                    </div>
+                </div>
+                <div class="videos-grid" id="videoLecturesGrid">
+                    <!-- Beginner Videos -->
+                    <div class="video-card" data-category="beginner" onclick="playVideo('python-basics')">
+                        <div class="video-thumbnail">
+                            <div class="video-preview" style="background: linear-gradient(135deg, #3776ab, #ffd43b);">
+                                <i class="fab fa-python"></i>
+                                <span class="video-duration">45:30</span>
+                            </div>
+                            <div class="play-overlay">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h5>Python Programming Basics</h5>
+                            <p>Learn Python from scratch with AI tutor</p>
+                            <div class="video-meta">
+                                <span class="video-level beginner">Beginner</span>
+                                <span class="video-views"><i class="fas fa-eye"></i> 12.5K views</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="video-card" data-category="beginner" onclick="playVideo('web-dev-intro')">
+                        <div class="video-thumbnail">
+                            <div class="video-preview" style="background: linear-gradient(135deg, #e34c26, #f06529);">
+                                <i class="fab fa-html5"></i>
+                                <span class="video-duration">38:15</span>
+                            </div>
+                            <div class="play-overlay">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h5>Web Development Introduction</h5>
+                            <p>HTML, CSS & JavaScript fundamentals</p>
+                            <div class="video-meta">
+                                <span class="video-level beginner">Beginner</span>
+                                <span class="video-views"><i class="fas fa-eye"></i> 8.2K views</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Intermediate Videos -->
+                    <div class="video-card" data-category="intermediate" onclick="playVideo('react-course')">
+                        <div class="video-thumbnail">
+                            <div class="video-preview" style="background: linear-gradient(135deg, #61dafb, #282c34);">
+                                <i class="fab fa-react"></i>
+                                <span class="video-duration">1:15:00</span>
+                            </div>
+                            <div class="play-overlay">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h5>React.js Complete Course</h5>
+                            <p>Build modern web apps with React</p>
+                            <div class="video-meta">
+                                <span class="video-level intermediate">Intermediate</span>
+                                <span class="video-views"><i class="fas fa-eye"></i> 15.8K views</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="video-card" data-category="intermediate" onclick="playVideo('database-design')">
+                        <div class="video-thumbnail">
+                            <div class="video-preview" style="background: linear-gradient(135deg, #336791, #e8f4f8);">
+                                <i class="fas fa-database"></i>
+                                <span class="video-duration">52:45</span>
+                            </div>
+                            <div class="play-overlay">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h5>Database Design & SQL</h5>
+                            <p>Master database concepts and queries</p>
+                            <div class="video-meta">
+                                <span class="video-level intermediate">Intermediate</span>
+                                <span class="video-views"><i class="fas fa-eye"></i> 9.4K views</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Advanced Videos -->
+                    <div class="video-card" data-category="advanced" onclick="playVideo('ai-ml-course')">
+                        <div class="video-thumbnail">
+                            <div class="video-preview" style="background: linear-gradient(135deg, #ff6b6b, #ee5a6f);">
+                                <i class="fas fa-brain"></i>
+                                <span class="video-duration">2:30:00</span>
+                            </div>
+                            <div class="play-overlay">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h5>AI & Machine Learning</h5>
+                            <p>Deep learning and neural networks</p>
+                            <div class="video-meta">
+                                <span class="video-level advanced">Advanced</span>
+                                <span class="video-views"><i class="fas fa-eye"></i> 22.1K views</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="video-card" data-category="advanced" onclick="playVideo('cloud-architecture')">
+                        <div class="video-thumbnail">
+                            <div class="video-preview" style="background: linear-gradient(135deg, #ff9900, #232f3e);">
+                                <i class="fas fa-cloud"></i>
+                                <span class="video-duration">1:45:30</span>
+                            </div>
+                            <div class="play-overlay">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h5>Cloud Architecture (AWS)</h5>
+                            <p>Design scalable cloud solutions</p>
+                            <div class="video-meta">
+                                <span class="video-level advanced">Advanced</span>
+                                <span class="video-views"><i class="fas fa-eye"></i> 11.3K views</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mock Tests Section -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-clipboard-check" style="color: #f59e0b;"></i> Mock Tests & Practice Exams</h3>
+                    <button class="btn-secondary btn-sm" onclick="viewAllTests()">
+                        <i class="fas fa-th-list"></i> View All
+                    </button>
+                </div>
+                <div class="tests-grid" id="mockTestsGrid">
+                    <div class="test-card" onclick="startTest('python-basics')">
+                        <div class="test-icon" style="background: linear-gradient(135deg, #3776ab, #ffd43b);">
+                            <i class="fab fa-python"></i>
+                        </div>
+                        <div class="test-info">
+                            <h5>Python Basics Quiz</h5>
+                            <p>Test your Python fundamentals</p>
+                            <div class="test-meta">
+                                <span class="test-questions"><i class="fas fa-question-circle"></i> 20 Questions</span>
+                                <span class="test-duration"><i class="fas fa-clock"></i> 30 min</span>
+                            </div>
+                        </div>
+                        <div class="test-action">
+                            <button class="btn-primary btn-sm">Start Test</button>
+                        </div>
+                    </div>
+                    <div class="test-card" onclick="startTest('javascript-fundamentals')">
+                        <div class="test-icon" style="background: linear-gradient(135deg, #f7df1e, #323330);">
+                            <i class="fab fa-js"></i>
+                        </div>
+                        <div class="test-info">
+                            <h5>JavaScript Fundamentals</h5>
+                            <p>Core JS concepts and syntax</p>
+                            <div class="test-meta">
+                                <span class="test-questions"><i class="fas fa-question-circle"></i> 25 Questions</span>
+                                <span class="test-duration"><i class="fas fa-clock"></i> 35 min</span>
+                            </div>
+                        </div>
+                        <div class="test-action">
+                            <button class="btn-primary btn-sm">Start Test</button>
+                        </div>
+                    </div>
+                    <div class="test-card" onclick="startTest('data-structures')">
+                        <div class="test-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                            <i class="fas fa-code-branch"></i>
+                        </div>
+                        <div class="test-info">
+                            <h5>Data Structures</h5>
+                            <p>Arrays, Trees, Graphs & more</p>
+                            <div class="test-meta">
+                                <span class="test-questions"><i class="fas fa-question-circle"></i> 30 Questions</span>
+                                <span class="test-duration"><i class="fas fa-clock"></i> 45 min</span>
+                            </div>
+                        </div>
+                        <div class="test-action">
+                            <button class="btn-primary btn-sm">Start Test</button>
+                        </div>
+                    </div>
+                    <div class="test-card" onclick="startTest('aptitude-test')">
+                        <div class="test-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="test-info">
+                            <h5>Aptitude & Reasoning</h5>
+                            <p>Logical reasoning & problem solving</p>
+                            <div class="test-meta">
+                                <span class="test-questions"><i class="fas fa-question-circle"></i> 40 Questions</span>
+                                <span class="test-duration"><i class="fas fa-clock"></i> 60 min</span>
+                            </div>
+                        </div>
+                        <div class="test-action">
+                            <button class="btn-primary btn-sm">Start Test</button>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <div class="dashboard-card mt-4">
                 <div class="card-header">
-                    <h3>Library Status</h3>
+                    <h3><i class="fas fa-university"></i> Library Status</h3>
                 </div>
                 <div class="library-status">
                     <div class="info-row">
@@ -1438,6 +1828,67 @@
     <div id="toast" class="toast">
         <i class="fas fa-info-circle"></i>
         <span id="toastMessage">Message</span>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
+        <div class="modal-content profile-edit-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-edit"></i> Edit Profile</h3>
+                <button class="modal-close" onclick="closeEditProfileModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" onsubmit="saveProfileChanges(event)">
+                    <!-- Profile Photo Section -->
+                    <div class="profile-photo-section">
+                        <div class="current-photo" id="currentPhotoDisplay">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="photo-upload">
+                            <label for="profilePhotoInput" class="upload-btn">
+                                <i class="fas fa-camera"></i> Change Photo
+                            </label>
+                            <input type="file" id="profilePhotoInput" accept="image/*" onchange="previewProfilePhoto(event)">
+                            <p class="upload-hint">Supported: JPG, PNG, GIF (Max 5MB)</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Name Fields -->
+                    <div class="form-group">
+                        <label for="editFirstName">First Name</label>
+                        <input type="text" id="editFirstName" class="form-input" placeholder="Enter first name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editLastName">Last Name</label>
+                        <input type="text" id="editLastName" class="form-input" placeholder="Enter last name" required>
+                    </div>
+                    
+                    <!-- Email (Read-only) -->
+                    <div class="form-group">
+                        <label for="editEmail">Email</label>
+                        <input type="email" id="editEmail" class="form-input" readonly>
+                        <small class="form-hint">Email cannot be changed</small>
+                    </div>
+                    
+                    <!-- Phone -->
+                    <div class="form-group">
+                        <label for="editPhone">Phone Number</label>
+                        <input type="tel" id="editPhone" class="form-input" placeholder="Enter phone number">
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script src="/static/auth.js"></script>

@@ -139,5 +139,173 @@
         "3": "absent"
       }
     }
+  },
+  "EDU2026000002": {
+    "studentId": "EDU2026000002",
+    "firstName": "boss",
+    "lastName": "s",
+    "email": "vaibhavpawarftccoe@gmail.com",
+    "phone": "7972001605",
+    "course": "btech-cse",
+    "password": "Pass@123",
+    "createdAt": "2026-03-10T23:07:37.419262",
+    "status": "active",
+    "academic": {
+      "enrollmentYear": 2026,
+      "currentSemester": 1,
+      "department": "Computer Science & Engineering",
+      "program": "Bachelor of Technology",
+      "rollNumber": "260002",
+      "batch": "2026-2030"
+    },
+    "courses": {
+      "enrolled": [],
+      "completed": [],
+      "current": []
+    },
+    "grades": {
+      "semesterWise": {},
+      "cgpa": 0.0,
+      "sgpa": {},
+      "totalCredits": 0,
+      "earnedCredits": 0,
+      "creditPoints": {},
+      "totalCreditPoints": 0
+    },
+    "level": {
+      "current": 1,
+      "title": "Freshman",
+      "progress": 0,
+      "pointsToNext": 100
+    },
+    "assignments": {
+      "pending": [],
+      "submitted": [],
+      "graded": []
+    },
+    "attendance": {
+      "overall": 0,
+      "subjectWise": {},
+      "monthly": {}
+    },
+    "exams": {
+      "internal": {},
+      "external": {},
+      "practical": {}
+    },
+    "achievements": [],
+    "certifications": [],
+    "subscription": {
+      "status": "trial",
+      "plan": "free_trial",
+      "trialStartDate": "2026-03-10T23:07:37.419360",
+      "trialEndDate": "2026-04-09T23:07:37.419370",
+      "subscriptionStartDate": null,
+      "subscriptionEndDate": null,
+      "daysLeft": 29,
+      "autoRenew": false,
+      "paymentHistory": []
+    },
+    "availablePlans": {
+      "monthly": {
+        "name": "Monthly Plan",
+        "price": 299,
+        "duration": "1 Month",
+        "features": [
+          "Full Access",
+          "All Courses",
+          "Download Lectures",
+          "Quiz Access",
+          "Certificate Unlock"
+        ]
+      },
+      "quarterly": {
+        "name": "Quarterly Plan",
+        "price": 799,
+        "duration": "3 Months",
+        "features": [
+          "Full Access",
+          "All Courses",
+          "Download Lectures",
+          "Quiz Access",
+          "Certificate Unlock",
+          "Priority Support"
+        ],
+        "savings": "11%"
+      },
+      "yearly": {
+        "name": "Yearly Plan",
+        "price": 2499,
+        "duration": "1 Year",
+        "features": [
+          "Full Access",
+          "All Courses",
+          "Download Lectures",
+          "Quiz Access",
+          "Certificate Unlock",
+          "Priority Support",
+          "Personal Mentor"
+        ],
+        "savings": "30%"
+      }
+    },
+    "library": {
+      "booksIssued": [],
+      "booksReturned": [],
+      "fines": 0
+    },
+    "hostel": {
+      "allotted": false,
+      "roomNumber": null,
+      "block": null,
+      "mess": null
+    },
+    "activityLog": [
+      {
+        "action": "Account Created",
+        "timestamp": "2026-03-10T23:07:37.419407",
+        "details": "Student registered successfully"
+      }
+    ],
+    "profile": {
+      "avatar": null,
+      "bio": "",
+      "interests": [],
+      "skills": [],
+      "languages": [
+        "English"
+      ],
+      "socialLinks": {}
+    },
+    "lectures": [],
+    "downloadedLectures": [],
+    "completedLectures": [],
+    "lectureProgress": {},
+    "notifications": [
+      {
+        "id": "notif_001",
+        "title": "Welcome to EduBot!",
+        "message": "Your 30-day free trial has started. Explore all features!",
+        "type": "info",
+        "timestamp": "2026-03-10T23:07:37.419418",
+        "read": false
+      },
+      {
+        "id": "notif_002",
+        "title": "Complete Your Profile",
+        "message": "Add your interests and skills to get personalized recommendations.",
+        "type": "reminder",
+        "timestamp": "2026-03-10T23:07:37.419425",
+        "read": false
+      },
+      {
+        "id": "notif_003",
+        "title": "New Quiz Available",
+        "message": "Weekly quiz on Data Structures is now live. Test your knowledge!",
+        "type": "quiz",
+        "timestamp": "2026-03-10T23:07:37.419431",
+        "read": false
+      }
+    ]
   }
 }
