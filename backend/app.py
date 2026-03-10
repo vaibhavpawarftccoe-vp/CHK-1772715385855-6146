@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, jsonify, session, send_file
 from chatbot import get_response
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from contextlib import suppress
 from werkzeug.utils import secure_filename
 
@@ -29,11 +29,53 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # Student database file
 STUDENTS_FILE = os.path.join(BASE_DIR, "students.json")
 
+# Teacher database file
+TEACHERS_FILE = os.path.join(BASE_DIR, "teachers.json")
+
 # Initialize students database
 def init_students_db():
     if not os.path.exists(STUDENTS_FILE):
         with open(STUDENTS_FILE, "w") as f:
             json.dump({}, f)
+
+# Initialize teachers database
+def init_teachers_db():
+    if not os.path.exists(TEACHERS_FILE):
+        # Create default teacher accounts
+        default_teachers = {
+            "teacher1@edubot.edu": {
+                "name": "Dr. Rajesh Kumar",
+                "email": "teacher1@edubot.edu",
+                "password": "teacher123",
+                "teacher_id": "TCH20260001",
+                "department": "Computer Science & Engineering",
+                "designation": "Professor",
+                "subjects": ["Data Structures", "Algorithms", "Database Systems"],
+                "joined_date": "2020-06-15"
+            },
+            "teacher2@edubot.edu": {
+                "name": "Prof. Priya Sharma",
+                "email": "teacher2@edubot.edu",
+                "password": "teacher123",
+                "teacher_id": "TCH20260002",
+                "department": "Computer Science & Engineering",
+                "designation": "Associate Professor",
+                "subjects": ["Web Development", "Machine Learning", "Cloud Computing"],
+                "joined_date": "2019-08-20"
+            },
+            "teacher3@edubot.edu": {
+                "name": "Dr. Amit Patel",
+                "email": "teacher3@edubot.edu",
+                "password": "teacher123",
+                "teacher_id": "TCH20260003",
+                "department": "Computer Science & Engineering",
+                "designation": "Assistant Professor",
+                "subjects": ["Operating Systems", "Computer Networks", "Cyber Security"],
+                "joined_date": "2021-01-10"
+            }
+        }
+        with open(TEACHERS_FILE, "w") as f:
+            json.dump(default_teachers, f, indent=2)
 
 # Load students data
 def load_students():
@@ -45,6 +87,17 @@ def load_students():
 def save_students(students):
     with open(STUDENTS_FILE, "w") as f:
         json.dump(students, f, indent=2)
+
+# Load teachers data
+def load_teachers():
+    init_teachers_db()
+    with open(TEACHERS_FILE, "r") as f:
+        return json.load(f)
+
+# Save teachers data
+def save_teachers(teachers):
+    with open(TEACHERS_FILE, "w") as f:
+        json.dump(teachers, f, indent=2)
 
 # Generate unique student ID
 def generate_student_id():
@@ -112,6 +165,14 @@ def home():
 @app.route("/login")
 def login_page():
     return render_template("login.html")
+
+@app.route("/teacher-login")
+def teacher_login_page():
+    return render_template("teacher_login.html")
+
+@app.route("/teacher-dashboard")
+def teacher_dashboard():
+    return render_template("teacher_dashboard.html")
 
 @app.route("/dashboard")
 def dashboard():
@@ -213,12 +274,41 @@ def register():
         "achievements": [],
         "certifications": [],
         
-        # Fees & Financial (all FREE)
-        "fees": {
-            "totalFees": 0,
-            "paid": 0,
-            "scholarships": [],
-            "status": "FREE - No fees applicable"
+        # Subscription & Billing
+        "subscription": {
+            "status": "trial",  # trial, active, expired, cancelled
+            "plan": "free_trial",
+            "trialStartDate": datetime.now().isoformat(),
+            "trialEndDate": (datetime.now() + timedelta(days=30)).isoformat(),
+            "subscriptionStartDate": None,
+            "subscriptionEndDate": None,
+            "daysLeft": 30,
+            "autoRenew": False,
+            "paymentHistory": []
+        },
+        
+        # Subscription Plans Available
+        "availablePlans": {
+            "monthly": {
+                "name": "Monthly Plan",
+                "price": 299,
+                "duration": "1 Month",
+                "features": ["Full Access", "All Courses", "Download Lectures", "Quiz Access", "Certificate Unlock"]
+            },
+            "quarterly": {
+                "name": "Quarterly Plan",
+                "price": 799,
+                "duration": "3 Months",
+                "features": ["Full Access", "All Courses", "Download Lectures", "Quiz Access", "Certificate Unlock", "Priority Support"],
+                "savings": "11%"
+            },
+            "yearly": {
+                "name": "Yearly Plan",
+                "price": 2499,
+                "duration": "1 Year",
+                "features": ["Full Access", "All Courses", "Download Lectures", "Quiz Access", "Certificate Unlock", "Priority Support", "Personal Mentor"],
+                "savings": "30%"
+            }
         },
         
         # Library Records
@@ -259,7 +349,35 @@ def register():
         "lectures": [],
         "downloadedLectures": [],
         "completedLectures": [],
-        "lectureProgress": {}
+        "lectureProgress": {},
+        
+        # Notifications
+        "notifications": [
+            {
+                "id": "notif_001",
+                "title": "Welcome to EduBot!",
+                "message": "Your 30-day free trial has started. Explore all features!",
+                "type": "info",
+                "timestamp": datetime.now().isoformat(),
+                "read": False
+            },
+            {
+                "id": "notif_002",
+                "title": "Complete Your Profile",
+                "message": "Add your interests and skills to get personalized recommendations.",
+                "type": "reminder",
+                "timestamp": datetime.now().isoformat(),
+                "read": False
+            },
+            {
+                "id": "notif_003",
+                "title": "New Quiz Available",
+                "message": "Weekly quiz on Data Structures is now live. Test your knowledge!",
+                "type": "quiz",
+                "timestamp": datetime.now().isoformat(),
+                "read": False
+            }
+        ]
     }
     
     save_students(students)
@@ -308,6 +426,232 @@ def logout():
     session.clear()
     return jsonify({"success": True})
 
+# API: Teacher Login
+@app.route("/api/teacher/login", methods=["POST"])
+def teacher_login():
+    data = request.json
+    teachers = load_teachers()
+    
+    # Find teacher by email
+    if data["email"] in teachers:
+        teacher = teachers[data["email"]]
+        if teacher.get("password") == data["password"]:
+            # Store in session
+            session["teacher_email"] = data["email"]
+            session["user_type"] = "teacher"
+            
+            return jsonify({
+                "success": True,
+                "teacherId": teacher["teacher_id"],
+                "name": teacher["name"],
+                "email": teacher["email"],
+                "department": teacher["department"],
+                "designation": teacher["designation"],
+                "message": "Login successful!"
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "message": "Invalid password. Please try again."
+            })
+    
+    return jsonify({
+        "success": False,
+        "message": "Email not found. Please contact admin."
+    })
+
+# API: Get Teacher Info
+@app.route("/api/teacher/info", methods=["GET"])
+def get_teacher_info():
+    if "teacher_email" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    teachers = load_teachers()
+    teacher_email = session["teacher_email"]
+    
+    if teacher_email in teachers:
+        teacher = teachers[teacher_email]
+        # Return teacher data without password
+        teacher_data = {k: v for k, v in teacher.items() if k != "password"}
+        return jsonify({
+            "success": True,
+            "teacher": teacher_data
+        })
+    
+    return jsonify({"success": False, "message": "Teacher not found"})
+
+# API: Get All Students (for teacher attendance management)
+@app.route("/api/teacher/students", methods=["GET"])
+def get_all_students():
+    if "teacher_email" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    # Return simplified student list
+    student_list = []
+    for student_id, student in students.items():
+        student_list.append({
+            "studentId": student_id,
+            "name": f"{student.get('firstName', '')} {student.get('lastName', '')}",
+            "email": student.get("email", ""),
+            "course": student.get("course", ""),
+            "rollNumber": student.get("rollNumber", ""),
+            "attendance": student.get("attendance", {})
+        })
+    
+    return jsonify({
+        "success": True,
+        "students": student_list
+    })
+
+# API: Update Student Attendance (Teacher only)
+@app.route("/api/teacher/attendance/update", methods=["POST"])
+def update_student_attendance():
+    if "teacher_email" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    data = request.json
+    student_id = data.get("studentId")
+    date = data.get("date")
+    status = data.get("status")  # "present" or "absent"
+    subject = data.get("subject", "General")
+    
+    if not all([student_id, date, status]):
+        return jsonify({"success": False, "message": "Missing required fields"})
+    
+    students = load_students()
+    
+    if student_id not in students:
+        return jsonify({"success": False, "message": "Student not found"})
+    
+    # Initialize attendance if not exists
+    if "attendance" not in students[student_id]:
+        students[student_id]["attendance"] = {}
+    
+    # Update attendance for the date
+    students[student_id]["attendance"][date] = {
+        "status": status,
+        "subject": subject,
+        "marked_by": session["teacher_email"],
+        "marked_at": datetime.now().isoformat()
+    }
+    
+    # Update weekly stats
+    update_attendance_stats(students[student_id])
+    
+    save_students(students)
+    
+    return jsonify({
+        "success": True,
+        "message": f"Attendance marked as {status} for {students[student_id]['firstName']}"
+    })
+
+# API: Bulk Update Attendance (Teacher only)
+@app.route("/api/teacher/attendance/bulk-update", methods=["POST"])
+def bulk_update_attendance():
+    if "teacher_email" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    data = request.json
+    date = data.get("date")
+    subject = data.get("subject", "General")
+    attendance_list = data.get("attendance", [])  # List of {studentId, status}
+    
+    if not date or not attendance_list:
+        return jsonify({"success": False, "message": "Missing required fields"})
+    
+    students = load_students()
+    updated_count = 0
+    
+    for record in attendance_list:
+        student_id = record.get("studentId")
+        status = record.get("status")
+        
+        if student_id in students:
+            # Initialize attendance if not exists
+            if "attendance" not in students[student_id]:
+                students[student_id]["attendance"] = {}
+            
+            # Update attendance
+            students[student_id]["attendance"][date] = {
+                "status": status,
+                "subject": subject,
+                "marked_by": session["teacher_email"],
+                "marked_at": datetime.now().isoformat()
+            }
+            
+            # Update stats
+            update_attendance_stats(students[student_id])
+            updated_count += 1
+    
+    save_students(students)
+    
+    return jsonify({
+        "success": True,
+        "message": f"Attendance updated for {updated_count} students"
+    })
+
+def update_attendance_stats(student):
+    """Update attendance statistics for a student"""
+    attendance = student.get("attendance", {})
+    
+    if not attendance:
+        student["attendanceStats"] = {
+            "totalDays": 0,
+            "presentDays": 0,
+            "absentDays": 0,
+            "percentage": 0
+        }
+        return
+    
+    total = len(attendance)
+    present = sum(1 for record in attendance.values() if record.get("status") == "present")
+    absent = total - present
+    percentage = round((present / total) * 100, 2) if total > 0 else 0
+    
+    student["attendanceStats"] = {
+        "totalDays": total,
+        "presentDays": present,
+        "absentDays": absent,
+        "percentage": percentage
+    }
+
+# API: Get Attendance Report (Teacher only)
+@app.route("/api/teacher/attendance/report", methods=["GET"])
+def get_attendance_report():
+    if "teacher_email" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    date = request.args.get("date")
+    course = request.args.get("course")
+    
+    students = load_students()
+    report = []
+    
+    for student_id, student in students.items():
+        # Filter by course if specified
+        if course and student.get("course") != course:
+            continue
+        
+        attendance_record = None
+        if date and "attendance" in student:
+            attendance_record = student["attendance"].get(date)
+        
+        report.append({
+            "studentId": student_id,
+            "name": f"{student.get('firstName', '')} {student.get('lastName', '')}",
+            "rollNumber": student.get("rollNumber", ""),
+            "course": student.get("course", ""),
+            "attendance": attendance_record,
+            "overallStats": student.get("attendanceStats", {})
+        })
+    
+    return jsonify({
+        "success": True,
+        "report": report,
+        "date": date
+    })
+
 # API: Get Student Info
 @app.route("/api/student/info", methods=["GET"])
 def get_student_info():
@@ -319,6 +663,11 @@ def get_student_info():
     
     if student_id in students:
         student = students[student_id]
+        
+        # Check and update subscription status
+        update_subscription_status(student)
+        save_students(students)
+        
         # Return full student data including academic info
         return jsonify({
             "success": True,
@@ -326,6 +675,231 @@ def get_student_info():
         })
     
     return jsonify({"success": False, "message": "Student not found"})
+
+def update_subscription_status(student):
+    """Update subscription status based on trial/subscription end date"""
+    subscription = student.get("subscription", {})
+    
+    if subscription.get("status") == "trial":
+        trial_end = subscription.get("trialEndDate")
+        if trial_end:
+            end_date = datetime.fromisoformat(trial_end)
+            days_left = (end_date - datetime.now()).days
+            subscription["daysLeft"] = max(0, days_left)
+            
+            if days_left <= 0:
+                subscription["status"] = "expired"
+                subscription["daysLeft"] = 0
+    
+    elif subscription.get("status") == "active":
+        sub_end = subscription.get("subscriptionEndDate")
+        if sub_end:
+            end_date = datetime.fromisoformat(sub_end)
+            days_left = (end_date - datetime.now()).days
+            subscription["daysLeft"] = max(0, days_left)
+            
+            if days_left <= 0:
+                subscription["status"] = "expired"
+                subscription["daysLeft"] = 0
+
+# API: Check Subscription Status
+@app.route("/api/student/subscription/status", methods=["GET"])
+def check_subscription_status():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        student = students[student_id]
+        update_subscription_status(student)
+        save_students(students)
+        
+        subscription = student.get("subscription", {})
+        return jsonify({
+            "success": True,
+            "subscription": {
+                "status": subscription.get("status"),
+                "plan": subscription.get("plan"),
+                "daysLeft": subscription.get("daysLeft"),
+                "trialEndDate": subscription.get("trialEndDate"),
+                "subscriptionEndDate": subscription.get("subscriptionEndDate")
+            }
+        })
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+# API: Subscribe to Plan
+@app.route("/api/student/subscription/subscribe", methods=["POST"])
+def subscribe_to_plan():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    data = request.json
+    plan_type = data.get("plan")  # monthly, quarterly, yearly
+    
+    if plan_type not in ["monthly", "quarterly", "yearly"]:
+        return jsonify({"success": False, "message": "Invalid plan type"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        student = students[student_id]
+        
+        # Calculate subscription dates
+        now = datetime.now()
+        if plan_type == "monthly":
+            end_date = now + timedelta(days=30)
+        elif plan_type == "quarterly":
+            end_date = now + timedelta(days=90)
+        else:  # yearly
+            end_date = now + timedelta(days=365)
+        
+        # Update subscription
+        student["subscription"]["status"] = "active"
+        student["subscription"]["plan"] = plan_type
+        student["subscription"]["subscriptionStartDate"] = now.isoformat()
+        student["subscription"]["subscriptionEndDate"] = end_date.isoformat()
+        student["subscription"]["daysLeft"] = (end_date - now).days
+        
+        # Add to payment history
+        plan_details = student["availablePlans"][plan_type]
+        student["subscription"]["paymentHistory"].append({
+            "date": now.isoformat(),
+            "plan": plan_type,
+            "amount": plan_details["price"],
+            "status": "completed",
+            "transactionId": f"TXN{now.strftime('%Y%m%d%H%M%S')}"
+        })
+        
+        save_students(students)
+        
+        return jsonify({
+            "success": True,
+            "message": f"Successfully subscribed to {plan_details['name']}!",
+            "subscription": student["subscription"]
+        })
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+# API: Get Student Notifications
+@app.route("/api/student/notifications", methods=["GET"])
+def get_notifications():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        notifications = students[student_id].get("notifications", [])
+        unread_count = sum(1 for n in notifications if not n.get("read", False))
+        
+        return jsonify({
+            "success": True,
+            "notifications": notifications,
+            "unreadCount": unread_count
+        })
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+# API: Mark Notification as Read
+@app.route("/api/student/notifications/<notification_id>/read", methods=["PUT"])
+def mark_notification_read(notification_id):
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        notifications = students[student_id].get("notifications", [])
+        
+        for notification in notifications:
+            if notification.get("id") == notification_id:
+                notification["read"] = True
+                save_students(students)
+                return jsonify({"success": True, "message": "Notification marked as read"})
+        
+        return jsonify({"success": False, "message": "Notification not found"})
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+# API: Mark All Notifications as Read
+@app.route("/api/student/notifications/read-all", methods=["PUT"])
+def mark_all_notifications_read():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        notifications = students[student_id].get("notifications", [])
+        
+        for notification in notifications:
+            notification["read"] = True
+        
+        save_students(students)
+        
+        return jsonify({"success": True, "message": "All notifications marked as read"})
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+# API: Delete Notification
+@app.route("/api/student/notifications/<notification_id>", methods=["DELETE"])
+def delete_notification(notification_id):
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        notifications = students[student_id].get("notifications", [])
+        students[student_id]["notifications"] = [n for n in notifications if n.get("id") != notification_id]
+        
+        save_students(students)
+        
+        return jsonify({"success": True, "message": "Notification deleted"})
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+# API: Add Notification (for internal use)
+def add_notification(student_id, title, message, notification_type="info"):
+    """Add a notification to a student's account"""
+    students = load_students()
+    
+    if student_id in students:
+        notification = {
+            "id": f"notif_{datetime.now().strftime('%Y%m%d%H%M%S')}_{len(students[student_id].get('notifications', []))}",
+            "title": title,
+            "message": message,
+            "type": notification_type,
+            "timestamp": datetime.now().isoformat(),
+            "read": False
+        }
+        
+        if "notifications" not in students[student_id]:
+            students[student_id]["notifications"] = []
+        
+        students[student_id]["notifications"].insert(0, notification)  # Add to beginning
+        
+        # Keep only last 50 notifications
+        if len(students[student_id]["notifications"]) > 50:
+            students[student_id]["notifications"] = students[student_id]["notifications"][:50]
+        
+        save_students(students)
+        return True
+    
+    return False
 
 
 # API: Update Student Profile

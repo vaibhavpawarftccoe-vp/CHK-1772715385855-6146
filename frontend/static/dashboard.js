@@ -602,129 +602,6 @@ function saveQuizResult(score, total) {
 }
 
 // ============================================
-// Load Attendance Section
-// ============================================
-function loadAttendanceSection() {
-    if (!studentData) return;
-    
-    // Set today's date
-    const todayDate = document.getElementById('todayDate');
-    if (todayDate) {
-        todayDate.textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-    }
-    
-    // Generate today's lectures
-    const todayLectures = document.getElementById('todayLectures');
-    const lectures = [
-        { time: '09:00 AM', subject: 'Data Structures', teacher: 'Prof. Sharma' },
-        { time: '10:30 AM', subject: 'Algorithms', teacher: 'Prof. Patel' },
-        { time: '01:00 PM', subject: 'Database Systems', teacher: 'Prof. Kumar' },
-        { time: '02:30 PM', subject: 'Web Development', teacher: 'Prof. Singh' }
-    ];
-    
-    if (todayLectures) {
-        todayLectures.innerHTML = lectures.map((lec, idx) => `
-            <div class="lecture-item">
-                <span class="lecture-time">${lec.time}</span>
-                <div class="lecture-info">
-                    <h4>${lec.subject}</h4>
-                    <span>${lec.teacher}</span>
-                </div>
-                <div class="lecture-status">
-                    <button class="status-btn present ${studentData.todayAttendance?.[idx] === 'present' ? 'active' : ''}" onclick="markAttendance(${idx}, 'present')">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button class="status-btn absent ${studentData.todayAttendance?.[idx] === 'absent' ? 'active' : ''}" onclick="markAttendance(${idx}, 'absent')">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    // Update attendance stats
-    updateAttendanceStats();
-    
-    // Update weekly attendance bars
-    updateWeeklyAttendance();
-    
-    // Update overall attendance circle
-    updateOverallAttendance();
-}
-
-function markAttendance(lectureIdx, status) {
-    if (!studentData.todayAttendance) studentData.todayAttendance = {};
-    studentData.todayAttendance[lectureIdx] = status;
-    
-    // Update UI
-    loadAttendanceSection();
-    
-    // Save to server
-    fetch('/api/student/attendance/daily', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            lectureIdx: lectureIdx,
-            status: status,
-            date: new Date().toISOString().split('T')[0]
-        })
-    }).catch(error => console.error('Error saving attendance:', error));
-}
-
-function updateAttendanceStats() {
-    const todayAttendance = studentData.todayAttendance || {};
-    const present = Object.values(todayAttendance).filter(s => s === 'present').length;
-    const absent = Object.values(todayAttendance).filter(s => s === 'absent').length;
-    const total = 4; // Total lectures per day
-    const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
-    
-    const presentCount = document.getElementById('presentCount');
-    const absentCount = document.getElementById('absentCount');
-    const todayPercentage = document.getElementById('todayPercentage');
-    
-    if (presentCount) presentCount.textContent = present;
-    if (absentCount) absentCount.textContent = absent;
-    if (todayPercentage) todayPercentage.textContent = percentage + '%';
-}
-
-function updateWeeklyAttendance() {
-    const weeklyData = studentData.weeklyAttendance || {
-        mon: 85, tue: 90, wed: 75, thu: 100, fri: 80, sat: 95
-    };
-    
-    Object.entries(weeklyData).forEach(([day, percent]) => {
-        const bar = document.getElementById(day + 'Bar');
-        const percentEl = document.getElementById(day + 'Percent');
-        if (bar) bar.style.height = percent + '%';
-        if (percentEl) percentEl.textContent = percent + '%';
-    });
-}
-
-function updateOverallAttendance() {
-    const attendance = studentData.attendance || { overall: 85, present: 68, absent: 10, leave: 2 };
-    
-    const overallText = document.getElementById('overallAttendanceText');
-    const overallBadge = document.getElementById('overallAttendanceBadge');
-    const circle = document.getElementById('attendanceCircle');
-    const totalPresent = document.getElementById('totalPresent');
-    const totalAbsent = document.getElementById('totalAbsent');
-    const totalLeave = document.getElementById('totalLeave');
-    
-    if (overallText) overallText.textContent = attendance.overall + '%';
-    if (overallBadge) overallBadge.textContent = attendance.overall + '%';
-    if (totalPresent) totalPresent.textContent = attendance.present || 0;
-    if (totalAbsent) totalAbsent.textContent = attendance.absent || 0;
-    if (totalLeave) totalLeave.textContent = attendance.leave || 0;
-    
-    // Update circle progress
-    if (circle) {
-        const circumference = 2 * Math.PI * 45;
-        const offset = circumference - (attendance.overall / 100) * circumference;
-        circle.style.strokeDashoffset = offset;
-    }
-}
-
-// ============================================
 // Academic Calendar Functions
 // ============================================
 let currentCalendarMonth = new Date();
@@ -1751,6 +1628,220 @@ function initChat() {
             }
         });
     }
+    
+    // Initialize voice assistant
+    initVoiceAssistant();
+}
+
+// ============================================
+// Voice Assistant Functions
+// ============================================
+let recognition = null;
+let isListening = false;
+let speechSynthesis = window.speechSynthesis;
+let isSpeechEnabled = false;
+let isVoiceModeEnabled = false;
+
+function initVoiceAssistant() {
+    // Check if browser supports Web Speech API
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        
+        recognition.onstart = function() {
+            isListening = true;
+            updateVoiceUI();
+        };
+        
+        recognition.onend = function() {
+            isListening = false;
+            updateVoiceUI();
+        };
+        
+        recognition.onresult = function(event) {
+            let finalTranscript = '';
+            let interimTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+            
+            const userInput = document.getElementById('userInput');
+            if (finalTranscript) {
+                userInput.value = finalTranscript;
+                // Auto-send after voice input
+                setTimeout(() => {
+                    sendDashboardMessage();
+                }, 500);
+            } else if (interimTranscript) {
+                userInput.value = interimTranscript;
+            }
+        };
+        
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            isListening = false;
+            updateVoiceUI();
+            
+            let errorMessage = 'Voice recognition error. Please try again.';
+            if (event.error === 'no-speech') {
+                errorMessage = 'No speech detected. Please try speaking again.';
+            } else if (event.error === 'audio-capture') {
+                errorMessage = 'No microphone found. Please check your microphone.';
+            } else if (event.error === 'not-allowed') {
+                errorMessage = 'Microphone access denied. Please allow microphone access.';
+            }
+            
+            showToast(errorMessage, 'error');
+        };
+    } else {
+        // Browser doesn't support speech recognition
+        const micButton = document.getElementById('micButton');
+        if (micButton) {
+            micButton.style.display = 'none';
+        }
+        console.log('Web Speech API not supported in this browser');
+    }
+}
+
+function toggleVoiceInput() {
+    if (!recognition) {
+        showToast('Voice recognition is not supported in your browser', 'error');
+        return;
+    }
+    
+    if (isListening) {
+        recognition.stop();
+    } else {
+        // Request microphone permission
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(() => {
+                recognition.start();
+                showToast('Listening... Speak now', 'info');
+            })
+            .catch(err => {
+                showToast('Microphone access denied. Please allow microphone access.', 'error');
+                console.error('Microphone error:', err);
+            });
+    }
+}
+
+function toggleVoiceMode() {
+    isVoiceModeEnabled = !isVoiceModeEnabled;
+    const voiceToggle = document.getElementById('voiceToggle');
+    
+    if (voiceToggle) {
+        if (isVoiceModeEnabled) {
+            voiceToggle.classList.add('active');
+            voiceToggle.innerHTML = '<i class="fas fa-microphone"></i>';
+            showToast('Voice mode enabled. Click the mic button to speak.', 'success');
+        } else {
+            voiceToggle.classList.remove('active');
+            voiceToggle.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+            showToast('Voice mode disabled', 'info');
+        }
+    }
+}
+
+function toggleSpeechOutput() {
+    isSpeechEnabled = !isSpeechEnabled;
+    const speakToggle = document.getElementById('speakToggle');
+    
+    if (speakToggle) {
+        if (isSpeechEnabled) {
+            speakToggle.classList.add('active');
+            speakToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+            showToast('Speech output enabled. Bot responses will be spoken.', 'success');
+            
+            // Test speech
+            speakText('Voice assistant is now active. How can I help you?');
+        } else {
+            speakToggle.classList.remove('active');
+            speakToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            showToast('Speech output disabled', 'info');
+            
+            // Stop any ongoing speech
+            if (speechSynthesis) {
+                speechSynthesis.cancel();
+            }
+        }
+    }
+}
+
+function updateVoiceUI() {
+    const micButton = document.getElementById('micButton');
+    const voiceStatus = document.getElementById('voiceStatus');
+    
+    if (micButton) {
+        if (isListening) {
+            micButton.classList.add('listening');
+        } else {
+            micButton.classList.remove('listening');
+        }
+    }
+    
+    if (voiceStatus) {
+        if (isListening) {
+            voiceStatus.classList.add('active');
+        } else {
+            voiceStatus.classList.remove('active');
+        }
+    }
+}
+
+function speakText(text) {
+    if (!isSpeechEnabled || !speechSynthesis) return;
+    
+    // Cancel any ongoing speech
+    speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    utterance.lang = 'en-US';
+    
+    // Try to find a good voice
+    const voices = speechSynthesis.getVoices();
+    const preferredVoice = voices.find(voice => 
+        voice.name.includes('Google') || 
+        voice.name.includes('Samantha') || 
+        voice.name.includes('Microsoft Zira')
+    );
+    if (preferredVoice) {
+        utterance.voice = preferredVoice;
+    }
+    
+    utterance.onstart = function() {
+        const speakToggle = document.getElementById('speakToggle');
+        if (speakToggle) {
+            speakToggle.classList.add('speaking');
+        }
+    };
+    
+    utterance.onend = function() {
+        const speakToggle = document.getElementById('speakToggle');
+        if (speakToggle) {
+            speakToggle.classList.remove('speaking');
+        }
+    };
+    
+    speechSynthesis.speak(utterance);
+}
+
+// Load voices when available
+if (speechSynthesis) {
+    speechSynthesis.onvoiceschanged = function() {
+        // Voices loaded
+    };
 }
 
 // ============================================
@@ -1798,18 +1889,34 @@ function addDashboardMessage(text, sender) {
     const chatbox = document.getElementById('chatbox');
     
     const messageDiv = document.createElement('div');
-    messageDiv.className = `chat-message ${sender}`;
+    messageDiv.className = `message ${sender}`;
     
     const avatar = document.createElement('div');
-    avatar.className = 'message-avatar';
+    avatar.className = 'bot-avatar';
     avatar.innerHTML = sender === 'bot' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
     
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble';
-    bubble.textContent = text;
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    
+    const paragraph = document.createElement('p');
+    paragraph.textContent = text;
+    content.appendChild(paragraph);
+    
+    // Add speak button for bot messages
+    if (sender === 'bot' && isSpeechEnabled) {
+        const speakBtn = document.createElement('button');
+        speakBtn.className = 'speak-message-btn';
+        speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+        speakBtn.onclick = () => speakText(text);
+        speakBtn.style.cssText = 'background: none; border: none; color: #6366f1; cursor: pointer; margin-top: 0.5rem; font-size: 0.9rem;';
+        content.appendChild(speakBtn);
+        
+        // Auto-speak bot responses if speech is enabled
+        speakText(text);
+    }
     
     messageDiv.appendChild(avatar);
-    messageDiv.appendChild(bubble);
+    messageDiv.appendChild(content);
     
     chatbox.appendChild(messageDiv);
     chatbox.scrollTop = chatbox.scrollHeight;
@@ -1875,3 +1982,379 @@ function showToast(message, type = 'info') {
         toast.classList.remove('show');
     }, 3000);
 }
+
+// ============================================
+// Subscription Management
+// ============================================
+let currentSubscription = null;
+
+function updateSubscriptionUI(student) {
+    const subscription = student.subscription;
+    const availablePlans = student.availablePlans;
+    currentSubscription = subscription;
+    
+    // Update sidebar badge
+    const subBadge = document.getElementById('subBadge');
+    if (subBadge) {
+        if (subscription.status === 'active') {
+            subBadge.textContent = 'PRO';
+            subBadge.classList.add('pro');
+        } else if (subscription.status === 'trial') {
+            subBadge.textContent = 'FREE';
+        } else {
+            subBadge.textContent = 'EXPIRED';
+            subBadge.style.background = '#ef4444';
+        }
+    }
+    
+    // Update subscription status card
+    const statusBadge = document.getElementById('subscriptionStatus');
+    const daysLeft = document.getElementById('daysLeft');
+    const trialProgress = document.getElementById('trialProgress');
+    const message = document.getElementById('subscriptionMessage');
+    
+    if (statusBadge) {
+        statusBadge.className = 'status-badge ' + subscription.status;
+        statusBadge.textContent = subscription.status === 'trial' ? 'FREE TRIAL' : 
+                                   subscription.status === 'active' ? 'ACTIVE' : 'EXPIRED';
+    }
+    
+    if (daysLeft) {
+        daysLeft.textContent = subscription.daysLeft;
+    }
+    
+    if (trialProgress) {
+        const totalDays = subscription.status === 'trial' ? 30 : 
+                         subscription.plan === 'monthly' ? 30 :
+                         subscription.plan === 'quarterly' ? 90 : 365;
+        const percentage = (subscription.daysLeft / totalDays) * 100;
+        const circumference = 2 * Math.PI * 45;
+        const offset = circumference - (percentage / 100) * circumference;
+        trialProgress.style.strokeDashoffset = offset;
+    }
+    
+    if (message) {
+        if (subscription.status === 'trial') {
+            message.innerHTML = `<p><i class="fas fa-info-circle"></i> You're on a 30-day free trial. ${subscription.daysLeft} days left. Upgrade to continue accessing all features after trial ends.</p>`;
+        } else if (subscription.status === 'active') {
+            const planName = availablePlans[subscription.plan]?.name || subscription.plan;
+            message.innerHTML = `<p><i class="fas fa-check-circle" style="color: #10b981;"></i> You're subscribed to ${planName}. ${subscription.daysLeft} days remaining.</p>`;
+        } else {
+            message.innerHTML = `<p><i class="fas fa-exclamation-circle" style="color: #ef4444;"></i> Your subscription has expired. Upgrade now to regain access to all features.</p>`;
+        }
+    }
+    
+    // Update payment history
+    updatePaymentHistory(subscription.paymentHistory);
+}
+
+function updatePaymentHistory(payments) {
+    const container = document.getElementById('paymentHistory');
+    if (!container) return;
+    
+    if (!payments || payments.length === 0) {
+        container.innerHTML = '<p class="empty-state">No payments yet. Start your free trial today!</p>';
+        return;
+    }
+    
+    container.innerHTML = payments.map(payment => `
+        <div class="payment-item">
+            <div class="payment-info">
+                <h4>${payment.plan.toUpperCase()} Plan</h4>
+                <p>${new Date(payment.date).toLocaleDateString()} • Transaction ID: ${payment.transactionId}</p>
+            </div>
+            <div class="payment-amount">
+                <div class="amount">₹${payment.amount}</div>
+                <span class="status ${payment.status}">${payment.status}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showUpgradeModal() {
+    const modal = document.getElementById('upgradeModal');
+    if (modal) {
+        modal.classList.add('show');
+    }
+}
+
+function closeUpgradeModal() {
+    const modal = document.getElementById('upgradeModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+function selectPlan(plan) {
+    document.querySelectorAll('input[name="plan"]').forEach(input => {
+        input.checked = input.value === plan;
+    });
+}
+
+async function subscribe(plan) {
+    selectPlan(plan);
+    showUpgradeModal();
+}
+
+async function processPayment() {
+    const selectedPlan = document.querySelector('input[name="plan"]:checked');
+    if (!selectedPlan) {
+        showToast('Please select a plan', 'error');
+        return;
+    }
+    
+    const plan = selectedPlan.value;
+    
+    try {
+        showToast('Processing payment...', 'info');
+        
+        const response = await fetch('/api/student/subscription/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ plan: plan })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(data.message, 'success');
+            closeUpgradeModal();
+            
+            // Refresh student data
+            const studentResponse = await fetch('/api/student/info');
+            const studentData = await studentResponse.json();
+            if (studentData.success) {
+                studentDataGlobal = studentData.student;
+                updateDashboardUI(studentData.student);
+                updateSubscriptionUI(studentData.student);
+            }
+        } else {
+            showToast(data.message || 'Payment failed', 'error');
+        }
+    } catch (error) {
+        showToast('Payment error. Please try again.', 'error');
+        console.error('Payment error:', error);
+    }
+}
+
+function viewPaymentHistory() {
+    showSection('subscription');
+    document.getElementById('paymentHistory').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Check subscription before accessing premium features
+function checkSubscriptionAccess() {
+    if (!currentSubscription) return true;
+    
+    if (currentSubscription.status === 'expired') {
+        showToast('Your subscription has expired. Please upgrade to access this feature.', 'error');
+        showSection('subscription');
+        return false;
+    }
+    
+    return true;
+}
+
+// ============================================
+// Notification System
+// ============================================
+let notifications = [];
+let unreadCount = 0;
+
+// Load notifications
+async function loadNotifications() {
+    try {
+        const response = await fetch('/api/student/notifications');
+        const data = await response.json();
+        
+        if (data.success) {
+            notifications = data.notifications;
+            unreadCount = data.unreadCount;
+            updateNotificationUI();
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+    }
+}
+
+// Update notification UI
+function updateNotificationUI() {
+    const badge = document.getElementById('notificationBadge');
+    const list = document.getElementById('notificationList');
+    
+    // Update badge
+    if (badge) {
+        badge.textContent = unreadCount;
+        badge.style.display = unreadCount > 0 ? 'block' : 'none';
+    }
+    
+    // Update list
+    if (list) {
+        if (notifications.length === 0) {
+            list.innerHTML = `
+                <div class="notification-empty">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>No notifications yet</p>
+                </div>
+            `;
+        } else {
+            list.innerHTML = notifications.map(notif => `
+                <div class="notification-item ${notif.read ? '' : 'unread'}" data-id="${notif.id}">
+                    <div class="notification-icon ${notif.type}">
+                        <i class="fas ${getNotificationIcon(notif.type)}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h5>
+                            ${notif.read ? '' : '<span class="unread-dot"></span>'}
+                            ${notif.title}
+                        </h5>
+                        <p>${notif.message}</p>
+                        <span class="notification-time">${formatNotificationTime(notif.timestamp)}</span>
+                    </div>
+                    <button class="notification-delete" onclick="deleteNotification('${notif.id}', event)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+            
+            // Add click handlers
+            document.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    if (!e.target.closest('.notification-delete')) {
+                        markNotificationRead(item.dataset.id);
+                    }
+                });
+            });
+        }
+    }
+}
+
+// Get icon for notification type
+function getNotificationIcon(type) {
+    const icons = {
+        'info': 'fa-info-circle',
+        'success': 'fa-check-circle',
+        'warning': 'fa-exclamation-triangle',
+        'reminder': 'fa-clock',
+        'quiz': 'fa-question-circle',
+        'assignment': 'fa-file-alt',
+        'message': 'fa-envelope'
+    };
+    return icons[type] || 'fa-bell';
+}
+
+// Format notification time
+function formatNotificationTime(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = (now - date) / 1000; // seconds
+    
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+    
+    return date.toLocaleDateString();
+}
+
+// Toggle notification dropdown
+function toggleNotifications() {
+    const dropdown = document.getElementById('notificationDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('show');
+        
+        // Load notifications if opening
+        if (dropdown.classList.contains('show')) {
+            loadNotifications();
+        }
+    }
+}
+
+// Mark single notification as read
+async function markNotificationRead(notificationId) {
+    try {
+        const response = await fetch(`/api/student/notifications/${notificationId}/read`, {
+            method: 'PUT'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update local state
+            const notif = notifications.find(n => n.id === notificationId);
+            if (notif && !notif.read) {
+                notif.read = true;
+                unreadCount = Math.max(0, unreadCount - 1);
+                updateNotificationUI();
+            }
+        }
+    } catch (error) {
+        console.error('Error marking notification read:', error);
+    }
+}
+
+// Mark all notifications as read
+async function markAllNotificationsRead() {
+    try {
+        const response = await fetch('/api/student/notifications/read-all', {
+            method: 'PUT'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update local state
+            notifications.forEach(n => n.read = true);
+            unreadCount = 0;
+            updateNotificationUI();
+            showToast('All notifications marked as read', 'success');
+        }
+    } catch (error) {
+        console.error('Error marking all notifications read:', error);
+    }
+}
+
+// Delete notification
+async function deleteNotification(notificationId, event) {
+    event.stopPropagation();
+    
+    try {
+        const response = await fetch(`/api/student/notifications/${notificationId}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update local state
+            const notif = notifications.find(n => n.id === notificationId);
+            if (notif && !notif.read) {
+                unreadCount = Math.max(0, unreadCount - 1);
+            }
+            notifications = notifications.filter(n => n.id !== notificationId);
+            updateNotificationUI();
+        }
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+    }
+}
+
+// Close notification dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    const container = document.querySelector('.notification-container');
+    const dropdown = document.getElementById('notificationDropdown');
+    
+    if (container && dropdown && !container.contains(e.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// Load notifications on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadNotifications();
+    
+    // Refresh notifications every 30 seconds
+    setInterval(loadNotifications, 30000);
+});

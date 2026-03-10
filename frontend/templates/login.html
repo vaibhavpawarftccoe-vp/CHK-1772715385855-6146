@@ -38,6 +38,10 @@
 
             <!-- Login Form -->
             <div id="loginForm" class="auth-form active">
+                <div class="login-type-switch" style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.5rem;">
+                    <span class="login-type-btn" style="padding: 0.5rem 1.5rem; border-radius: 20px; background: #6366f1; color: white; font-size: 0.9rem; font-weight: 500;">Student</span>
+                    <a href="/teacher-login" class="login-type-btn" style="padding: 0.5rem 1.5rem; border-radius: 20px; background: #e0e7ff; color: #6366f1; font-size: 0.9rem; font-weight: 500; text-decoration: none;">Teacher</a>
+                </div>
                 <h3>Login to Your Account</h3>
                 <form onsubmit="handleLogin(event)">
                     <div class="form-group">

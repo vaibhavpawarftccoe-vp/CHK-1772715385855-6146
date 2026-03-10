@@ -37,7 +37,7 @@
     "attendance": {
       "overall": 0,
       "present": 0,
-      "absent": 2,
+      "absent": 4,
       "leave": 0
     },
     "exams": {
@@ -98,7 +98,9 @@
     "dailyAttendance": {
       "2026-03-10": {
         "0": "absent",
-        "1": "absent"
+        "1": "absent",
+        "2": "absent",
+        "3": "absent"
       }
     }
   }

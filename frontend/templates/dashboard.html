@@ -54,10 +54,6 @@
                 <i class="fas fa-question-circle"></i>
                 <span>Weekly Quiz</span>
             </a>
-            <a href="#attendance" class="nav-item" onclick="showSection('attendance')">
-                <i class="fas fa-clipboard-check"></i>
-                <span>Attendance</span>
-            </a>
             <a href="#calendar" class="nav-item" onclick="showSection('calendar')">
                 <i class="fas fa-calendar-alt"></i>
                 <span>Academic Calendar</span>
@@ -77,6 +73,11 @@
             <a href="#chat" class="nav-item" onclick="showSection('chat')">
                 <i class="fas fa-comments"></i>
                 <span>Chat with EduBot</span>
+            </a>
+            <a href="#subscription" class="nav-item" onclick="showSection('subscription')">
+                <i class="fas fa-crown"></i>
+                <span>Subscription</span>
+                <span id="subBadge" class="nav-badge">FREE</span>
             </a>
         </nav>
         
@@ -102,10 +103,21 @@
                     <i class="fas fa-search"></i>
                     <input type="text" placeholder="Search...">
                 </div>
-                <button class="notification-btn">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge">3</span>
-                </button>
+                <div class="notification-container">
+                    <button class="notification-btn" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span id="notificationBadge" class="badge">0</span>
+                    </button>
+                    <div id="notificationDropdown" class="notification-dropdown">
+                        <div class="notification-header">
+                            <h4>Notifications</h4>
+                            <button onclick="markAllNotificationsRead()" class="mark-read-btn">Mark all read</button>
+                        </div>
+                        <div id="notificationList" class="notification-list">
+                            <p class="notification-empty">No notifications</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -450,124 +462,6 @@
                             <span class="rank">1</span>
                             <span class="name">You</span>
                             <span class="score">850 pts</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Attendance Section -->
-        <section id="attendance" class="content-section">
-            <div class="dashboard-grid">
-                <!-- Daily Attendance Card -->
-                <div class="dashboard-card attendance-card">
-                    <div class="card-header">
-                        <h3>Today's Lectures</h3>
-                        <span class="badge" id="todayDate"></span>
-                    </div>
-                    <div class="attendance-container">
-                        <div class="attendance-summary">
-                            <div class="attendance-stat">
-                                <span class="stat-value" id="presentCount">0</span>
-                                <span class="stat-label">Present</span>
-                            </div>
-                            <div class="attendance-stat">
-                                <span class="stat-value" id="absentCount">0</span>
-                                <span class="stat-label">Absent</span>
-                            </div>
-                            <div class="attendance-stat">
-                                <span class="stat-value" id="todayPercentage">0%</span>
-                                <span class="stat-label">Attendance</span>
-                            </div>
-                        </div>
-                        <div id="todayLectures" class="lectures-list">
-                            <!-- Today's lectures will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Weekly Attendance Card -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>Weekly Attendance</h3>
-                    </div>
-                    <div class="weekly-attendance">
-                        <div class="week-days">
-                            <div class="day-attendance" data-day="mon">
-                                <span class="day-name">Mon</span>
-                                <div class="day-bar">
-                                    <div class="day-fill" id="monBar" style="height: 0%"></div>
-                                </div>
-                                <span class="day-percent" id="monPercent">0%</span>
-                            </div>
-                            <div class="day-attendance" data-day="tue">
-                                <span class="day-name">Tue</span>
-                                <div class="day-bar">
-                                    <div class="day-fill" id="tueBar" style="height: 0%"></div>
-                                </div>
-                                <span class="day-percent" id="tuePercent">0%</span>
-                            </div>
-                            <div class="day-attendance" data-day="wed">
-                                <span class="day-name">Wed</span>
-                                <div class="day-bar">
-                                    <div class="day-fill" id="wedBar" style="height: 0%"></div>
-                                </div>
-                                <span class="day-percent" id="wedPercent">0%</span>
-                            </div>
-                            <div class="day-attendance" data-day="thu">
-                                <span class="day-name">Thu</span>
-                                <div class="day-bar">
-                                    <div class="day-fill" id="thuBar" style="height: 0%"></div>
-                                </div>
-                                <span class="day-percent" id="thuPercent">0%</span>
-                            </div>
-                            <div class="day-attendance" data-day="fri">
-                                <span class="day-name">Fri</span>
-                                <div class="day-bar">
-                                    <div class="day-fill" id="friBar" style="height: 0%"></div>
-                                </div>
-                                <span class="day-percent" id="friPercent">0%</span>
-                            </div>
-                            <div class="day-attendance" data-day="sat">
-                                <span class="day-name">Sat</span>
-                                <div class="day-bar">
-                                    <div class="day-fill" id="satBar" style="height: 0%"></div>
-                                </div>
-                                <span class="day-percent" id="satPercent">0%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Overall Attendance Stats -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>Overall Attendance</h3>
-                        <span class="badge badge-success" id="overallAttendanceBadge">0%</span>
-                    </div>
-                    <div class="overall-attendance">
-                        <div class="attendance-circle">
-                            <svg viewBox="0 0 100 100">
-                                <circle class="circle-bg" cx="50" cy="50" r="45"/>
-                                <circle class="circle-progress" id="attendanceCircle" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="283"/>
-                            </svg>
-                            <div class="circle-text">
-                                <span id="overallAttendanceText">0%</span>
-                            </div>
-                        </div>
-                        <div class="attendance-legend">
-                            <div class="legend-item">
-                                <span class="legend-color present"></span>
-                                <span>Present: <strong id="totalPresent">0</strong></span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color absent"></span>
-                                <span>Absent: <strong id="totalAbsent">0</strong></span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color leave"></span>
-                                <span>Leave: <strong id="totalLeave">0</strong></span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1163,24 +1057,217 @@
 
         <section id="chat" class="content-section">
             <div class="dashboard-card chat-card">
-                <h3>Chat with EduBot</h3>
+                <div class="chat-header">
+                    <h3><i class="fas fa-robot"></i> Chat with EduBot</h3>
+                    <div class="voice-controls">
+                        <button id="voiceToggle" class="voice-btn" onclick="toggleVoiceMode()" title="Enable Voice Mode">
+                            <i class="fas fa-microphone-slash"></i>
+                        </button>
+                        <button id="speakToggle" class="voice-btn" onclick="toggleSpeechOutput()" title="Enable Speech Output">
+                            <i class="fas fa-volume-mute"></i>
+                        </button>
+                    </div>
+                </div>
                 <div class="chat-widget">
                     <div id="chatbox" class="chat-messages-main">
                         <div class="welcome-message">
-                            <p>Hello! I'm EduBot. How can I help you today?</p>
+                            <div class="bot-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <p>Hello! I'm EduBot, your AI assistant. I can now understand your voice! Click the microphone button to speak with me.</p>
+                                <div class="voice-hint">
+                                    <i class="fas fa-microphone"></i>
+                                    <span>Try saying: "What courses do you offer?" or "Tell me about attendance"</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="chat-input-area">
                         <div class="input-wrapper">
-                            <input type="text" id="userInput" placeholder="Type your message...">
+                            <button id="micButton" class="mic-btn" onclick="toggleVoiceInput()" title="Click to speak">
+                                <i class="fas fa-microphone"></i>
+                                <span class="mic-wave"></span>
+                                <span class="mic-wave"></span>
+                                <span class="mic-wave"></span>
+                            </button>
+                            <input type="text" id="userInput" placeholder="Type your message or click the mic to speak...">
                             <button class="send-btn" onclick="sendMessage()">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
+                        </div>
+                        <div id="voiceStatus" class="voice-status">
+                            <span class="listening-indicator">
+                                <span class="pulse"></span>
+                                Listening...
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Subscription Section -->
+        <section id="subscription" class="content-section">
+            <div class="dashboard-grid">
+                <!-- Current Subscription Status -->
+                <div class="dashboard-card subscription-status-card" style="grid-column: 1 / -1;">
+                    <div class="subscription-header">
+                        <div class="subscription-info">
+                            <h3><i class="fas fa-crown"></i> Your Subscription</h3>
+                            <div id="subscriptionStatus" class="status-badge trial">FREE TRIAL</div>
+                        </div>
+                        <div class="subscription-timer">
+                            <div class="timer-circle">
+                                <svg viewBox="0 0 100 100">
+                                    <circle class="timer-bg" cx="50" cy="50" r="45"/>
+                                    <circle id="trialProgress" class="timer-progress" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="0"/>
+                                </svg>
+                                <div class="timer-text">
+                                    <span id="daysLeft">30</span>
+                                    <small>days left</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subscription-message" id="subscriptionMessage">
+                        <p><i class="fas fa-info-circle"></i> You're on a 30-day free trial. Upgrade to continue accessing all features after trial ends.</p>
+                    </div>
+                    <div class="subscription-actions">
+                        <button class="btn-primary btn-upgrade" onclick="showUpgradeModal()">
+                            <i class="fas fa-arrow-up"></i> Upgrade Now
+                        </button>
+                        <button class="btn-secondary" onclick="viewPaymentHistory()">
+                            <i class="fas fa-history"></i> Payment History
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pricing Plans -->
+                <div class="dashboard-card pricing-card">
+                    <div class="pricing-header">
+                        <h4>Monthly</h4>
+                        <div class="price">
+                            <span class="currency">₹</span>
+                            <span class="amount">299</span>
+                            <span class="period">/month</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Full Access</li>
+                        <li><i class="fas fa-check"></i> All Courses</li>
+                        <li><i class="fas fa-check"></i> Download Lectures</li>
+                        <li><i class="fas fa-check"></i> Quiz Access</li>
+                        <li><i class="fas fa-check"></i> Certificate Unlock</li>
+                    </ul>
+                    <button class="btn-subscribe" onclick="subscribe('monthly')">
+                        Subscribe Monthly
+                    </button>
+                </div>
+
+                <div class="dashboard-card pricing-card popular">
+                    <div class="popular-badge">MOST POPULAR</div>
+                    <div class="pricing-header">
+                        <h4>Quarterly</h4>
+                        <div class="price">
+                            <span class="currency">₹</span>
+                            <span class="amount">799</span>
+                            <span class="period">/3 months</span>
+                        </div>
+                        <div class="savings">Save 11%</div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Full Access</li>
+                        <li><i class="fas fa-check"></i> All Courses</li>
+                        <li><i class="fas fa-check"></i> Download Lectures</li>
+                        <li><i class="fas fa-check"></i> Quiz Access</li>
+                        <li><i class="fas fa-check"></i> Certificate Unlock</li>
+                        <li><i class="fas fa-check"></i> Priority Support</li>
+                    </ul>
+                    <button class="btn-subscribe" onclick="subscribe('quarterly')">
+                        Subscribe Quarterly
+                    </button>
+                </div>
+
+                <div class="dashboard-card pricing-card">
+                    <div class="pricing-header">
+                        <h4>Yearly</h4>
+                        <div class="price">
+                            <span class="currency">₹</span>
+                            <span class="amount">2499</span>
+                            <span class="period">/year</span>
+                        </div>
+                        <div class="savings">Save 30%</div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Full Access</li>
+                        <li><i class="fas fa-check"></i> All Courses</li>
+                        <li><i class="fas fa-check"></i> Download Lectures</li>
+                        <li><i class="fas fa-check"></i> Quiz Access</li>
+                        <li><i class="fas fa-check"></i> Certificate Unlock</li>
+                        <li><i class="fas fa-check"></i> Priority Support</li>
+                        <li><i class="fas fa-check"></i> Personal Mentor</li>
+                    </ul>
+                    <button class="btn-subscribe" onclick="subscribe('yearly')">
+                        Subscribe Yearly
+                    </button>
+                </div>
+
+                <!-- Payment History -->
+                <div class="dashboard-card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-receipt"></i> Payment History</h3>
+                    </div>
+                    <div id="paymentHistory" class="payment-history">
+                        <p class="empty-state">No payments yet. Start your free trial today!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upgrade Modal -->
+        <div id="upgradeModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-crown"></i> Upgrade Your Plan</h3>
+                    <button class="modal-close" onclick="closeUpgradeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Choose a plan to continue enjoying unlimited access to all courses and features.</p>
+                    <div class="modal-plans">
+                        <div class="modal-plan" onclick="selectPlan('monthly')">
+                            <input type="radio" name="plan" value="monthly" id="planMonthly">
+                            <label for="planMonthly">
+                                <strong>Monthly</strong>
+                                <span>₹299/month</span>
+                            </label>
+                        </div>
+                        <div class="modal-plan recommended" onclick="selectPlan('quarterly')">
+                            <input type="radio" name="plan" value="quarterly" id="planQuarterly" checked>
+                            <label for="planQuarterly">
+                                <strong>Quarterly</strong>
+                                <span>₹799/3 months</span>
+                                <small>Save 11%</small>
+                            </label>
+                        </div>
+                        <div class="modal-plan" onclick="selectPlan('yearly')">
+                            <input type="radio" name="plan" value="yearly" id="planYearly">
+                            <label for="planYearly">
+                                <strong>Yearly</strong>
+                                <span>₹2499/year</span>
+                                <small>Save 30%</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" onclick="closeUpgradeModal()">Cancel</button>
+                    <button class="btn-primary" onclick="processPayment()">
+                        <i class="fas fa-lock"></i> Proceed to Payment
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <section id="settings" class="content-section">
             <div class="dashboard-card">
