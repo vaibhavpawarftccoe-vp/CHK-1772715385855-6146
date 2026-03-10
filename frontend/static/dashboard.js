@@ -29,6 +29,9 @@ function loadStudentData() {
                     localStorage.setItem('studentId', studentData.studentId);
                 }
                 updateDashboardUI();
+                
+                // Start live dashboard updates
+                startLiveDashboard();
             } else {
                 // Not logged in, redirect to login
                 window.location.href = '/login';
@@ -38,6 +41,218 @@ function loadStudentData() {
             console.error('Error loading student data:', error);
             showToast('Error loading data', 'error');
         });
+}
+
+// ============================================
+// Live Dashboard Functions
+// ============================================
+let liveUpdateInterval = null;
+let isLiveDashboardActive = false;
+
+function startLiveDashboard() {
+    if (isLiveDashboardActive) return;
+    
+    isLiveDashboardActive = true;
+    console.log('Starting live dashboard...');
+    
+    // Initial load
+    fetchLiveMetrics();
+    fetchLiveActivity();
+    fetchLiveNotifications();
+    
+    // Set up polling every 10 seconds for live updates
+    liveUpdateInterval = setInterval(() => {
+        fetchLiveMetrics();
+        fetchLiveActivity();
+        fetchLiveNotifications();
+    }, 10000); // 10 seconds
+}
+
+function stopLiveDashboard() {
+    isLiveDashboardActive = false;
+    if (liveUpdateInterval) {
+        clearInterval(liveUpdateInterval);
+        liveUpdateInterval = null;
+    }
+}
+
+function fetchLiveMetrics() {
+    fetch('/api/dashboard/live-metrics')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateLiveMetrics(data.metrics);
+            }
+        })
+        .catch(error => console.error('Error fetching live metrics:', error));
+}
+
+function updateLiveMetrics(metrics) {
+    // Update Active Courses
+    const courseStat = document.getElementById('statCourses');
+    if (courseStat && metrics.activeCourses) {
+        const currentValue = parseInt(courseStat.textContent) || 0;
+        const newValue = metrics.activeCourses.value;
+        if (currentValue !== newValue) {
+            animateNumber(courseStat, currentValue, newValue);
+            showLiveUpdatePulse(courseStat.closest('.stat-card'));
+        }
+    }
+    
+    // Update Completed Tasks
+    const completedStat = document.getElementById('statCompleted');
+    if (completedStat && metrics.completedTasks) {
+        const currentValue = parseInt(completedStat.textContent) || 0;
+        const newValue = metrics.completedTasks.value;
+        if (currentValue !== newValue) {
+            animateNumber(completedStat, currentValue, newValue);
+            showLiveUpdatePulse(completedStat.closest('.stat-card'));
+        }
+    }
+    
+    // Update Pending Tasks
+    const pendingStat = document.getElementById('statPending');
+    if (pendingStat && metrics.pendingTasks) {
+        const currentValue = parseInt(pendingStat.textContent) || 0;
+        const newValue = metrics.pendingTasks.value;
+        if (currentValue !== newValue) {
+            animateNumber(pendingStat, currentValue, newValue);
+            showLiveUpdatePulse(pendingStat.closest('.stat-card'));
+        }
+    }
+    
+    // Update Performance Score
+    const scoreStat = document.getElementById('statScore');
+    if (scoreStat && metrics.performanceScore) {
+        const currentValue = parseInt(scoreStat.textContent) || 0;
+        const newValue = metrics.performanceScore.value;
+        if (currentValue !== newValue) {
+            animateNumber(scoreStat, currentValue, newValue, '%');
+            showLiveUpdatePulse(scoreStat.closest('.stat-card'));
+        }
+    }
+    
+    // Update last updated timestamp
+    updateLastUpdatedTime();
+}
+
+function showLiveUpdatePulse(cardElement) {
+    if (!cardElement) return;
+    
+    cardElement.classList.add('live-update-pulse');
+    setTimeout(() => {
+        cardElement.classList.remove('live-update-pulse');
+    }, 1000);
+}
+
+function updateLastUpdatedTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    
+    // You can add a timestamp element to show last update time
+    console.log(`Dashboard updated at ${timeString}`);
+}
+
+function fetchLiveActivity() {
+    fetch('/api/dashboard/live-activity')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateLiveActivityFeed(data.activities);
+            }
+        })
+        .catch(error => console.error('Error fetching live activity:', error));
+}
+
+function updateLiveActivityFeed(activities) {
+    const activityList = document.querySelector('.activity-list');
+    if (!activityList || !activities) return;
+    
+    // Get last 3 activities
+    const recentActivities = activities.slice(0, 3);
+    
+    const activityIcons = {
+        'Account Created': 'fa-user-plus',
+        'Course Enrolled': 'fa-book',
+        'Assignment Submitted': 'fa-check-circle',
+        'Grade Added': 'fa-star',
+        'Profile Updated': 'fa-user-edit',
+        'Book Issued': 'fa-book-reader',
+        'Achievement Added': 'fa-trophy',
+        'Assignment Due Soon': 'fa-clock',
+        'Study Streak': 'fa-fire',
+        'Trial Expiring': 'fa-exclamation-circle'
+    };
+    
+    activityList.innerHTML = recentActivities.map(activity => {
+        const { action, timestamp, details } = activity;
+        const icon = activityIcons[action] || 'fa-circle';
+        const timeAgo = getTimeAgo(timestamp);
+        
+        return `
+            <div class="activity-item live-activity">
+                <div class="activity-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="activity-info">
+                    <p>${action}: ${details}</p>
+                    <span>${timeAgo}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function fetchLiveNotifications() {
+    fetch('/api/dashboard/live-notifications')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateLiveNotifications(data.notifications, data.unreadCount);
+            }
+        })
+        .catch(error => console.error('Error fetching live notifications:', error));
+}
+
+function updateLiveNotifications(notifications, unreadCount) {
+    // Update notification badge
+    const badge = document.getElementById('notificationBadge');
+    if (badge) {
+        badge.textContent = unreadCount;
+        badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+    }
+    
+    // Update notification list if dropdown is open
+    const notificationList = document.getElementById('notificationList');
+    if (notificationList && notifications.length > 0) {
+        notificationList.innerHTML = notifications.map(notification => `
+            <div class="notification-item ${notification.read ? '' : 'unread'}" data-id="${notification.id}">
+                <div class="notification-icon ${notification.type}">
+                    <i class="fas ${getNotificationIcon(notification.type)}"></i>
+                </div>
+                <div class="notification-content">
+                    <h5>${notification.title}</h5>
+                    <p>${notification.message}</p>
+                    <span>${getTimeAgo(notification.timestamp)}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function getNotificationIcon(type) {
+    const icons = {
+        'urgent': 'fa-exclamation-circle',
+        'warning': 'fa-exclamation-triangle',
+        'success': 'fa-check-circle',
+        'info': 'fa-info-circle',
+        'alert': 'fa-bell'
+    };
+    return icons[type] || 'fa-bell';
 }
 
 // ============================================
@@ -86,28 +301,222 @@ function updateDashboardUI() {
 function updateStats() {
     if (!studentData) return;
 
-    const { courses: { current, enrolled }, assignments: { graded, pending }, grades: { cgpa } } = studentData;
-
-    // Update course count
-    const courseCount = current.length + enrolled.length;
-    const courseStat = document.querySelector('.stat-card:nth-child(1) h3');
-    if (courseStat) courseStat.textContent = courseCount || 6;
-
-    // Update completed assignments
-    const completedCount = graded.length;
-    const completedStat = document.querySelector('.stat-card:nth-child(2) h3');
-    if (completedStat) completedStat.textContent = completedCount || 24;
-
-    // Update pending assignments
-    const pendingCount = pending.length;
-    const pendingStat = document.querySelector('.stat-card:nth-child(3) h3');
-    if (pendingStat) pendingStat.textContent = pendingCount || 8;
-
-    // Update CGPA
-    const cgpaFormatted = cgpa.toFixed(2);
-    const cgpaStat = document.querySelector('.stat-card:nth-child(4) h3');
-    if (cgpaStat) cgpaStat.textContent = cgpaFormatted > 0 ? cgpaFormatted + '%' : '85%';
+    // Calculate real-time metrics from student data
+    const metrics = calculateLiveMetrics();
+    
+    // Update Active Courses
+    const courseCount = metrics.activeCourses;
+    const courseStat = document.getElementById('statCourses');
+    if (courseStat) {
+        animateNumber(courseStat, parseInt(courseStat.textContent) || 0, courseCount);
+    }
+    
+    // Update Completed Tasks
+    const completedStat = document.getElementById('statCompleted');
+    if (completedStat) {
+        animateNumber(completedStat, parseInt(completedStat.textContent) || 0, metrics.completedTasks);
+    }
+    
+    // Update Pending Tasks
+    const pendingStat = document.getElementById('statPending');
+    if (pendingStat) {
+        animateNumber(pendingStat, parseInt(pendingStat.textContent) || 0, metrics.pendingTasks);
+    }
+    
+    // Update Performance Score
+    const scoreStat = document.getElementById('statScore');
+    if (scoreStat) {
+        const currentScore = parseInt(scoreStat.textContent) || 0;
+        animateNumber(scoreStat, currentScore, metrics.performanceScore, '%');
+    }
+    
+    // Update stat details data with real calculations
+    updateStatDetailsData(metrics);
 }
+
+// ============================================
+// Calculate Live Performance Metrics
+// ============================================
+function calculateLiveMetrics() {
+    if (!studentData) return getDefaultMetrics();
+    
+    const { courses, assignments, grades, activityLog } = studentData;
+    
+    // Active Courses - count current semester courses
+    const activeCourses = (courses?.current?.length || 0) + (courses?.enrolled?.length || 0);
+    
+    // Completed Tasks - graded assignments + completed activities
+    const gradedAssignments = assignments?.graded?.length || 0;
+    const completedActivities = activityLog?.filter(a => 
+        a.action.includes('Completed') || a.action.includes('Submitted')
+    ).length || 0;
+    const completedTasks = Math.max(gradedAssignments, completedActivities);
+    
+    // Pending Tasks - pending assignments + upcoming deadlines
+    const pendingAssignments = assignments?.pending?.length || 0;
+    const pendingTasks = pendingAssignments;
+    
+    // Performance Score - calculate from grades
+    let performanceScore = 85; // default
+    if (grades?.semesterGrades && grades.semesterGrades.length > 0) {
+        const totalScore = grades.semesterGrades.reduce((sum, g) => sum + (g.sgpa * 10), 0);
+        performanceScore = Math.round(totalScore / grades.semesterGrades.length);
+    } else if (grades?.cgpa) {
+        performanceScore = Math.round(grades.cgpa * 10);
+    }
+    
+    // Calculate trend (improving/declining)
+    const trend = calculatePerformanceTrend(grades?.semesterGrades);
+    
+    return {
+        activeCourses: activeCourses || 6,
+        completedTasks: completedTasks || 24,
+        pendingTasks: pendingTasks || 8,
+        performanceScore: performanceScore || 85,
+        trend: trend,
+        lastUpdated: new Date().toLocaleTimeString()
+    };
+}
+
+// ============================================
+// Calculate Performance Trend
+// ============================================
+function calculatePerformanceTrend(semesterGrades) {
+    if (!semesterGrades || semesterGrades.length < 2) return 'stable';
+    
+    const recent = semesterGrades[semesterGrades.length - 1].sgpa;
+    const previous = semesterGrades[semesterGrades.length - 2].sgpa;
+    
+    if (recent > previous) return 'improving';
+    if (recent < previous) return 'declining';
+    return 'stable';
+}
+
+// ============================================
+// Get Default Metrics
+// ============================================
+function getDefaultMetrics() {
+    return {
+        activeCourses: 6,
+        completedTasks: 24,
+        pendingTasks: 8,
+        performanceScore: 85,
+        trend: 'stable',
+        lastUpdated: new Date().toLocaleTimeString()
+    };
+}
+
+// ============================================
+// Animate Number Counter
+// ============================================
+function animateNumber(element, start, end, suffix = '') {
+    const duration = 1000;
+    const startTime = performance.now();
+    
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const current = Math.round(start + (end - start) * easeOutQuart);
+        
+        element.textContent = current + suffix;
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    
+    requestAnimationFrame(update);
+}
+
+// ============================================
+// Update Stat Details Data with Real Data
+// ============================================
+function updateStatDetailsData(metrics) {
+    if (!studentData) return;
+    
+    const { courses, assignments, grades, activityLog } = studentData;
+    
+    // Update Courses Data
+    if (courses?.current) {
+        statDetailsData.courses.items = courses.current.map((course, index) => ({
+            name: course.name || `Course ${index + 1}`,
+            code: course.code || `CS${200 + index}`,
+            progress: course.progress || Math.floor(Math.random() * 40) + 40,
+            status: course.status || 'In Progress'
+        }));
+        statDetailsData.courses.stats[0].value = (courses.current.length * 4).toString();
+    }
+    
+    // Update Completed Tasks Data
+    if (assignments?.graded) {
+        statDetailsData.completed.items = assignments.graded.slice(0, 6).map((item, index) => ({
+            name: item.title || `Assignment ${index + 1}`,
+            type: item.type || 'Assignment',
+            date: item.submittedDate || new Date(Date.now() - index * 86400000).toISOString().split('T')[0],
+            score: item.score ? `${item.score}%` : `${85 + Math.floor(Math.random() * 15)}%`
+        }));
+    }
+    
+    // Update Pending Tasks Data
+    if (assignments?.pending) {
+        statDetailsData.pending.items = assignments.pending.slice(0, 6).map((item, index) => {
+            const dueDate = new Date(item.dueDate || Date.now() + (index + 3) * 86400000);
+            const daysLeft = Math.ceil((dueDate - Date.now()) / 86400000);
+            return {
+                name: item.title || `Task ${index + 1}`,
+                type: item.type || 'Assignment',
+                deadline: dueDate.toISOString().split('T')[0],
+                daysLeft: Math.max(1, daysLeft)
+            };
+        });
+    }
+    
+    // Update Score Data
+    if (grades?.semesterGrades) {
+        statDetailsData.score.items = grades.semesterGrades.map((grade, index) => ({
+            name: grade.courseName || `Subject ${index + 1}`,
+            score: Math.round(grade.sgpa * 10),
+            grade: getGradeFromSGPA(grade.sgpa),
+            maxScore: 100
+        }));
+        statDetailsData.score.stats[0].value = grades.cgpa?.toFixed(1) || '8.5';
+    }
+}
+
+// ============================================
+// Get Grade from SGPA
+// ============================================
+function getGradeFromSGPA(sgpa) {
+    if (sgpa >= 9) return 'A+';
+    if (sgpa >= 8) return 'A';
+    if (sgpa >= 7) return 'B+';
+    if (sgpa >= 6) return 'B';
+    if (sgpa >= 5) return 'C';
+    return 'F';
+}
+
+// ============================================
+// Live Update - Refresh stats every 30 seconds
+// ============================================
+function startLiveUpdates() {
+    // Update immediately
+    updateStats();
+    
+    // Then update every 30 seconds
+    setInterval(() => {
+        console.log('Refreshing live metrics...');
+        updateStats();
+    }, 30000);
+}
+
+// Call this when dashboard loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for student data to load, then start live updates
+    setTimeout(startLiveUpdates, 2000);
+});
 
 // ============================================
 // Update Activity Log
@@ -1641,8 +2050,14 @@ let isListening = false;
 let speechSynthesis = window.speechSynthesis;
 let isSpeechEnabled = false;
 let isVoiceModeEnabled = false;
+let selectedVoiceGender = localStorage.getItem('edubotVoiceGender') || 'female';
+let availableVoices = [];
+let currentVoice = null;
 
 function initVoiceAssistant() {
+    // Initialize voice gender UI
+    initVoiceGenderUI();
+    
     // Check if browser supports Web Speech API
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1809,15 +2224,27 @@ function speakText(text) {
     utterance.volume = 1;
     utterance.lang = 'en-US';
     
-    // Try to find a good voice
-    const voices = speechSynthesis.getVoices();
-    const preferredVoice = voices.find(voice => 
-        voice.name.includes('Google') || 
-        voice.name.includes('Samantha') || 
-        voice.name.includes('Microsoft Zira')
-    );
-    if (preferredVoice) {
-        utterance.voice = preferredVoice;
+    // Use the selected voice based on gender preference
+    if (currentVoice) {
+        utterance.voice = currentVoice;
+    } else {
+        // Fallback: try to find a good voice
+        const voices = speechSynthesis.getVoices();
+        const preferredVoice = voices.find(voice => {
+            if (selectedVoiceGender === 'female') {
+                return voice.name.includes('Google') || 
+                       voice.name.includes('Samantha') || 
+                       voice.name.includes('Microsoft Zira') ||
+                       voice.name.includes('Victoria');
+            } else {
+                return voice.name.includes('Google UK English Male') || 
+                       voice.name.includes('Microsoft David') ||
+                       voice.name.includes('Daniel');
+            }
+        });
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
     }
     
     utterance.onstart = function() {
@@ -1840,8 +2267,587 @@ function speakText(text) {
 // Load voices when available
 if (speechSynthesis) {
     speechSynthesis.onvoiceschanged = function() {
-        // Voices loaded
+        availableVoices = speechSynthesis.getVoices();
+        updateCurrentVoice();
     };
+    // Try to load voices immediately
+    availableVoices = speechSynthesis.getVoices();
+    if (availableVoices.length > 0) {
+        updateCurrentVoice();
+    }
+}
+
+// ============================================
+// Voice Gender Selection Functions
+// ============================================
+function updateCurrentVoice() {
+    if (availableVoices.length === 0) return;
+    
+    // Filter voices by gender preference
+    let preferredVoices = [];
+    
+    if (selectedVoiceGender === 'female') {
+        // Look for female voices
+        preferredVoices = availableVoices.filter(voice => 
+            voice.name.toLowerCase().includes('female') ||
+            voice.name.includes('Samantha') ||
+            voice.name.includes('Victoria') ||
+            voice.name.includes('Karen') ||
+            voice.name.includes('Google US English') ||
+            voice.name.includes('Microsoft Zira') ||
+            voice.name.includes('Microsoft Anna') ||
+            voice.name.includes('Google UK English Female')
+        );
+    } else {
+        // Look for male voices
+        preferredVoices = availableVoices.filter(voice => 
+            voice.name.toLowerCase().includes('male') ||
+            voice.name.includes('Daniel') ||
+            voice.name.includes('Fred') ||
+            voice.name.includes('Google UK English Male') ||
+            voice.name.includes('Microsoft David') ||
+            voice.name.includes('Microsoft Mark') ||
+            voice.name.includes('Alex')
+        );
+    }
+    
+    // If no gender-specific voice found, try to find any good voice
+    if (preferredVoices.length === 0) {
+        preferredVoices = availableVoices.filter(voice =>
+            voice.name.includes('Google') ||
+            voice.name.includes('Microsoft') ||
+            voice.name.includes('Apple')
+        );
+    }
+    
+    // Default to first available if still no match
+    currentVoice = preferredVoices.length > 0 ? preferredVoices[0] : availableVoices[0];
+    
+    console.log(`Voice set to: ${currentVoice?.name || 'Default'} (${selectedVoiceGender})`);
+}
+
+function toggleVoiceGender() {
+    const dropdown = document.getElementById('genderDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('show');
+    }
+}
+
+function selectVoiceGender(gender) {
+    selectedVoiceGender = gender;
+    localStorage.setItem('edubotVoiceGender', gender);
+    
+    // Update UI
+    const genderLabel = document.getElementById('genderLabel');
+    const genderToggle = document.getElementById('genderToggle');
+    const dropdown = document.getElementById('genderDropdown');
+    
+    if (genderLabel) {
+        genderLabel.textContent = gender === 'female' ? 'Female' : 'Male';
+    }
+    
+    if (genderToggle) {
+        genderToggle.innerHTML = gender === 'female' 
+            ? '<i class="fas fa-venus"></i><span class="gender-label">Female</span>'
+            : '<i class="fas fa-mars"></i><span class="gender-label">Male</span>';
+    }
+    
+    // Update dropdown options
+    const options = document.querySelectorAll('.gender-option');
+    options.forEach(option => {
+        option.classList.remove('active');
+        if (option.textContent.toLowerCase().includes(gender)) {
+            option.classList.add('active');
+        }
+    });
+    
+    // Hide dropdown
+    if (dropdown) {
+        dropdown.classList.remove('show');
+    }
+    
+    // Update voice
+    updateCurrentVoice();
+    
+    // Test the new voice
+    if (isSpeechEnabled && currentVoice) {
+        const testMessage = gender === 'female' 
+            ? "Hello! I'm your female voice assistant. How can I help you today?"
+            : "Hello! I'm your male voice assistant. How can I help you today?";
+        speakText(testMessage);
+    }
+    
+    showToast(`Voice changed to ${gender === 'female' ? 'Female' : 'Male'}`, 'success');
+}
+
+// Close gender dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const genderSelector = document.querySelector('.voice-gender-selector');
+    const dropdown = document.getElementById('genderDropdown');
+    
+    if (genderSelector && dropdown && !genderSelector.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// Initialize Voice Gender UI
+function initVoiceGenderUI() {
+    const genderToggle = document.getElementById('genderToggle');
+    const genderLabel = document.getElementById('genderLabel');
+    
+    if (genderToggle) {
+        genderToggle.innerHTML = selectedVoiceGender === 'female' 
+            ? '<i class="fas fa-venus"></i><span class="gender-label">Female</span>'
+            : '<i class="fas fa-mars"></i><span class="gender-label">Male</span>';
+    }
+    
+    // Update dropdown active state
+    const options = document.querySelectorAll('.gender-option');
+    options.forEach(option => {
+        option.classList.remove('active');
+        if (option.textContent.toLowerCase().includes(selectedVoiceGender)) {
+            option.classList.add('active');
+        }
+    });
+}
+
+// ============================================
+// Voice Assistant Modal Functions
+// ============================================
+let vaRecognition = null;
+let vaIsListening = false;
+let vaIsSpeechEnabled = false;
+
+function openVoiceAssistant() {
+    const modal = document.getElementById('voiceAssistantModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        initVoiceAssistantModal();
+    }
+}
+
+function closeVoiceAssistant() {
+    const modal = document.getElementById('voiceAssistantModal');
+    if (modal) {
+        modal.style.display = 'none';
+        // Stop any ongoing speech
+        if (speechSynthesis) {
+            speechSynthesis.cancel();
+        }
+        // Stop listening if active
+        if (vaRecognition && vaIsListening) {
+            vaRecognition.stop();
+        }
+    }
+}
+
+function initVoiceAssistantModal() {
+    // Initialize voice recognition for modal
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        vaRecognition = new SpeechRecognition();
+        vaRecognition.continuous = false;
+        vaRecognition.interimResults = true;
+        vaRecognition.lang = 'en-US';
+        
+        vaRecognition.onstart = function() {
+            vaIsListening = true;
+            updateVAUI();
+        };
+        
+        vaRecognition.onend = function() {
+            vaIsListening = false;
+            updateVAUI();
+        };
+        
+        vaRecognition.onresult = function(event) {
+            let finalTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript;
+                }
+            }
+            
+            if (finalTranscript) {
+                processVoiceCommand(finalTranscript);
+            }
+        };
+        
+        vaRecognition.onerror = function(event) {
+            console.error('VA Speech error:', event.error);
+            vaIsListening = false;
+            updateVAUI();
+            
+            let errorMsg = 'Voice error. Please try again.';
+            if (event.error === 'no-speech') errorMsg = 'No speech detected.';
+            if (event.error === 'audio-capture') errorMsg = 'No microphone found.';
+            if (event.error === 'not-allowed') errorMsg = 'Microphone access denied.';
+            
+            document.getElementById('voiceStatusText').textContent = errorMsg;
+        };
+    }
+    
+    // Set initial gender button state
+    updateVAGenderButtons();
+}
+
+function toggleVoiceAssistantInput() {
+    if (!vaRecognition) {
+        showToast('Voice recognition not supported in your browser', 'error');
+        return;
+    }
+    
+    if (vaIsListening) {
+        vaRecognition.stop();
+    } else {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(() => {
+                vaRecognition.start();
+                document.getElementById('voiceStatusText').textContent = 'Listening... Speak now';
+            })
+            .catch(err => {
+                showToast('Microphone access denied', 'error');
+            });
+    }
+}
+
+function updateVAUI() {
+    const micBtn = document.getElementById('voiceMicBtn');
+    const voiceOrb = document.getElementById('voiceOrb');
+    const voiceWaves = document.querySelector('.voice-waves');
+    const statusText = document.getElementById('voiceStatusText');
+    
+    if (vaIsListening) {
+        micBtn.classList.add('listening');
+        voiceOrb.classList.add('listening');
+        voiceWaves.classList.add('active');
+        micBtn.innerHTML = '<i class="fas fa-stop"></i>';
+    } else {
+        micBtn.classList.remove('listening');
+        voiceOrb.classList.remove('listening');
+        voiceWaves.classList.remove('active');
+        micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        if (statusText.textContent === 'Listening... Speak now') {
+            statusText.textContent = 'Tap the microphone to start speaking';
+        }
+    }
+}
+
+function processVoiceCommand(command) {
+    // Show user command
+    const voiceResponse = document.getElementById('voiceResponse');
+    const userCommand = document.getElementById('userCommand');
+    const botResponse = document.getElementById('botResponse');
+    const statusText = document.getElementById('voiceStatusText');
+    const voiceOrb = document.getElementById('voiceOrb');
+    
+    voiceResponse.style.display = 'block';
+    userCommand.textContent = command;
+    botResponse.textContent = 'Thinking...';
+    statusText.textContent = 'Processing...';
+    
+    // Send to chatbot API
+    fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: command })
+    })
+    .then(response => response.json())
+    .then(data => {
+        botResponse.textContent = data.reply;
+        statusText.textContent = 'Response ready';
+        
+        // Speak response if enabled
+        if (vaIsSpeechEnabled) {
+            voiceOrb.classList.add('speaking');
+            speakVAResponse(data.reply);
+        }
+    })
+    .catch(error => {
+        botResponse.textContent = 'Sorry, I encountered an error.';
+        statusText.textContent = 'Error occurred';
+    });
+}
+
+function speakVAResponse(text) {
+    if (!speechSynthesis) return;
+    
+    speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    utterance.lang = 'en-US';
+    
+    // Use selected voice
+    if (currentVoice) {
+        utterance.voice = currentVoice;
+    }
+    
+    utterance.onend = function() {
+        document.getElementById('voiceOrb').classList.remove('speaking');
+    };
+    
+    speechSynthesis.speak(utterance);
+}
+
+function toggleVoiceAssistantOutput() {
+    vaIsSpeechEnabled = document.getElementById('voiceOutputToggle').checked;
+    showToast(vaIsSpeechEnabled ? 'Speech output enabled' : 'Speech output disabled', 'info');
+}
+
+function setVoiceAssistantGender(gender) {
+    selectedVoiceGender = gender;
+    localStorage.setItem('edubotVoiceGender', gender);
+    updateVAGenderButtons();
+    updateCurrentVoice();
+    
+    // Test voice
+    if (vaIsSpeechEnabled) {
+        const testMsg = gender === 'female' 
+            ? "Voice changed to female"
+            : "Voice changed to male";
+        speakVAResponse(testMsg);
+    }
+    
+    showToast(`Voice set to ${gender === 'female' ? 'Female' : 'Male'}`, 'success');
+}
+
+function updateVAGenderButtons() {
+    const femaleBtn = document.getElementById('vaGenderFemale');
+    const maleBtn = document.getElementById('vaGenderMale');
+    
+    if (femaleBtn && maleBtn) {
+        femaleBtn.classList.toggle('active', selectedVoiceGender === 'female');
+        maleBtn.classList.toggle('active', selectedVoiceGender === 'male');
+    }
+}
+
+function speakCommand(text) {
+    document.getElementById('userCommand').textContent = text;
+    processVoiceCommand(text);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const vaModal = document.getElementById('voiceAssistantModal');
+    const statModal = document.getElementById('statDetailsModal');
+    if (event.target === vaModal) {
+        closeVoiceAssistant();
+    }
+    if (event.target === statModal) {
+        closeStatDetails();
+    }
+};
+
+// ============================================
+// Stat Details Modal Functions
+// ============================================
+const statDetailsData = {
+    courses: {
+        title: 'Active Courses',
+        icon: 'fa-book-open',
+        color: 'blue',
+        description: 'Currently enrolled courses this semester',
+        items: [
+            { name: 'Data Structures & Algorithms', code: 'CS201', progress: 75, status: 'In Progress' },
+            { name: 'Web Development', code: 'CS301', progress: 60, status: 'In Progress' },
+            { name: 'Database Management', code: 'CS205', progress: 90, status: 'Nearly Complete' },
+            { name: 'Machine Learning', code: 'CS401', progress: 45, status: 'In Progress' },
+            { name: 'Computer Networks', code: 'CS302', progress: 30, status: 'Just Started' },
+            { name: 'Operating Systems', code: 'CS303', progress: 55, status: 'In Progress' }
+        ],
+        stats: [
+            { label: 'Total Credits', value: '24' },
+            { label: 'Completed', value: '2' },
+            { label: 'In Progress', value: '4' }
+        ]
+    },
+    completed: {
+        title: 'Completed Tasks',
+        icon: 'fa-check-circle',
+        color: 'green',
+        description: 'Assignments, quizzes, and projects completed',
+        items: [
+            { name: 'Data Structures Assignment 1', type: 'Assignment', date: '2026-03-05', score: '95%' },
+            { name: 'Web Development Quiz', type: 'Quiz', date: '2026-03-03', score: '88%' },
+            { name: 'Database Project Phase 1', type: 'Project', date: '2026-02-28', score: '92%' },
+            { name: 'ML Lab Exercise 3', type: 'Lab', date: '2026-02-25', score: '100%' },
+            { name: 'Network Protocols Quiz', type: 'Quiz', date: '2026-02-22', score: '85%' },
+            { name: 'OS Assignment 2', type: 'Assignment', date: '2026-02-20', score: '90%' }
+        ],
+        stats: [
+            { label: 'Total Tasks', value: '24' },
+            { label: 'Avg Score', value: '91%' },
+            { label: 'Streak', value: '7 days' }
+        ]
+    },
+    pending: {
+        title: 'Pending Tasks',
+        icon: 'fa-clock',
+        color: 'orange',
+        description: 'Upcoming deadlines and pending submissions',
+        items: [
+            { name: 'ML Project Report', type: 'Project', deadline: '2026-03-15', daysLeft: 5 },
+            { name: 'Web Dev Assignment 3', type: 'Assignment', deadline: '2026-03-18', daysLeft: 8 },
+            { name: 'Database Quiz 2', type: 'Quiz', deadline: '2026-03-20', daysLeft: 10 },
+            { name: 'DSA Lab Exercise 5', type: 'Lab', deadline: '2026-03-22', daysLeft: 12 },
+            { name: 'Network Config Project', type: 'Project', deadline: '2026-03-25', daysLeft: 15 },
+            { name: 'OS Mid-term Prep', type: 'Study', deadline: '2026-03-28', daysLeft: 18 }
+        ],
+        stats: [
+            { label: 'Total Pending', value: '8' },
+            { label: 'This Week', value: '3' },
+            { label: 'Urgent', value: '1' }
+        ]
+    },
+    score: {
+        title: 'Performance Score',
+        icon: 'fa-trophy',
+        color: 'purple',
+        description: 'Overall academic performance metrics',
+        items: [
+            { name: 'Data Structures', score: 92, grade: 'A', maxScore: 100 },
+            { name: 'Web Development', score: 88, grade: 'A-', maxScore: 100 },
+            { name: 'Database Systems', score: 95, grade: 'A', maxScore: 100 },
+            { name: 'Machine Learning', score: 78, grade: 'B+', maxScore: 100 },
+            { name: 'Computer Networks', score: 85, grade: 'B+', maxScore: 100 },
+            { name: 'Operating Systems', score: 82, grade: 'B', maxScore: 100 }
+        ],
+        stats: [
+            { label: 'CGPA', value: '8.5' },
+            { label: 'Rank', value: '12th' },
+            { label: 'Credits', value: '96' }
+        ]
+    }
+};
+
+function showStatDetails(type) {
+    const modal = document.getElementById('statDetailsModal');
+    const titleEl = document.getElementById('statModalTitle');
+    const contentEl = document.getElementById('statModalContent');
+    
+    const data = statDetailsData[type];
+    if (!data) return;
+    
+    // Set title
+    titleEl.innerHTML = `<i class="fas ${data.icon}"></i> ${data.title}`;
+    
+    // Build content
+    let contentHtml = `
+        <div class="stat-detail-header">
+            <div class="stat-detail-icon ${data.color}">
+                <i class="fas ${data.icon}"></i>
+            </div>
+            <div class="stat-detail-title">
+                <h2>${data.title}</h2>
+                <p>${data.description}</p>
+            </div>
+        </div>
+        <div class="stat-detail-list">
+    `;
+    
+    // Add items based on type
+    if (type === 'courses') {
+        data.items.forEach(item => {
+            contentHtml += `
+                <div class="stat-detail-item">
+                    <div class="stat-detail-item-left">
+                        <i class="fas fa-book"></i>
+                        <div class="stat-detail-item-info">
+                            <h4>${item.name}</h4>
+                            <p>${item.code} • ${item.status}</p>
+                        </div>
+                    </div>
+                    <div class="stat-detail-item-right">
+                        <div class="value">${item.progress}%</div>
+                        <div class="label">Complete</div>
+                    </div>
+                </div>
+            `;
+        });
+    } else if (type === 'completed') {
+        data.items.forEach(item => {
+            contentHtml += `
+                <div class="stat-detail-item">
+                    <div class="stat-detail-item-left">
+                        <i class="fas fa-check"></i>
+                        <div class="stat-detail-item-info">
+                            <h4>${item.name}</h4>
+                            <p>${item.type} • ${item.date}</p>
+                        </div>
+                    </div>
+                    <div class="stat-detail-item-right">
+                        <div class="value" style="color: #10b981;">${item.score}</div>
+                        <div class="label">Score</div>
+                    </div>
+                </div>
+            `;
+        });
+    } else if (type === 'pending') {
+        data.items.forEach(item => {
+            const urgencyColor = item.daysLeft <= 5 ? '#ef4444' : (item.daysLeft <= 10 ? '#f97316' : '#64748b');
+            contentHtml += `
+                <div class="stat-detail-item">
+                    <div class="stat-detail-item-left">
+                        <i class="fas fa-clock"></i>
+                        <div class="stat-detail-item-info">
+                            <h4>${item.name}</h4>
+                            <p>${item.type} • Due: ${item.deadline}</p>
+                        </div>
+                    </div>
+                    <div class="stat-detail-item-right">
+                        <div class="value" style="color: ${urgencyColor};">${item.daysLeft}</div>
+                        <div class="label">Days Left</div>
+                    </div>
+                </div>
+            `;
+        });
+    } else if (type === 'score') {
+        data.items.forEach(item => {
+            contentHtml += `
+                <div class="stat-detail-item">
+                    <div class="stat-detail-item-left">
+                        <i class="fas fa-star"></i>
+                        <div class="stat-detail-item-info">
+                            <h4>${item.name}</h4>
+                            <p>Grade: ${item.grade}</p>
+                        </div>
+                    </div>
+                    <div class="stat-detail-item-right">
+                        <div class="value">${item.score}%</div>
+                        <div class="label">Score</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    contentHtml += '</div>';
+    
+    // Add stats summary
+    contentHtml += '<div class="stat-detail-stats">';
+    data.stats.forEach(stat => {
+        contentHtml += `
+            <div class="stat-detail-stat">
+                <h5>${stat.value}</h5>
+                <p>${stat.label}</p>
+            </div>
+        `;
+    });
+    contentHtml += '</div>';
+    
+    contentEl.innerHTML = contentHtml;
+    modal.style.display = 'flex';
+}
+
+function closeStatDetails() {
+    const modal = document.getElementById('statDetailsModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // ============================================

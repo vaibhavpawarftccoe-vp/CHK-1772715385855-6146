@@ -74,6 +74,11 @@
                 <i class="fas fa-comments"></i>
                 <span>Chat with EduBot</span>
             </a>
+            <a href="#voice-assistant" class="nav-item voice-nav-item" onclick="openVoiceAssistant()">
+                <i class="fas fa-microphone-alt"></i>
+                <span>Voice Assistant</span>
+                <span class="nav-badge voice-badge">AI</span>
+            </a>
             <a href="#subscription" class="nav-item" onclick="showSection('subscription')">
                 <i class="fas fa-crown"></i>
                 <span>Subscription</span>
@@ -99,6 +104,10 @@
         <header class="dashboard-header">
             <h2 id="pageTitle">Dashboard Overview</h2>
             <div class="header-actions">
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span>Live</span>
+                </div>
                 <div class="search-box">
                     <i class="fas fa-search"></i>
                     <input type="text" placeholder="Search...">
@@ -124,40 +133,68 @@
         <!-- Overview Section -->
         <section id="overview" class="content-section active">
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card clickable live-card" onclick="showStatDetails('courses')" data-metric="courses">
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        <span class="live-text">LIVE</span>
+                    </div>
                     <div class="stat-icon blue">
                         <i class="fas fa-book-open"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>6</h3>
+                        <h3 id="statCourses">--</h3>
                         <p>Active Courses</p>
                     </div>
+                    <div class="stat-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card clickable live-card" onclick="showStatDetails('completed')" data-metric="completed">
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        <span class="live-text">LIVE</span>
+                    </div>
                     <div class="stat-icon green">
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>24</h3>
+                        <h3 id="statCompleted">--</h3>
                         <p>Completed</p>
                     </div>
+                    <div class="stat-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card clickable live-card" onclick="showStatDetails('pending')" data-metric="pending">
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        <span class="live-text">LIVE</span>
+                    </div>
                     <div class="stat-icon orange">
                         <i class="fas fa-clock"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>8</h3>
+                        <h3 id="statPending">--</h3>
                         <p>Pending</p>
                     </div>
+                    <div class="stat-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card clickable live-card" onclick="showStatDetails('score')" data-metric="score">
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        <span class="live-text">LIVE</span>
+                    </div>
                     <div class="stat-icon purple">
                         <i class="fas fa-trophy"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>85%</h3>
+                        <h3 id="statScore">--%</h3>
                         <p>Average Score</p>
+                    </div>
+                    <div class="stat-arrow">
+                        <i class="fas fa-chevron-right"></i>
                     </div>
                 </div>
             </div>
@@ -1066,6 +1103,22 @@
                         <button id="speakToggle" class="voice-btn" onclick="toggleSpeechOutput()" title="Enable Speech Output">
                             <i class="fas fa-volume-mute"></i>
                         </button>
+                        <div class="voice-gender-selector">
+                            <button id="genderToggle" class="voice-btn gender-btn" onclick="toggleVoiceGender()" title="Change Voice Gender">
+                                <i class="fas fa-venus-mars"></i>
+                                <span id="genderLabel" class="gender-label">Female</span>
+                            </button>
+                            <div id="genderDropdown" class="gender-dropdown">
+                                <div class="gender-option active" onclick="selectVoiceGender('female')">
+                                    <i class="fas fa-venus"></i>
+                                    <span>Female Voice</span>
+                                </div>
+                                <div class="gender-option" onclick="selectVoiceGender('male')">
+                                    <i class="fas fa-mars"></i>
+                                    <span>Male Voice</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="chat-widget">
@@ -1075,10 +1128,25 @@
                                 <i class="fas fa-robot"></i>
                             </div>
                             <div class="message-content">
-                                <p>Hello! I'm EduBot, your AI assistant. I can now understand your voice! Click the microphone button to speak with me.</p>
+                                <p>Hello! I'm EduBot, your AI learning assistant with voice capabilities! 🎙️</p>
+                                <p>I can help you with programming, data structures, algorithms, and any academic questions. Choose your preferred voice and start speaking!</p>
+                                <div class="voice-features">
+                                    <div class="voice-feature">
+                                        <i class="fas fa-microphone-alt"></i>
+                                        <span>Speech-to-Text</span>
+                                    </div>
+                                    <div class="voice-feature">
+                                        <i class="fas fa-volume-up"></i>
+                                        <span>Text-to-Speech</span>
+                                    </div>
+                                    <div class="voice-feature">
+                                        <i class="fas fa-user-friends"></i>
+                                        <span>Male/Female Voice</span>
+                                    </div>
+                                </div>
                                 <div class="voice-hint">
-                                    <i class="fas fa-microphone"></i>
-                                    <span>Try saying: "What courses do you offer?" or "Tell me about attendance"</span>
+                                    <i class="fas fa-lightbulb"></i>
+                                    <span>Try asking: "Explain binary search" or "What is Python used for?"</span>
                                 </div>
                             </div>
                         </div>
@@ -1276,6 +1344,95 @@
             </div>
         </section>
     </main>
+
+    <!-- Stat Details Modal -->
+    <div id="statDetailsModal" class="modal stat-modal">
+        <div class="modal-content stat-modal-content">
+            <div class="modal-header">
+                <h3 id="statModalTitle"><i class="fas fa-chart-bar"></i> Details</h3>
+                <button class="modal-close" onclick="closeStatDetails()">&times;</button>
+            </div>
+            <div class="modal-body stat-modal-body">
+                <div id="statModalContent" class="stat-details-content">
+                    <!-- Content will be loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Assistant Modal -->
+    <div id="voiceAssistantModal" class="modal voice-modal">
+        <div class="modal-content voice-modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-microphone-alt"></i> Voice Assistant</h3>
+                <button class="modal-close" onclick="closeVoiceAssistant()">&times;</button>
+            </div>
+            <div class="modal-body voice-modal-body">
+                <div class="voice-assistant-container">
+                    <!-- Voice Visualizer -->
+                    <div class="voice-visualizer">
+                        <div class="voice-orb" id="voiceOrb">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="voice-waves">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Voice Status -->
+                    <div class="voice-status-text" id="voiceStatusText">
+                        Tap the microphone to start speaking
+                    </div>
+                    
+                    <!-- Voice Controls -->
+                    <div class="voice-controls-main">
+                        <button id="voiceMicBtn" class="voice-mic-main" onclick="toggleVoiceAssistantInput()">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Voice Settings -->
+                    <div class="voice-settings">
+                        <div class="voice-setting-item">
+                            <span><i class="fas fa-volume-up"></i> Speech Output</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="voiceOutputToggle" onchange="toggleVoiceAssistantOutput()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="voice-setting-item">
+                            <span><i class="fas fa-venus-mars"></i> Voice Gender</span>
+                            <div class="voice-gender-toggle">
+                                <button class="gender-btn-sidewidget" id="vaGenderFemale" onclick="setVoiceAssistantGender('female')">
+                                    <i class="fas fa-venus"></i> Female
+                                </button>
+                                <button class="gender-btn-sidewidget" id="vaGenderMale" onclick="setVoiceAssistantGender('male')">
+                                    <i class="fas fa-mars"></i> Male
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Commands -->
+                    <div class="voice-commands">
+                        <h4>Try saying:</h4>
+                        <div class="command-chips">
+                            <span class="command-chip" onclick="speakCommand('Explain binary search')">"Explain binary search"</span>
+                            <span class="command-chip" onclick="speakCommand('What is Python')">"What is Python"</span>
+                            <span class="command-chip" onclick="speakCommand('Help with arrays')">"Help with arrays"</span>
+                            <span class="command-chip" onclick="speakCommand('Data structures basics')">"Data structures basics"</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Voice Response Display -->
+                    <div class="voice-response" id="voiceResponse" style="display: none;">
+                        <div class="response-bubble user-bubble" id="userCommand"></div>
+                        <div class="response-bubble bot-bubble" id="botResponse"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Toast Notification -->
     <div id="toast" class="toast">

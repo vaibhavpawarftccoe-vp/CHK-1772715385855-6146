@@ -54,9 +54,9 @@
                     <a href="#pricing" class="btn-primary">
                         <i class="fas fa-rocket"></i> Start Free Trial
                     </a>
-                    <a href="#features" class="btn-secondary">
-                        <i class="fas fa-play-circle"></i> Watch Demo
-                    </a>
+                    <button class="btn-secondary btn-demo" onclick="openDemoVideo()">
+                        <i class="fas fa-play-circle"></i> View Demo
+                    </button>
                 </div>
                 <div class="trial-badge">
                     <i class="fas fa-gift"></i>
@@ -371,6 +371,116 @@
             </div>
         </div>
     </footer>
+
+    <!-- Demo Video Modal -->
+    <div id="demoVideoModal" class="demo-modal">
+        <div class="demo-modal-overlay" onclick="closeDemoVideo()"></div>
+        <div class="demo-modal-content">
+            <button class="demo-close-btn" onclick="closeDemoVideo()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="demo-video-container">
+                <!-- Animated AI Demo Video Placeholder -->
+                <div class="demo-video-player" id="demoVideoPlayer">
+                    <div class="video-animation">
+                        <!-- AI Brain Animation -->
+                        <div class="ai-brain">
+                            <div class="brain-core">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="brain-particles">
+                                <span></span><span></span><span></span>
+                                <span></span><span></span><span></span>
+                                <span></span><span></span><span></span>
+                            </div>
+                            <div class="brain-rings">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Feature Showcase -->
+                        <div class="feature-showcase">
+                            <div class="showcase-item active" data-step="1">
+                                <i class="fas fa-robot"></i>
+                                <h3>AI-Powered Learning</h3>
+                                <p>Get instant answers to all your academic questions</p>
+                            </div>
+                            <div class="showcase-item" data-step="2">
+                                <i class="fas fa-chart-line"></i>
+                                <h3>Track Progress</h3>
+                                <p>Monitor your performance with real-time analytics</p>
+                            </div>
+                            <div class="showcase-item" data-step="3">
+                                <i class="fas fa-trophy"></i>
+                                <h3>Gamified Learning</h3>
+                                <p>Earn points, unlock levels, and win certificates</p>
+                            </div>
+                            <div class="showcase-item" data-step="4">
+                                <i class="fas fa-microphone-alt"></i>
+                                <h3>Voice Assistant</h3>
+                                <p>Speak naturally with our AI voice assistant</p>
+                            </div>
+                            <div class="showcase-item" data-step="5">
+                                <i class="fas fa-calendar-check"></i>
+                                <h3>Smart Scheduling</h3>
+                                <p>Never miss deadlines with automated reminders</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="demo-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="demoProgressFill"></div>
+                            </div>
+                            <div class="progress-steps">
+                                <span class="active">1</span>
+                                <span>2</span>
+                                <span>3</span>
+                                <span>4</span>
+                                <span>5</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Play/Pause Controls -->
+                        <div class="demo-controls">
+                            <button class="demo-btn" id="demoPlayBtn" onclick="toggleDemoPlayback()">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            <span class="demo-time" id="demoTime">00:00 / 00:30</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Video Info -->
+                <div class="demo-video-info">
+                    <h2>See EduBot in Action</h2>
+                    <p>Experience the future of education with our AI-powered platform. Watch how EduBot transforms learning with personalized assistance, real-time analytics, and gamified achievements.</p>
+                    <div class="demo-features-list">
+                        <div class="demo-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>24/7 AI Assistance</span>
+                        </div>
+                        <div class="demo-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Personalized Learning</span>
+                        </div>
+                        <div class="demo-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Progress Tracking</span>
+                        </div>
+                        <div class="demo-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Voice Interaction</span>
+                        </div>
+                    </div>
+                    <a href="/login" class="btn-primary btn-get-started">
+                        <i class="fas fa-rocket"></i> Get Started Free
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="/static/script.js"></script>
 </body>

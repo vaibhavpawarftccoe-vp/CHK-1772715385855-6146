@@ -74,6 +74,21 @@
         "action": "Quiz Completed",
         "timestamp": "2026-03-10T12:29:52.401789",
         "details": "Scored 2/5 in Weekly Quiz"
+      },
+      {
+        "action": "Quiz Completed",
+        "timestamp": "2026-03-10T19:09:14.054927",
+        "details": "Scored 0/5 in Weekly Quiz"
+      },
+      {
+        "action": "Quiz Completed",
+        "timestamp": "2026-03-10T19:09:40.787531",
+        "details": "Scored 3/5 in Weekly Quiz"
+      },
+      {
+        "action": "Quiz Completed",
+        "timestamp": "2026-03-10T21:02:38.095350",
+        "details": "Scored 3/5 in Weekly Quiz"
       }
     ],
     "profile": {
@@ -93,6 +108,27 @@
         "total": 5,
         "date": "2026-03-10T06:59:52.389Z",
         "percentage": 40.0
+      },
+      {
+        "subject": "Weekly Quiz",
+        "score": 0,
+        "total": 5,
+        "date": "2026-03-10T13:39:14.047Z",
+        "percentage": 0.0
+      },
+      {
+        "subject": "Weekly Quiz",
+        "score": 3,
+        "total": 5,
+        "date": "2026-03-10T13:39:40.781Z",
+        "percentage": 60.0
+      },
+      {
+        "subject": "Weekly Quiz",
+        "score": 3,
+        "total": 5,
+        "date": "2026-03-10T15:32:37.004Z",
+        "percentage": 60.0
       }
     ],
     "dailyAttendance": {

@@ -341,3 +341,98 @@ const heroStats = document.querySelector('.hero-stats');
 if (heroStats) {
     statsObserver.observe(heroStats);
 }
+
+// ============================================
+// Demo Video Modal Functions
+// ============================================
+let demoInterval = null;
+let demoCurrentStep = 1;
+let demoTotalSteps = 5;
+let demoIsPlaying = true;
+let demoProgress = 0;
+
+function openDemoVideo() {
+    const modal = document.getElementById('demoVideoModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        startDemoAnimation();
+    }
+}
+
+function closeDemoVideo() {
+    const modal = document.getElementById('demoVideoModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        stopDemoAnimation();
+    }
+}
+
+function startDemoAnimation() {
+    demoCurrentStep = 1;
+    demoProgress = 0;
+    demoIsPlaying = true;
+    
+    updateDemoStep();
+    
+    // Progress animation (30 seconds total, 6 seconds per step)
+    demoInterval = setInterval(() => {
+        if (!demoIsPlaying) return;
+        
+        demoProgress += 0.5; // Update every 100ms
+        
+        const totalProgress = ((demoCurrentStep - 1) * 20) + (demoProgress / 6);
+        document.getElementById('demoProgressFill').style.width = totalProgress + '%';
+        
+        // Update time display
+        const currentSeconds = Math.floor((demoCurrentStep - 1) * 6 + demoProgress);
+        document.getElementById('demoTime').textContent = 
+            `00:${currentSeconds.toString().padStart(2, '0')} / 00:30`;
+        
+        if (demoProgress >= 6) {
+            demoProgress = 0;
+            demoCurrentStep++;
+            
+            if (demoCurrentStep > demoTotalSteps) {
+                demoCurrentStep = 1; // Loop back to start
+            }
+            
+            updateDemoStep();
+        }
+    }, 100);
+}
+
+function stopDemoAnimation() {
+    if (demoInterval) {
+        clearInterval(demoInterval);
+        demoInterval = null;
+    }
+}
+
+function updateDemoStep() {
+    // Update showcase items
+    document.querySelectorAll('.showcase-item').forEach((item, index) => {
+        item.classList.toggle('active', index + 1 === demoCurrentStep);
+    });
+    
+    // Update progress steps
+    document.querySelectorAll('.progress-steps span').forEach((step, index) => {
+        step.classList.toggle('active', index + 1 === demoCurrentStep);
+    });
+}
+
+function toggleDemoPlayback() {
+    demoIsPlaying = !demoIsPlaying;
+    const btn = document.getElementById('demoPlayBtn');
+    if (btn) {
+        btn.innerHTML = demoIsPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+    }
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDemoVideo();
+    }
+});

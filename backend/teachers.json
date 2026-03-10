@@ -1,0 +1,44 @@
+{
+  "teacher1@edubot.edu": {
+    "name": "Dr. Rajesh Kumar",
+    "email": "teacher1@edubot.edu",
+    "password": "teacher123",
+    "teacher_id": "TCH20260001",
+    "department": "Computer Science & Engineering",
+    "designation": "Professor",
+    "subjects": [
+      "Data Structures",
+      "Algorithms",
+      "Database Systems"
+    ],
+    "joined_date": "2020-06-15"
+  },
+  "teacher2@edubot.edu": {
+    "name": "Prof. Priya Sharma",
+    "email": "teacher2@edubot.edu",
+    "password": "teacher123",
+    "teacher_id": "TCH20260002",
+    "department": "Computer Science & Engineering",
+    "designation": "Associate Professor",
+    "subjects": [
+      "Web Development",
+      "Machine Learning",
+      "Cloud Computing"
+    ],
+    "joined_date": "2019-08-20"
+  },
+  "teacher3@edubot.edu": {
+    "name": "Dr. Amit Patel",
+    "email": "teacher3@edubot.edu",
+    "password": "teacher123",
+    "teacher_id": "TCH20260003",
+    "department": "Computer Science & Engineering",
+    "designation": "Assistant Professor",
+    "subjects": [
+      "Operating Systems",
+      "Computer Networks",
+      "Cyber Security"
+    ],
+    "joined_date": "2021-01-10"
+  }
+}
