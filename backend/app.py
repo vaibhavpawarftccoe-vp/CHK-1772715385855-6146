@@ -513,6 +513,61 @@ def logout():
     session.clear()
     return jsonify({"success": True})
 
+# API: Parent Registration
+@app.route("/api/parent/register", methods=["POST"])
+def parent_register():
+    data = request.json
+    parents = load_parents()
+    students = load_students()
+    
+    # Check if email already exists
+    if data["email"] in parents:
+        return jsonify({
+            "success": False,
+            "message": "Email already registered. Please login instead."
+        })
+    
+    # Check if student ID exists
+    student_id = data["studentId"]
+    if student_id not in students:
+        return jsonify({
+            "success": False,
+            "message": "Student ID not found. Please check the ID with your child."
+        })
+    
+    # Generate unique parent ID
+    parent_count = len(parents)
+    parent_id = f"PRT{20260000 + parent_count + 1}"
+    
+    # Get student info
+    student = students[student_id]
+    
+    # Create new parent account
+    new_parent = {
+        "name": f"{data['firstName']} {data['lastName']}",
+        "email": data["email"],
+        "password": data["password"],
+        "parent_id": parent_id,
+        "child_name": student.get("name", "Unknown"),
+        "child_id": student_id,
+        "phone": data["phone"],
+        "relationship": "Parent",
+        "first_name": data["firstName"],
+        "last_name": data["lastName"],
+        "registered_at": datetime.now().isoformat()
+    }
+    
+    # Save parent
+    parents[data["email"]] = new_parent
+    save_parents(parents)
+    
+    return jsonify({
+        "success": True,
+        "message": "Parent registration successful!",
+        "parentId": parent_id,
+        "childName": student.get("name", "Unknown")
+    })
+
 # API: Parent Login
 @app.route("/api/parent/login", methods=["POST"])
 def parent_login():
@@ -566,6 +621,69 @@ def get_parent_info():
         })
     
     return jsonify({"success": False, "message": "Parent not found"})
+
+# API: Update Parent Profile
+@app.route("/api/parent/update-profile", methods=["POST"])
+def update_parent_profile():
+    """Update parent profile information and photo"""
+    if "parent_email" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    parents = load_parents()
+    parent_email = session["parent_email"]
+    
+    if parent_email not in parents:
+        return jsonify({"success": False, "message": "Parent not found"})
+    
+    parent = parents[parent_email]
+    
+    # Update text fields
+    if "firstName" in request.form:
+        parent["first_name"] = request.form["firstName"]
+    if "lastName" in request.form:
+        parent["last_name"] = request.form["lastName"]
+    if "firstName" in request.form and "lastName" in request.form:
+        parent["name"] = f"{request.form['firstName']} {request.form['lastName']}"
+    if "phone" in request.form:
+        parent["phone"] = request.form["phone"]
+    
+    # Handle profile photo upload
+    if "profilePhoto" in request.files:
+        photo = request.files["profilePhoto"]
+        if photo.filename:
+            # Validate file type
+            allowed_extensions = {"jpg", "jpeg", "png", "gif"}
+            file_ext = photo.filename.rsplit(".", 1)[1].lower() if "." in photo.filename else ""
+            
+            if file_ext not in allowed_extensions:
+                return jsonify({"success": False, "message": "Invalid file type. Use JPG, PNG, or GIF."})
+            
+            # Create uploads directory for profile photos
+            profile_uploads = os.path.join(UPLOAD_FOLDER, "profiles")
+            os.makedirs(profile_uploads, exist_ok=True)
+            
+            # Save file with parent ID as filename
+            parent_id = parent.get("parent_id", "parent").replace(" ", "_")
+            filename = f"{parent_id}.{file_ext}"
+            filepath = os.path.join(profile_uploads, filename)
+            photo.save(filepath)
+            
+            # Store relative path in parent record
+            parent["profilePhoto"] = f"/uploads/profiles/{filename}"
+    
+    # Save updated parent data
+    save_parents(parents)
+    
+    return jsonify({
+        "success": True,
+        "message": "Profile updated successfully",
+        "parent": {
+            "name": parent.get("name", ""),
+            "email": parent.get("email", ""),
+            "phone": parent.get("phone", ""),
+            "profilePhoto": parent.get("profilePhoto", None)
+        }
+    })
 
 # API: Get Child's Live Progress (Parent only)
 @app.route("/api/parent/child-progress", methods=["GET"])
@@ -931,7 +1049,110 @@ def check_subscription_status():
     
     return jsonify({"success": False, "message": "Student not found"})
 
-# API: Subscribe to Plan
+# API: Process Payment and Subscribe
+@app.route("/api/student/subscription/payment", methods=["POST"])
+def process_subscription_payment():
+    """Process payment with details and create subscription"""
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    data = request.json
+    plan_type = data.get("plan")
+    payment_method = "UPI" if data.get("upiId") else "Card"
+    
+    if plan_type not in ["monthly", "quarterly", "yearly"]:
+        return jsonify({"success": False, "message": "Invalid plan type"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id not in students:
+        return jsonify({"success": False, "message": "Student not found"})
+    
+    student = students[student_id]
+    
+    # Validate payment details (in real app, integrate with payment gateway)
+    # For demo, we simulate successful payment
+    
+    # Calculate subscription dates
+    now = datetime.now()
+    if plan_type == "monthly":
+        end_date = now + timedelta(days=30)
+        plan_name = "Monthly"
+        amount = "₹299"
+    elif plan_type == "quarterly":
+        end_date = now + timedelta(days=90)
+        plan_name = "Quarterly"
+        amount = "₹799"
+    else:  # yearly
+        end_date = now + timedelta(days=365)
+        plan_name = "Yearly"
+        amount = "₹2499"
+    
+    # Create payment record
+    payment_record = {
+        "date": now.isoformat(),
+        "plan": plan_type,
+        "planName": plan_name,
+        "amount": amount,
+        "paymentMethod": payment_method,
+        "status": "success",
+        "transactionId": f"TXN{now.strftime('%Y%m%d%H%M%S')}{random.randint(1000, 9999)}",
+        "cardLastFour": data.get("cardNumber", "")[-4:] if data.get("cardNumber") else None,
+        "upiId": data.get("upiId") if payment_method == "UPI" else None,
+        "billingAddress": data.get("billingAddress", "")
+    }
+    
+    # Update subscription
+    if "subscription" not in student:
+        student["subscription"] = {}
+    
+    student["subscription"]["status"] = "active"
+    student["subscription"]["plan"] = plan_type
+    student["subscription"]["subscriptionStartDate"] = now.isoformat()
+    student["subscription"]["subscriptionEndDate"] = end_date.isoformat()
+    student["subscription"]["daysLeft"] = (end_date - now).days
+    
+    # Add to payment history
+    if "paymentHistory" not in student["subscription"]:
+        student["subscription"]["paymentHistory"] = []
+    
+    student["subscription"]["paymentHistory"].append(payment_record)
+    
+    # Save payment details for future reference
+    if "savedPaymentMethods" not in student:
+        student["savedPaymentMethods"] = []
+    
+    # Only save last 4 digits of card, not full details
+    if payment_method == "Card" and data.get("cardNumber"):
+        student["savedPaymentMethods"].append({
+            "type": "card",
+            "lastFour": data.get("cardNumber", "")[-4:],
+            "expiryDate": data.get("expiryDate", ""),
+            "cardHolderName": data.get("cardHolderName", ""),
+            "addedOn": now.isoformat()
+        })
+    elif payment_method == "UPI" and data.get("upiId"):
+        student["savedPaymentMethods"].append({
+            "type": "upi",
+            "upiId": data.get("upiId", ""),
+            "addedOn": now.isoformat()
+        })
+    
+    # Keep only last 3 saved methods
+    student["savedPaymentMethods"] = student["savedPaymentMethods"][-3:]
+    
+    save_students(students)
+    
+    return jsonify({
+        "success": True,
+        "message": f"Payment successful! Subscribed to {plan_name} plan.",
+        "payment": payment_record,
+        "subscription": student["subscription"]
+    })
+
+
+# API: Subscribe to Plan (Legacy - kept for compatibility)
 @app.route("/api/student/subscription/subscribe", methods=["POST"])
 def subscribe_to_plan():
     if "student_id" not in session:

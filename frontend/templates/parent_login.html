@@ -130,6 +130,9 @@
                         Login as Parent
                     </button>
                 </form>
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="#" onclick="showParentRegister()">Register here</a></p>
+                </div>
                 
                 <!-- Demo Credentials -->
                 <div class="demo-credentials">
@@ -138,6 +141,96 @@
                     <p><strong>Parent 2:</strong> <code>parent2@edubot.edu</code> / <code>parent123</code></p>
                     <p><strong>Parent 3:</strong> <code>parent3@edubot.edu</code> / <code>parent123</code></p>
                 </div>
+            </div>
+
+            <!-- Parent Register Form -->
+            <div id="registerForm" class="auth-form">
+                <h3>Parent Registration</h3>
+                <form onsubmit="handleParentRegister(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="parentFirstName">First Name</label>
+                            <div class="input-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="parentFirstName" name="firstName" placeholder="First name" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="parentLastName">Last Name</label>
+                            <div class="input-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="parentLastName" name="lastName" placeholder="Last name" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="parentEmail">Email Address</label>
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="parentEmail" name="email" placeholder="Enter your email" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="parentPhone">Phone Number</label>
+                        <div class="input-group">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="parentPhone" name="phone" placeholder="Enter phone number" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentId"><i class="fas fa-id-card" style="color: #667eea;"></i> Child's Student ID</label>
+                        <div class="input-group">
+                            <i class="fas fa-graduation-cap"></i>
+                            <input type="text" id="studentId" name="studentId" placeholder="Enter your child's Student ID (e.g., EDU202600001)" required>
+                        </div>
+                        <small style="color: #64748b; font-size: 0.8rem; margin-top: 0.25rem; display: block;">
+                            <i class="fas fa-info-circle"></i> You can find this ID in your child's dashboard
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label for="parentPassword">Password</label>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="parentPassword" name="password" placeholder="Create password" required minlength="6">
+                            <button type="button" class="toggle-password" onclick="togglePassword('parentPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="parentConfirmPassword">Confirm Password</label>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="parentConfirmPassword" name="confirmPassword" placeholder="Confirm password" required>
+                        </div>
+                    </div>
+                    <div class="form-group terms">
+                        <label class="checkbox-label">
+                            <input type="checkbox" required>
+                            <span>I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a></span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-auth" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-user-plus"></i>
+                        Register as Parent
+                    </button>
+                </form>
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="#" onclick="showParentLogin()">Login here</a></p>
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <div id="successMessage" class="auth-form success-message">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Registration Successful!</h3>
+                <p class="success-note">Your parent account has been created. You can now monitor your child's academic progress.</p>
+                <a href="#" onclick="showParentLogin()" class="btn-auth" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login Now
+                </a>
             </div>
         </div>
     </div>
@@ -178,6 +271,27 @@
             }, 3000);
         }
 
+        // Show parent register form
+        function showParentRegister() {
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.add('active');
+            document.getElementById('successMessage').classList.remove('active');
+        }
+
+        // Show parent login form
+        function showParentLogin() {
+            document.getElementById('registerForm').classList.remove('active');
+            document.getElementById('successMessage').classList.remove('active');
+            document.getElementById('loginForm').classList.add('active');
+        }
+
+        // Show success message
+        function showSuccessMessage() {
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.remove('active');
+            document.getElementById('successMessage').classList.add('active');
+        }
+
         // Handle parent login
         async function handleParentLogin(event) {
             event.preventDefault();
@@ -203,6 +317,59 @@
                     }, 1000);
                 } else {
                     showToast(data.message || 'Login failed', 'error');
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Handle parent registration
+        async function handleParentRegister(event) {
+            event.preventDefault();
+            
+            const firstName = document.getElementById('parentFirstName').value;
+            const lastName = document.getElementById('parentLastName').value;
+            const email = document.getElementById('parentEmail').value;
+            const phone = document.getElementById('parentPhone').value;
+            const studentId = document.getElementById('studentId').value;
+            const password = document.getElementById('parentPassword').value;
+            const confirmPassword = document.getElementById('parentConfirmPassword').value;
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match!', 'error');
+                return;
+            }
+            
+            // Validate student ID format
+            if (!studentId.match(/^EDU\d{9}$/)) {
+                showToast('Invalid Student ID format. Should be like EDU202600001', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/parent/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        firstName,
+                        lastName,
+                        email,
+                        phone,
+                        studentId,
+                        password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Registration successful!', 'success');
+                    showSuccessMessage();
+                } else {
+                    showToast(data.message || 'Registration failed', 'error');
                 }
             } catch (error) {
                 showToast('Network error. Please try again.', 'error');

@@ -1032,6 +1032,10 @@ Can you share the specific error message you're getting?"""
         # Store in conversation history
         self.conversation_history.append({"user": message, "timestamp": datetime.now()})
         
+        # Bot name/identity questions
+        if any(phrase in message_lower for phrase in ['what is your name', 'your name', 'what are you called', 'your name is']):
+            return "I'm **EduBot** - your AI-powered learning assistant! 🤖\n\nI'm here to help you with:\n• Programming (Python, JavaScript, Java, C++)\n• Data Structures & Algorithms\n• Web Development\n• Computer Science concepts\n• Academic guidance\n\nWhat would you like to learn today?"
+        
         # Greetings
         if any(word in message_lower for word in ['hello', 'hi', 'hey', 'greetings', 'good morning', 'good afternoon', 'good evening', 'namaste', 'hola']):
             return random.choice(RESPONSE_PATTERNS["greeting"])
@@ -2343,24 +2347,42 @@ Want to learn about Flexbox layout or CSS animations?"""
 Would you like to know about CS courses, careers, or specific topics?"""
 
         # Try to provide a helpful general response instead of confusion
-        return f"""I'd be happy to help you learn about "{message}"!
+        # Check if it's a simple conversational question
+        if len(message.split()) <= 3:
+            return """I'm **EduBot**, your AI learning assistant! 🤖
 
-Let me provide a comprehensive explanation. Could you tell me which aspect interests you most?
+I can help you with:
+• **Programming**: Python, JavaScript, Java, C++
+• **Computer Science**: Data Structures, Algorithms, Databases
+• **Web Development**: HTML, CSS, React, Node.js
+• **AI/ML**: Machine Learning, Data Science
+• **Career**: Interview prep, project ideas, learning paths
 
-**I can explain:**
-• Basic concepts and definitions
-• How it works (step-by-step)
-• Real-world examples and applications
-• Code examples and implementations
-• Comparisons with similar topics
+**Try asking:**
+• "Explain binary search"
+• "What is Python used for?"
+• "How do I start with web development?"
+• "Show me a sorting algorithm"
 
-**Or ask me specifically:**
-• "What is {message} in simple terms?"
-• "How does {message} work?"
-• "Show me an example of {message}"
-• "Why is {message} important?"
+What would you like to learn? 🚀"""
+        
+        # For longer unrecognized queries, provide helpful guidance
+        return f"""I want to help, but I'm not sure I understood your question about "{message}".
 
-I'm here to make complex topics easy to understand! What would you like to know? 🎓"""
+**I specialize in:**
+• Programming languages and coding
+• Data structures and algorithms
+• Web development (frontend & backend)
+• Computer science concepts
+• Academic guidance and projects
+
+**Could you rephrase or ask about:**
+• A specific programming topic?
+• A computer science concept?
+• Help with coding or debugging?
+• Learning resources or career advice?
+
+What topic would you like to explore? 💡"""
 
 
 # Global bot instance

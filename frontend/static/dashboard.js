@@ -12,6 +12,12 @@ let studentData = null;
 document.addEventListener('DOMContentLoaded', function() {
     loadStudentData();
     initChat();
+    
+    // Initialize real-time progress tracking
+    setTimeout(() => {
+        startRealTimeProgress();
+        initializeTabProgressTracking();
+    }, 500);
 });
 
 // ============================================
@@ -263,7 +269,7 @@ function updateDashboardUI() {
     
     console.log('Updating dashboard with data:', studentData);
     
-    const { firstName, lastName, studentId } = studentData;
+    const { firstName, lastName, studentId, profilePhoto } = studentData;
     
     // Update sidebar profile
     const fullName = firstName && lastName ? `${firstName} ${lastName}` : 'Unknown Student';
@@ -271,12 +277,22 @@ function updateDashboardUI() {
     
     const studentNameEl = document.getElementById('studentName');
     const studentIdEl = document.getElementById('studentId');
+    const profileAvatarEl = document.getElementById('profileAvatar');
     
     if (studentNameEl) {
         studentNameEl.textContent = fullName;
     }
     if (studentIdEl) {
         studentIdEl.textContent = studentIdValue;
+    }
+    
+    // Update profile avatar
+    if (profileAvatarEl) {
+        if (profilePhoto) {
+            profileAvatarEl.innerHTML = `<img src="${profilePhoto}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+        } else {
+            profileAvatarEl.innerHTML = '<i class="fas fa-user"></i>';
+        }
     }
     
     // Update ID display in overview
@@ -369,10 +385,10 @@ function calculateLiveMetrics() {
     const trend = calculatePerformanceTrend(grades?.semesterGrades);
     
     return {
-        activeCourses: activeCourses || 6,
-        completedTasks: completedTasks || 24,
-        pendingTasks: pendingTasks || 8,
-        performanceScore: performanceScore || 85,
+        activeCourses: activeCourses || 0,
+        completedTasks: completedTasks || 0,
+        pendingTasks: pendingTasks || 0,
+        performanceScore: performanceScore || 0,
         trend: trend,
         lastUpdated: new Date().toLocaleTimeString()
     };
@@ -393,17 +409,195 @@ function calculatePerformanceTrend(semesterGrades) {
 }
 
 // ============================================
-// Get Default Metrics
+// Get Default Metrics (Reset to 0 for real-time tracking)
 // ============================================
 function getDefaultMetrics() {
     return {
-        activeCourses: 6,
-        completedTasks: 24,
-        pendingTasks: 8,
-        performanceScore: 85,
+        activeCourses: 0,
+        completedTasks: 0,
+        pendingTasks: 0,
+        performanceScore: 0,
         trend: 'stable',
         lastUpdated: new Date().toLocaleTimeString()
     };
+}
+
+// ============================================
+// Real-Time Progress Tracker
+// ============================================
+let progressIntervals = {};
+let currentProgress = {
+    activeCourses: 0,
+    completedTasks: 0,
+    pendingTasks: 0,
+    performanceScore: 0
+};
+
+function startRealTimeProgress() {
+    // Clear any existing intervals
+    Object.values(progressIntervals).forEach(interval => clearInterval(interval));
+    progressIntervals = {};
+    
+    // Reset current progress
+    currentProgress = {
+        activeCourses: 0,
+        completedTasks: 0,
+        pendingTasks: 0,
+        performanceScore: 0
+    };
+    
+    // Animate from 0 to target values
+    const targetMetrics = calculateLiveMetrics();
+    
+    // Progress for Active Courses
+    progressIntervals.courses = setInterval(() => {
+        if (currentProgress.activeCourses < targetMetrics.activeCourses) {
+            currentProgress.activeCourses++;
+            updateStatDisplay('statCourses', currentProgress.activeCourses);
+        } else {
+            clearInterval(progressIntervals.courses);
+        }
+    }, 200);
+    
+    // Progress for Completed Tasks
+    progressIntervals.completed = setInterval(() => {
+        if (currentProgress.completedTasks < targetMetrics.completedTasks) {
+            currentProgress.completedTasks++;
+            updateStatDisplay('statCompleted', currentProgress.completedTasks);
+        } else {
+            clearInterval(progressIntervals.completed);
+        }
+    }, 150);
+    
+    // Progress for Pending Tasks
+    progressIntervals.pending = setInterval(() => {
+        if (currentProgress.pendingTasks < targetMetrics.pendingTasks) {
+            currentProgress.pendingTasks++;
+            updateStatDisplay('statPending', currentProgress.pendingTasks);
+        } else {
+            clearInterval(progressIntervals.pending);
+        }
+    }, 300);
+    
+    // Progress for Performance Score
+    progressIntervals.score = setInterval(() => {
+        if (currentProgress.performanceScore < targetMetrics.performanceScore) {
+            currentProgress.performanceScore += 2;
+            if (currentProgress.performanceScore > targetMetrics.performanceScore) {
+                currentProgress.performanceScore = targetMetrics.performanceScore;
+            }
+            updateStatDisplay('statScore', currentProgress.performanceScore + '%');
+        } else {
+            clearInterval(progressIntervals.score);
+        }
+    }, 100);
+}
+
+function updateStatDisplay(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = value;
+        // Add pulse animation
+        const card = element.closest('.stat-card');
+        if (card) {
+            card.classList.add('live-update-pulse');
+            setTimeout(() => card.classList.remove('live-update-pulse'), 500);
+        }
+    }
+}
+
+// ============================================
+// Tab-Based Progress Tracking
+// ============================================
+function updateTabProgress(tabId) {
+    const tabContent = document.getElementById(tabId);
+    if (!tabContent) return;
+    
+    // Calculate progress based on tab content
+    let progress = 0;
+    let total = 0;
+    
+    switch(tabId) {
+        case 'courses':
+            // Count enrolled vs completed courses
+            const courseCards = tabContent.querySelectorAll('.course-card');
+            const completedCourses = tabContent.querySelectorAll('.course-card.completed').length;
+            total = courseCards.length || 1;
+            progress = completedCourses;
+            
+            // Update progress display
+            document.getElementById('coursesProgressText').textContent = `${progress}/${total}`;
+            document.getElementById('coursesPercentage').textContent = `${Math.round((progress/total)*100)}%`;
+            break;
+            
+        case 'assignments':
+            // Count submitted vs total assignments
+            const assignmentItems = tabContent.querySelectorAll('.assignment-item');
+            const submittedAssignments = tabContent.querySelectorAll('.assignment-item.submitted').length;
+            total = assignmentItems.length || 1;
+            progress = submittedAssignments;
+            
+            // Update progress display
+            document.getElementById('assignmentsProgressText').textContent = `${progress}/${total}`;
+            document.getElementById('assignmentsPercentage').textContent = `${Math.round((progress/total)*100)}%`;
+            break;
+    }
+    
+    // Update progress bar in tab
+    updateTabProgressBar(tabId, progress, total);
+}
+
+function updateTabProgressBar(tabId, progress, total) {
+    const progressBar = document.getElementById(`${tabId}ProgressBar`);
+    const progressText = document.getElementById(`${tabId}ProgressText`);
+    const percentageText = document.getElementById(`${tabId}Percentage`);
+    
+    if (progressBar && total > 0) {
+        const percentage = Math.round((progress / total) * 100);
+        progressBar.style.width = `${percentage}%`;
+        
+        // Update color based on percentage
+        progressBar.className = 'tab-progress-fill';
+        if (percentage >= 80) {
+            progressBar.classList.add('excellent');
+        } else if (percentage >= 60) {
+            progressBar.classList.add('good');
+        } else if (percentage >= 40) {
+            progressBar.classList.add('average');
+        } else {
+            progressBar.classList.add('needs-improvement');
+        }
+    }
+    
+    if (progressText) {
+        progressText.textContent = `${progress}/${total}`;
+    }
+    
+    if (percentageText) {
+        percentageText.textContent = `${Math.round((progress/total)*100)}%`;
+    }
+}
+
+// ============================================
+// Initialize Progress on Tab Switch
+// ============================================
+function initializeTabProgressTracking() {
+    // Track when tabs are switched
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+            if (tabId) {
+                setTimeout(() => updateTabProgress(tabId), 100);
+            }
+        });
+    });
+    
+    // Initial progress update for active tab
+    const activeTab = document.querySelector('.content-section.active');
+    if (activeTab) {
+        updateTabProgress(activeTab.id);
+    }
 }
 
 // ============================================
@@ -3103,9 +3297,857 @@ function selectPlan(plan) {
     });
 }
 
+// Payment and Subscription Functions
+// ============================================
+
+let selectedPlanForPayment = null;
+
 async function subscribe(plan) {
-    selectPlan(plan);
-    showUpgradeModal();
+    selectedPlanForPayment = plan;
+    showPaymentModal(plan);
+}
+
+// Show Payment Modal
+function showPaymentModal(plan) {
+    const modal = document.getElementById('paymentModal');
+    if (!modal) return;
+    
+    // Set plan details
+    const planDetails = {
+        monthly: { name: 'Monthly', amount: '₹299', amountValue: 299 },
+        quarterly: { name: 'Quarterly', amount: '₹799', amountValue: 799 },
+        yearly: { name: 'Yearly', amount: '₹2499', amountValue: 2499 }
+    };
+    
+    const details = planDetails[plan];
+    document.getElementById('selectedPlanName').textContent = details.name;
+    document.getElementById('selectedPlanAmount').textContent = details.amount;
+    document.getElementById('upiAmount').textContent = details.amount;
+    
+    // Generate UPI QR Code
+    generateUPIQRCode('edubot@upi', details.amountValue, details.name);
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Generate UPI QR Code
+function generateUPIQRCode(upiId, amount, planName) {
+    const canvas = document.getElementById('qrCanvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const size = 160;
+    const cellSize = 8;
+    const cells = size / cellSize;
+    
+    // Clear canvas
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, size, size);
+    
+    // Generate UPI payment string
+    const upiString = `upi://pay?pa=${upiId}&pn=EduBot%20Education&am=${amount}&cu=INR&tn=Subscription%20-${planName}`;
+    
+    // Simple QR-like pattern generation (for demo purposes)
+    // In production, use a proper QR code library like qrcode.js
+    ctx.fillStyle = '#1e293b';
+    
+    // Draw position detection patterns (corners)
+    const drawPositionPattern = (x, y) => {
+        // Outer square
+        for (let i = 0; i < 7; i++) {
+            for (let j = 0; j < 7; j++) {
+                if (i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4)) {
+                    ctx.fillRect((x + i) * cellSize, (y + j) * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+    };
+    
+    // Draw three position patterns
+    drawPositionPattern(2, 2);
+    drawPositionPattern(2, cells - 9);
+    drawPositionPattern(cells - 9, 2);
+    
+    // Generate pseudo-random data pattern based on UPI string
+    let seed = 0;
+    for (let i = 0; i < upiString.length; i++) {
+        seed += upiString.charCodeAt(i);
+    }
+    
+    const random = (s) => {
+        const x = Math.sin(s) * 10000;
+        return x - Math.floor(x);
+    };
+    
+    // Draw data modules
+    for (let row = 0; row < cells; row++) {
+        for (let col = 0; col < cells; col++) {
+            // Skip position patterns
+            if ((row < 9 && col < 9) || (row < 9 && col > cells - 9) || (row > cells - 9 && col < 9)) {
+                continue;
+            }
+            
+            const rand = random(seed + row * cells + col);
+            if (rand > 0.5) {
+                ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+            }
+        }
+    }
+    
+    // Add UPI logo/icon in center
+    ctx.fillStyle = '#8b5cf6';
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const logoSize = 24;
+    
+    // Draw circular background
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, logoSize / 2 + 4, 0, 2 * Math.PI);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Draw "UPI" text
+    ctx.fillStyle = '#8b5cf6';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('UPI', centerX, centerY);
+}
+
+// Close Payment Modal
+function closePaymentModal() {
+    const modal = document.getElementById('paymentModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        // Reset form
+        document.getElementById('paymentForm').reset();
+    }
+}
+
+// Format Card Number
+function formatCardNumber(input) {
+    let value = input.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+    input.value = formattedValue;
+    
+    // Detect card type
+    const cardType = document.getElementById('cardType');
+    if (value.startsWith('4')) {
+        cardType.innerHTML = '<i class="fab fa-cc-visa"></i>';
+    } else if (value.startsWith('5')) {
+        cardType.innerHTML = '<i class="fab fa-cc-mastercard"></i>';
+    } else if (value.startsWith('3')) {
+        cardType.innerHTML = '<i class="fab fa-cc-amex"></i>';
+    } else {
+        cardType.innerHTML = '<i class="fas fa-credit-card"></i>';
+    }
+}
+
+// Format Expiry Date
+function formatExpiryDate(input) {
+    let value = input.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (value.length >= 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    }
+    input.value = value;
+}
+
+// Process Payment with Details
+async function processPaymentWithDetails(event) {
+    event.preventDefault();
+    
+    if (!selectedPlanForPayment) {
+        showToast('Please select a plan', 'error');
+        return;
+    }
+    
+    // Get payment details
+    const paymentDetails = {
+        cardHolderName: document.getElementById('cardHolderName').value,
+        cardNumber: document.getElementById('cardNumber').value.replace(/\s/g, ''),
+        expiryDate: document.getElementById('expiryDate').value,
+        cvv: document.getElementById('cvv').value,
+        billingAddress: document.getElementById('billingAddress').value,
+        upiId: document.getElementById('upiId').value,
+        plan: selectedPlanForPayment
+    };
+    
+    // Validate payment details
+    if (!validatePaymentDetails(paymentDetails)) {
+        return;
+    }
+    
+    try {
+        showToast('Processing payment...', 'info');
+        
+        const response = await fetch('/api/student/subscription/payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(paymentDetails)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('Payment successful! Subscription activated.', 'success');
+            closePaymentModal();
+            
+            // Save payment details to localStorage for history
+            savePaymentToHistory(data.payment);
+            
+            // Refresh student data
+            const studentResponse = await fetch('/api/student/info');
+            const studentData = await studentResponse.json();
+            if (studentData.success) {
+                studentDataGlobal = studentData.student;
+                updateDashboardUI(studentData.student);
+                updateSubscriptionUI(studentData.student);
+                loadPaymentHistory();
+            }
+        } else {
+            showToast(data.message || 'Payment failed', 'error');
+        }
+    } catch (error) {
+        showToast('Payment error. Please try again.', 'error');
+        console.error('Payment error:', error);
+    }
+}
+
+// Validate Payment Details
+function validatePaymentDetails(details) {
+    // Check if UPI is provided instead of card
+    if (details.upiId && details.upiId.trim() !== '') {
+        if (!details.upiId.includes('@')) {
+            showToast('Invalid UPI ID format', 'error');
+            return false;
+        }
+        return true;
+    }
+    
+    // Validate card number
+    if (details.cardNumber.length < 13 || details.cardNumber.length > 19) {
+        showToast('Invalid card number', 'error');
+        return false;
+    }
+    
+    // Validate expiry date
+    if (!details.expiryDate.match(/^\d{2}\/\d{2}$/)) {
+        showToast('Invalid expiry date format', 'error');
+        return false;
+    }
+    
+    // Validate CVV
+    if (details.cvv.length < 3) {
+        showToast('Invalid CVV', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+// Save Payment to History
+function savePaymentToHistory(payment) {
+    let paymentHistory = JSON.parse(localStorage.getItem('paymentHistory') || '[]');
+    paymentHistory.unshift(payment);
+    localStorage.setItem('paymentHistory', JSON.stringify(paymentHistory));
+}
+
+// Load Payment History
+function loadPaymentHistory() {
+    const container = document.getElementById('paymentHistory');
+    if (!container) return;
+    
+    const paymentHistory = JSON.parse(localStorage.getItem('paymentHistory') || '[]');
+    
+    if (paymentHistory.length === 0) {
+        container.innerHTML = '<p class="empty-state" style="text-align: center; padding: 2rem; color: #94a3b8;"><i class="fas fa-receipt" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>No payments yet. Subscribe to a plan!</p>';
+        return;
+    }
+    
+    container.innerHTML = paymentHistory.map(payment => `
+        <div class="payment-item" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e2e8f0; transition: background 0.3s ease;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 48px; height: 48px; background: ${payment.status === 'success' ? '#dcfce7' : '#fee2e2'}; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: ${payment.status === 'success' ? '#16a34a' : '#dc2626'}; font-size: 1.25rem;">
+                    <i class="fas ${payment.status === 'success' ? 'fa-check' : 'fa-times'}"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: #1e293b;">${payment.planName} Plan</div>
+                    <div style="font-size: 0.8rem; color: #64748b;">${new Date(payment.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} • ${payment.paymentMethod}</div>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-weight: 700; color: #1e293b; font-size: 1.1rem;">${payment.amount}</div>
+                <div style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px; display: inline-block; ${payment.status === 'success' ? 'background: #dcfce7; color: #16a34a;' : 'background: #fee2e2; color: #dc2626;'}">${payment.status === 'success' ? 'Successful' : 'Failed'}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Initialize payment history on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadPaymentHistory();
+    
+    // Generate static QR code for payment receiving section
+    generateStaticQRCode();
+});
+
+// ============================================
+// E-Book Download System with Local Storage
+// ============================================
+
+// E-Book database
+const ebooksDatabase = {
+    'python': {
+        id: 'python',
+        title: 'Python Programming',
+        author: 'Dr. John Smith',
+        description: 'Complete guide for beginners',
+        category: 'Programming',
+        pages: 450,
+        color: 'linear-gradient(135deg, #3776ab, #ffd43b)',
+        icon: 'fab fa-python',
+        content: 'Python is a versatile programming language...',
+        fileSize: '12.5 MB',
+        format: 'PDF'
+    },
+    'javascript': {
+        id: 'javascript',
+        title: 'JavaScript Mastery',
+        author: 'Sarah Johnson',
+        description: 'From basics to advanced',
+        category: 'Web Dev',
+        pages: 380,
+        color: 'linear-gradient(135deg, #f7df1e, #323330)',
+        icon: 'fab fa-js',
+        content: 'JavaScript is the language of the web...',
+        fileSize: '8.3 MB',
+        format: 'PDF'
+    },
+    'algorithms': {
+        id: 'algorithms',
+        title: 'Data Structures',
+        author: 'Prof. Michael Chen',
+        description: 'Algorithms & Problem Solving',
+        category: 'CS Core',
+        pages: 520,
+        color: 'linear-gradient(135deg, #667eea, #764ba2)',
+        icon: 'fas fa-code',
+        content: 'Data structures are fundamental to computer science...',
+        fileSize: '15.2 MB',
+        format: 'PDF'
+    },
+    'machine-learning': {
+        id: 'machine-learning',
+        title: 'Machine Learning',
+        author: 'Dr. Emily Davis',
+        description: 'AI & Deep Learning basics',
+        category: 'AI/ML',
+        pages: 480,
+        color: 'linear-gradient(135deg, #ff6b6b, #ee5a6f)',
+        icon: 'fas fa-brain',
+        content: 'Machine learning is transforming industries...',
+        fileSize: '18.7 MB',
+        format: 'PDF'
+    }
+};
+
+// Download e-book function
+async function downloadEbook(bookId) {
+    const book = ebooksDatabase[bookId];
+    if (!book) {
+        showToast('Book not found', 'error');
+        return;
+    }
+    
+    // Check if already downloaded
+    const downloadedBooks = getDownloadedBooks();
+    if (downloadedBooks.some(b => b.id === bookId)) {
+        showToast('This book is already in your downloads!', 'info');
+        return;
+    }
+    
+    // Show download progress
+    showDownloadProgress(book);
+    
+    // Simulate download progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(progressInterval);
+            
+            // Complete download
+            setTimeout(() => {
+                completeDownload(book);
+                hideDownloadProgress();
+            }, 500);
+        }
+        updateDownloadProgress(progress, book.title);
+    }, 300);
+}
+
+// Show download progress UI
+function showDownloadProgress(book) {
+    // Create progress element if not exists
+    let progressContainer = document.getElementById('downloadProgressContainer');
+    if (!progressContainer) {
+        progressContainer = document.createElement('div');
+        progressContainer.id = 'downloadProgressContainer';
+        progressContainer.className = 'download-progress';
+        progressContainer.innerHTML = `
+            <div class="download-progress-header">
+                <i class="fas fa-download" style="color: #667eea;"></i>
+                <span id="downloadProgressTitle">Downloading...</span>
+            </div>
+            <div class="download-progress-bar">
+                <div class="download-progress-fill" id="downloadProgressFill" style="width: 0%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+                <span id="downloadProgressText">0%</span>
+                <span id="downloadProgressSize">0 MB / ${book.fileSize}</span>
+            </div>
+        `;
+        document.body.appendChild(progressContainer);
+    }
+    
+    document.getElementById('downloadProgressTitle').textContent = `Downloading: ${book.title}`;
+    progressContainer.classList.add('active');
+}
+
+// Update download progress
+function updateDownloadProgress(progress, bookTitle) {
+    const progressFill = document.getElementById('downloadProgressFill');
+    const progressText = document.getElementById('downloadProgressText');
+    
+    if (progressFill) {
+        progressFill.style.width = `${progress}%`;
+    }
+    if (progressText) {
+        progressText.textContent = `${Math.round(progress)}%`;
+    }
+}
+
+// Hide download progress
+function hideDownloadProgress() {
+    const progressContainer = document.getElementById('downloadProgressContainer');
+    if (progressContainer) {
+        progressContainer.classList.remove('active');
+        setTimeout(() => {
+            progressContainer.remove();
+        }, 300);
+    }
+}
+
+// Complete download and save to localStorage
+function completeDownload(book) {
+    // Add download timestamp and local URL
+    const downloadedBook = {
+        ...book,
+        downloadDate: new Date().toISOString(),
+        localUrl: `local-ebook://${book.id}`,
+        isDownloaded: true
+    };
+    
+    // Save to localStorage
+    let downloadedBooks = getDownloadedBooks();
+    downloadedBooks.push(downloadedBook);
+    localStorage.setItem('downloadedEbooks', JSON.stringify(downloadedBooks));
+    
+    // Update UI
+    updateDownloadButton(book.id, true);
+    renderDownloadsList();
+    showToast(`"${book.title}" downloaded successfully!`, 'success');
+}
+
+// Get downloaded books from localStorage
+function getDownloadedBooks() {
+    return JSON.parse(localStorage.getItem('downloadedEbooks') || '[]');
+}
+
+// Update download button state
+function updateDownloadButton(bookId, isDownloaded) {
+    const bookCard = document.querySelector(`[data-book-id="${bookId}"]`);
+    if (bookCard) {
+        const downloadBtn = bookCard.querySelector('.btn-download-ebook');
+        if (downloadBtn) {
+            if (isDownloaded) {
+                downloadBtn.innerHTML = '<i class="fas fa-check"></i>';
+                downloadBtn.classList.add('downloaded');
+                downloadBtn.title = 'Already downloaded';
+            } else {
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+                downloadBtn.classList.remove('downloaded');
+                downloadBtn.title = 'Download for offline reading';
+            }
+        }
+    }
+}
+
+// Render downloads list
+function renderDownloadsList() {
+    const downloadsList = document.getElementById('downloadsList');
+    const myDownloadsSection = document.getElementById('myDownloadsSection');
+    const downloadCount = document.getElementById('downloadCount');
+    
+    if (!downloadsList) return;
+    
+    const downloadedBooks = getDownloadedBooks();
+    
+    // Update count
+    if (downloadCount) {
+        downloadCount.textContent = `${downloadedBooks.length} Item${downloadedBooks.length !== 1 ? 's' : ''}`;
+    }
+    
+    // Show/hide section
+    if (myDownloadsSection) {
+        myDownloadsSection.style.display = downloadedBooks.length > 0 ? 'block' : 'none';
+    }
+    
+    if (downloadedBooks.length === 0) {
+        downloadsList.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #94a3b8;">
+                <i class="fas fa-download" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                <p>No downloads yet. Start downloading e-books!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    downloadsList.innerHTML = downloadedBooks.map(book => `
+        <div class="downloaded-item">
+            <div class="downloaded-item-icon" style="background: ${book.color};">
+                <i class="${book.icon}"></i>
+            </div>
+            <div class="downloaded-item-info">
+                <h5>${book.title}</h5>
+                <p>${book.format} • ${book.fileSize} • Downloaded on ${new Date(book.downloadDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+            </div>
+            <div class="downloaded-item-actions">
+                <button class="btn-action read" onclick="readEbook('${book.id}')" title="Read now">
+                    <i class="fas fa-book-open"></i>
+                </button>
+                <button class="btn-action delete" onclick="deleteEbook('${book.id}')" title="Remove download">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Read downloaded e-book
+function readEbook(bookId) {
+    const book = ebooksDatabase[bookId];
+    if (!book) {
+        showToast('Book not found', 'error');
+        return;
+    }
+    
+    // Create a modal to display book content
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+        <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header" style="background: ${book.color}; color: white;">
+                <h3><i class="${book.icon}"></i> ${book.title}</h3>
+                <button class="modal-close" onclick="this.closest('.modal').remove()" style="color: white;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0;">
+                    <div style="font-weight: 600; color: #1e293b;">Author: ${book.author}</div>
+                    <div style="color: #64748b; font-size: 0.875rem;">${book.pages} pages • ${book.category}</div>
+                </div>
+                <div style="line-height: 1.8; color: #374151;">
+                    <h4 style="color: #1e293b; margin-bottom: 1rem;">Chapter 1: Introduction</h4>
+                    <p style="margin-bottom: 1rem;">${book.content}</p>
+                    <p style="margin-bottom: 1rem;">This is a sample content from the e-book. In a real implementation, this would display the full PDF content or redirect to a PDF viewer.</p>
+                    <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 1rem; margin-top: 1.5rem;">
+                        <i class="fas fa-info-circle" style="color: #16a34a;"></i>
+                        <span style="color: #166534; font-size: 0.875rem;"> This e-book is available offline. You can read it anytime!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Delete downloaded e-book
+function deleteEbook(bookId) {
+    if (!confirm('Are you sure you want to remove this download?')) {
+        return;
+    }
+    
+    let downloadedBooks = getDownloadedBooks();
+    downloadedBooks = downloadedBooks.filter(book => book.id !== bookId);
+    localStorage.setItem('downloadedEbooks', JSON.stringify(downloadedBooks));
+    
+    // Update UI
+    updateDownloadButton(bookId, false);
+    renderDownloadsList();
+    showToast('Download removed successfully', 'success');
+}
+
+// Initialize downloads on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Mark already downloaded books
+    const downloadedBooks = getDownloadedBooks();
+    downloadedBooks.forEach(book => {
+        updateDownloadButton(book.id, true);
+    });
+    
+    // Render downloads list
+    renderDownloadsList();
+});
+
+// Generate Static QR Code for Payment Receiving Section
+function generateStaticQRCode() {
+    const canvas = document.getElementById('staticQRCode');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const size = 120;
+    const cellSize = 6;
+    const cells = size / cellSize;
+    
+    // Clear canvas
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, size, size);
+    
+    // Generate UPI payment string for general payments
+    const upiString = 'upi://pay?pa=edubot@upi&pn=EduBot%20Education&cu=INR';
+    
+    // Simple QR-like pattern generation
+    ctx.fillStyle = '#1e293b';
+    
+    // Draw position detection patterns (corners)
+    const drawPositionPattern = (x, y) => {
+        for (let i = 0; i < 7; i++) {
+            for (let j = 0; j < 7; j++) {
+                if (i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4)) {
+                    ctx.fillRect((x + i) * cellSize, (y + j) * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+    };
+    
+    // Draw three position patterns
+    drawPositionPattern(2, 2);
+    drawPositionPattern(2, cells - 9);
+    drawPositionPattern(cells - 9, 2);
+    
+    // Generate pseudo-random data pattern
+    let seed = 0;
+    for (let i = 0; i < upiString.length; i++) {
+        seed += upiString.charCodeAt(i);
+    }
+    
+    const random = (s) => {
+        const x = Math.sin(s) * 10000;
+        return x - Math.floor(x);
+    };
+    
+    // Draw data modules
+    for (let row = 0; row < cells; row++) {
+        for (let col = 0; col < cells; col++) {
+            if ((row < 9 && col < 9) || (row < 9 && col > cells - 9) || (row > cells - 9 && col < 9)) {
+                continue;
+            }
+            
+            const rand = random(seed + row * cells + col);
+            if (rand > 0.5) {
+                ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+            }
+        }
+    }
+    
+    // Add UPI logo in center
+    ctx.fillStyle = '#8b5cf6';
+    const centerX = size / 2;
+    const centerY = size / 2;
+    
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 18, 0, 2 * Math.PI);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    ctx.fillStyle = '#8b5cf6';
+    ctx.font = 'bold 8px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('UPI', centerX, centerY);
+}
+
+// Payment Receipt Modal Functions
+// ============================================
+
+let currentReceiptData = null;
+
+function showPaymentReceiptModal(paymentData) {
+    const modal = document.getElementById('paymentReceiptModal');
+    if (!modal) return;
+    
+    currentReceiptData = paymentData;
+    
+    // Populate receipt data
+    document.getElementById('receiptAmount').textContent = paymentData.amount;
+    document.getElementById('receiptTransactionId').textContent = paymentData.transactionId;
+    document.getElementById('receiptDate').textContent = new Date(paymentData.date).toLocaleString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    document.getElementById('receiptPlan').textContent = paymentData.planName;
+    
+    // Format payment method
+    let paymentMethodText = 'Card';
+    if (paymentData.paymentMethod === 'UPI') {
+        paymentMethodText = `UPI (${paymentData.upiId})`;
+    } else if (paymentData.cardLastFour) {
+        paymentMethodText = `Card ****${paymentData.cardLastFour}`;
+    }
+    document.getElementById('receiptPaymentMethod').textContent = paymentMethodText;
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePaymentReceiptModal() {
+    const modal = document.getElementById('paymentReceiptModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function downloadReceipt() {
+    if (!currentReceiptData) return;
+    
+    // Create receipt content
+    const receiptContent = `
+================================
+    EduBot Payment Receipt
+================================
+
+Transaction ID: ${currentReceiptData.transactionId}
+Date: ${new Date(currentReceiptData.date).toLocaleString('en-IN')}
+
+--------------------------------
+Payment Details
+--------------------------------
+Plan: ${currentReceiptData.planName}
+Amount: ${currentReceiptData.amount}
+Payment Method: ${currentReceiptData.paymentMethod === 'UPI' ? 'UPI' : 'Card'}
+Status: SUCCESSFUL
+
+--------------------------------
+Received By
+--------------------------------
+EduBot Education Pvt Ltd
+Account: ****1234
+IFSC: EDUB0001234
+Bank: State Bank of India
+
+--------------------------------
+Thank you for your payment!
+Your subscription is now active.
+
+For support: support@edubot.edu
+================================
+    `;
+    
+    // Create and download file
+    const blob = new Blob([receiptContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `receipt_${currentReceiptData.transactionId}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    showToast('Receipt downloaded successfully!', 'success');
+}
+
+// Update processPaymentWithDetails to show receipt
+async function processPaymentWithDetails(event) {
+    event.preventDefault();
+    
+    if (!selectedPlanForPayment) {
+        showToast('Please select a plan', 'error');
+        return;
+    }
+    
+    // Get payment details
+    const paymentDetails = {
+        cardHolderName: document.getElementById('cardHolderName').value,
+        cardNumber: document.getElementById('cardNumber').value.replace(/\s/g, ''),
+        expiryDate: document.getElementById('expiryDate').value,
+        cvv: document.getElementById('cvv').value,
+        billingAddress: document.getElementById('billingAddress').value,
+        upiId: document.getElementById('upiId').value,
+        plan: selectedPlanForPayment
+    };
+    
+    // Validate payment details
+    if (!validatePaymentDetails(paymentDetails)) {
+        return;
+    }
+    
+    try {
+        showToast('Processing payment...', 'info');
+        
+        const response = await fetch('/api/student/subscription/payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(paymentDetails)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            closePaymentModal();
+            
+            // Show payment receipt
+            showPaymentReceiptModal(data.payment);
+            
+            // Save payment details to localStorage for history
+            savePaymentToHistory(data.payment);
+            
+            // Refresh student data
+            const studentResponse = await fetch('/api/student/info');
+            const studentData = await studentResponse.json();
+            if (studentData.success) {
+                studentDataGlobal = studentData.student;
+                updateDashboardUI(studentData.student);
+                updateSubscriptionUI(studentData.student);
+                loadPaymentHistory();
+            }
+        } else {
+            showToast(data.message || 'Payment failed', 'error');
+        }
+    } catch (error) {
+        showToast('Payment error. Please try again.', 'error');
+        console.error('Payment error:', error);
+    }
 }
 
 async function processPayment() {
@@ -4079,4 +5121,594 @@ function submitTest() {
     `;
     
     showToast(`Test completed! Your score: ${score}%`, score >= 70 ? 'success' : 'info');
+}
+
+// ============================================
+// Digital Library Functions
+// ============================================
+
+const libraryBooks = [
+    { id: 1, title: "Python Programming", author: "Dr. John Smith", category: "programming", color: "linear-gradient(135deg, #3776ab, #ffd43b)", icon: "fab fa-python" },
+    { id: 2, title: "JavaScript Mastery", author: "Sarah Johnson", category: "programming", color: "linear-gradient(135deg, #f7df1e, #323330)", icon: "fab fa-js" },
+    { id: 3, title: "Data Structures", author: "Prof. Michael Chen", category: "programming", color: "linear-gradient(135deg, #667eea, #764ba2)", icon: "fas fa-code" },
+    { id: 4, title: "Machine Learning", author: "Dr. Emily Davis", category: "programming", color: "linear-gradient(135deg, #ff6b6b, #ee5a6f)", icon: "fas fa-brain" },
+    { id: 5, title: "Calculus I", author: "Dr. Robert Brown", category: "mathematics", color: "linear-gradient(135deg, #3b82f6, #1d4ed8)", icon: "fas fa-calculator" },
+    { id: 6, title: "Linear Algebra", author: "Prof. Lisa Wang", category: "mathematics", color: "linear-gradient(135deg, #8b5cf6, #6d28d9)", icon: "fas fa-square-root-alt" },
+    { id: 7, title: "Physics Fundamentals", author: "Dr. James Wilson", category: "science", color: "linear-gradient(135deg, #f59e0b, #d97706)", icon: "fas fa-atom" },
+    { id: 8, title: "Chemistry Basics", author: "Dr. Maria Garcia", category: "science", color: "linear-gradient(135deg, #10b981, #059669)", icon: "fas fa-flask" },
+    { id: 9, title: "Electrical Engineering", author: "Prof. David Lee", category: "engineering", color: "linear-gradient(135deg, #ef4444, #dc2626)", icon: "fas fa-bolt" },
+    { id: 10, title: "Mechanical Design", author: "Dr. Anna Taylor", category: "engineering", color: "linear-gradient(135deg, #6366f1, #4f46e5)", icon: "fas fa-cogs" }
+];
+
+let myIssuedBooks = JSON.parse(localStorage.getItem('myIssuedBooks')) || [];
+let returnedBooksCount = parseInt(localStorage.getItem('returnedBooksCount')) || 0;
+let libraryFines = parseInt(localStorage.getItem('libraryFines')) || 0;
+
+// Open Library Modal
+function openLibraryModal() {
+    const modal = document.getElementById('libraryModal');
+    if (modal) {
+        modal.classList.add('active');
+        renderLibraryBooks();
+    }
+}
+
+// Close Library Modal
+function closeLibraryModal() {
+    const modal = document.getElementById('libraryModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Render Library Books
+function renderLibraryBooks(filterCategory = 'all', searchTerm = '') {
+    const grid = document.getElementById('libraryBooksGrid');
+    if (!grid) return;
+    
+    let filteredBooks = libraryBooks;
+    
+    // Filter by category
+    if (filterCategory !== 'all') {
+        filteredBooks = filteredBooks.filter(book => book.category === filterCategory);
+    }
+    
+    // Filter by search term
+    if (searchTerm) {
+        filteredBooks = filteredBooks.filter(book => 
+            book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            book.author.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+    
+    if (filteredBooks.length === 0) {
+        grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">
+                <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <p>No books found</p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = filteredBooks.map(book => {
+        const isIssued = myIssuedBooks.some(b => b.id === book.id);
+        return `
+            <div class="library-book-card">
+                <div class="library-book-cover" style="background: ${book.color};">
+                    <i class="${book.icon}"></i>
+                </div>
+                <div class="library-book-info">
+                    <h5>${book.title}</h5>
+                    <p>${book.author}</p>
+                    <span class="book-category-tag">${book.category}</span>
+                </div>
+                <div class="library-book-actions">
+                    ${isIssued ? 
+                        `<button class="btn-return" onclick="returnBook(${book.id})">
+                            <i class="fas fa-undo"></i> Return
+                        </button>` :
+                        `<button class="btn-issue" onclick="issueBook(${book.id})" ${myIssuedBooks.length >= 3 ? 'disabled' : ''}>
+                            <i class="fas fa-book"></i> Issue
+                        </button>`
+                    }
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Filter Library Category
+function filterLibraryCategory(category) {
+    // Update active chip
+    document.querySelectorAll('.category-chip').forEach(chip => {
+        chip.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    const searchTerm = document.getElementById('librarySearchInput')?.value || '';
+    renderLibraryBooks(category, searchTerm);
+}
+
+// Search Library Books
+function searchLibraryBooks() {
+    const searchTerm = document.getElementById('librarySearchInput')?.value || '';
+    const activeCategory = document.querySelector('.category-chip.active');
+    const category = activeCategory ? 'all' : 'all'; // Default to all if not found
+    renderLibraryBooks('all', searchTerm);
+}
+
+// Issue Book
+function issueBook(bookId) {
+    if (myIssuedBooks.length >= 3) {
+        showToast('You can only issue up to 3 books at a time', 'error');
+        return;
+    }
+    
+    const book = libraryBooks.find(b => b.id === bookId);
+    if (!book) return;
+    
+    const issuedBook = {
+        ...book,
+        issuedDate: new Date().toISOString(),
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() // 14 days
+    };
+    
+    myIssuedBooks.push(issuedBook);
+    localStorage.setItem('myIssuedBooks', JSON.stringify(myIssuedBooks));
+    
+    updateLibraryStats();
+    renderLibraryBooks();
+    renderMyBooks();
+    
+    showToast(`"${book.title}" issued successfully!`, 'success');
+}
+
+// Return Book
+function returnBook(bookId) {
+    const bookIndex = myIssuedBooks.findIndex(b => b.id === bookId);
+    if (bookIndex === -1) return;
+    
+    const book = myIssuedBooks[bookIndex];
+    
+    // Check if overdue
+    const dueDate = new Date(book.dueDate);
+    const now = new Date();
+    if (now > dueDate) {
+        const daysOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
+        const fine = daysOverdue * 5; // ₹5 per day
+        libraryFines += fine;
+        localStorage.setItem('libraryFines', libraryFines);
+        showToast(`Book returned late. Fine: ₹${fine}`, 'warning');
+    } else {
+        showToast(`"${book.title}" returned successfully!`, 'success');
+    }
+    
+    myIssuedBooks.splice(bookIndex, 1);
+    returnedBooksCount++;
+    
+    localStorage.setItem('myIssuedBooks', JSON.stringify(myIssuedBooks));
+    localStorage.setItem('returnedBooksCount', returnedBooksCount);
+    
+    updateLibraryStats();
+    renderLibraryBooks();
+    renderMyBooks();
+}
+
+// Update Library Stats
+function updateLibraryStats() {
+    document.getElementById('booksIssued').textContent = myIssuedBooks.length;
+    document.getElementById('booksReturned').textContent = returnedBooksCount;
+    document.getElementById('libraryFines').textContent = '₹' + libraryFines;
+}
+
+// Render My Books
+function renderMyBooks() {
+    const container = document.getElementById('myBooksList');
+    if (!container) return;
+    
+    if (myIssuedBooks.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state" style="text-align: center; padding: 2rem; color: #94a3b8;">
+                <i class="fas fa-book-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                <p>No books issued yet. Browse the library to issue books.</p>
+                <button class="btn-primary" style="margin-top: 1rem;" onclick="openLibraryModal()">
+                    <i class="fas fa-search"></i> Browse Library
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = myIssuedBooks.map(book => {
+        const dueDate = new Date(book.dueDate);
+        const now = new Date();
+        const isOverdue = now > dueDate;
+        const daysLeft = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+        
+        return `
+            <div class="issued-book-item">
+                <div class="issued-book-cover" style="background: ${book.color};">
+                    <i class="${book.icon}"></i>
+                </div>
+                <div class="issued-book-info">
+                    <h5>${book.title}</h5>
+                    <p>${book.author}</p>
+                    <span class="due-date ${isOverdue ? 'overdue' : 'on-time'}">
+                        <i class="fas fa-clock"></i> 
+                        ${isOverdue ? `Overdue by ${Math.abs(daysLeft)} days` : `${daysLeft} days left`}
+                    </span>
+                </div>
+                <button class="btn-return" onclick="returnBook(${book.id})">
+                    <i class="fas fa-undo"></i> Return
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+// Initialize Library on Page Load
+document.addEventListener('DOMContentLoaded', function() {
+    updateLibraryStats();
+    renderMyBooks();
+    
+    // Initialize Level & Certificates
+    initializeStudentLevel();
+    renderCertificates();
+});
+
+// ============================================
+// Student Level & Certificate System
+// ============================================
+
+// Level configuration
+const levelConfig = {
+    1: { title: 'Novice Learner', xpRequired: 0, color: '#94a3b8' },
+    2: { title: 'Junior Scholar', xpRequired: 100, color: '#10b981' },
+    3: { title: 'Academic Explorer', xpRequired: 250, color: '#3b82f6' },
+    4: { title: 'Knowledge Seeker', xpRequired: 500, color: '#8b5cf6' },
+    5: { title: 'Senior Student', xpRequired: 1000, color: '#f59e0b' },
+    6: { title: 'Academic Achiever', xpRequired: 1750, color: '#ef4444' },
+    7: { title: 'Distinguished Scholar', xpRequired: 2750, color: '#ec4899' },
+    8: { title: 'Master Learner', xpRequired: 4000, color: '#6366f1' },
+    9: { title: 'Academic Elite', xpRequired: 5500, color: '#14b8a6' },
+    10: { title: 'Legendary Scholar', xpRequired: 7500, color: '#fbbf24' }
+};
+
+// Certificate definitions
+const certificates = [
+    {
+        id: 'first-steps',
+        name: 'First Steps',
+        description: 'Complete your first assignment',
+        icon: 'fas fa-shoe-prints',
+        requirement: { type: 'level', value: 1 },
+        unlocked: true
+    },
+    {
+        id: 'rising-star',
+        name: 'Rising Star',
+        description: 'Reach Level 2',
+        icon: 'fas fa-star',
+        requirement: { type: 'level', value: 2 },
+        unlocked: false
+    },
+    {
+        id: 'knowledge-hunter',
+        name: 'Knowledge Hunter',
+        description: 'Reach Level 3',
+        icon: 'fas fa-search',
+        requirement: { type: 'level', value: 3 },
+        unlocked: false
+    },
+    {
+        id: 'perfect-attendance',
+        name: 'Perfect Attendance',
+        description: 'Maintain 95%+ attendance',
+        icon: 'fas fa-calendar-check',
+        requirement: { type: 'attendance', value: 95 },
+        unlocked: false
+    },
+    {
+        id: 'quiz-master',
+        name: 'Quiz Master',
+        description: 'Score 90%+ in 5 quizzes',
+        icon: 'fas fa-brain',
+        requirement: { type: 'quizzes', value: 5 },
+        unlocked: false
+    },
+    {
+        id: 'academic-excellence',
+        name: 'Academic Excellence',
+        description: 'Reach Level 5',
+        icon: 'fas fa-trophy',
+        requirement: { type: 'level', value: 5 },
+        unlocked: false
+    },
+    {
+        id: 'dedicated-learner',
+        name: 'Dedicated Learner',
+        description: 'Complete 20 assignments',
+        icon: 'fas fa-tasks',
+        requirement: { type: 'assignments', value: 20 },
+        unlocked: false
+    },
+    {
+        id: 'master-scholar',
+        name: 'Master Scholar',
+        description: 'Reach Level 8',
+        icon: 'fas fa-crown',
+        requirement: { type: 'level', value: 8 },
+        unlocked: false
+    },
+    {
+        id: 'legend-status',
+        name: 'Legend Status',
+        description: 'Reach Level 10',
+        icon: 'fas fa-gem',
+        requirement: { type: 'level', value: 10 },
+        unlocked: false
+    },
+    {
+        id: 'perfect-score',
+        name: 'Perfect Score',
+        description: 'Get 100% in any exam',
+        icon: 'fas fa-award',
+        requirement: { type: 'score', value: 100 },
+        unlocked: false
+    }
+];
+
+// Get student level data from localStorage or calculate from student data
+function getStudentLevelData() {
+    const savedLevel = localStorage.getItem('studentLevel');
+    const savedXP = localStorage.getItem('studentXP');
+    
+    if (savedLevel && savedXP) {
+        return {
+            level: parseInt(savedLevel),
+            xp: parseInt(savedXP)
+        };
+    }
+    
+    // Calculate from student data if available
+    return calculateLevelFromStudentData();
+}
+
+// Calculate level based on student academic data
+function calculateLevelFromStudentData() {
+    // Default values
+    let xp = 0;
+    let level = 1;
+    
+    // Try to get data from student info
+    const studentData = JSON.parse(localStorage.getItem('studentData') || '{}');
+    
+    if (studentData) {
+        // XP from completed assignments
+        const completedAssignments = studentData.completedAssignments || 0;
+        xp += completedAssignments * 10;
+        
+        // XP from attendance
+        const attendance = studentData.attendance || 0;
+        xp += Math.floor(attendance * 2);
+        
+        // XP from average score
+        const avgScore = studentData.averageScore || 0;
+        xp += Math.floor(avgScore * 5);
+        
+        // XP from courses
+        const coursesCount = studentData.coursesCount || 0;
+        xp += coursesCount * 25;
+    }
+    
+    // Calculate level based on XP
+    for (let i = 10; i >= 1; i--) {
+        if (xp >= levelConfig[i].xpRequired) {
+            level = i;
+            break;
+        }
+    }
+    
+    return { level, xp };
+}
+
+// Initialize student level display
+function initializeStudentLevel() {
+    const levelData = getStudentLevelData();
+    updateLevelDisplay(levelData.level, levelData.xp);
+}
+
+// Update level display
+function updateLevelDisplay(level, xp) {
+    const config = levelConfig[level];
+    const nextConfig = levelConfig[level + 1];
+    
+    // Update level badge
+    document.getElementById('studentLevel').textContent = level;
+    document.getElementById('levelTitle').textContent = config.title;
+    document.getElementById('currentLevelNum').textContent = level;
+    document.getElementById('nextLevelNum').textContent = level + 1;
+    
+    // Update XP display
+    document.getElementById('currentXP').textContent = xp;
+    
+    if (nextConfig) {
+        document.getElementById('nextLevelXP').textContent = nextConfig.xpRequired;
+        
+        // Calculate progress percentage
+        const xpForNextLevel = nextConfig.xpRequired - config.xpRequired;
+        const currentLevelXP = xp - config.xpRequired;
+        const progressPercent = Math.min(100, Math.max(0, (currentLevelXP / xpForNextLevel) * 100));
+        
+        document.getElementById('levelProgressBar').style.width = progressPercent + '%';
+    } else {
+        // Max level reached
+        document.getElementById('nextLevelXP').textContent = 'MAX';
+        document.getElementById('levelProgressBar').style.width = '100%';
+    }
+}
+
+// Add XP to student
+function addXP(amount) {
+    const levelData = getStudentLevelData();
+    levelData.xp += amount;
+    
+    // Check for level up
+    let newLevel = levelData.level;
+    for (let i = 10; i > levelData.level; i--) {
+        if (levelData.xp >= levelConfig[i].xpRequired) {
+            newLevel = i;
+            break;
+        }
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('studentXP', levelData.xp);
+    
+    if (newLevel > levelData.level) {
+        levelData.level = newLevel;
+        localStorage.setItem('studentLevel', newLevel);
+        showToast(`Level Up! You are now Level ${newLevel} - ${levelConfig[newLevel].title}`, 'success');
+        
+        // Check for newly unlocked certificates
+        checkNewCertificates(newLevel);
+    }
+    
+    updateLevelDisplay(levelData.level, levelData.xp);
+    renderCertificates();
+}
+
+// Render certificates
+function renderCertificates() {
+    const grid = document.getElementById('certificatesGrid');
+    if (!grid) return;
+    
+    const levelData = getStudentLevelData();
+    const studentData = JSON.parse(localStorage.getItem('studentData') || '{}');
+    
+    // Update unlocked status based on current progress
+    const updatedCertificates = certificates.map(cert => {
+        let unlocked = cert.unlocked;
+        
+        if (!unlocked) {
+            switch (cert.requirement.type) {
+                case 'level':
+                    unlocked = levelData.level >= cert.requirement.value;
+                    break;
+                case 'attendance':
+                    unlocked = (studentData.attendance || 0) >= cert.requirement.value;
+                    break;
+                case 'assignments':
+                    unlocked = (studentData.completedAssignments || 0) >= cert.requirement.value;
+                    break;
+                case 'quizzes':
+                    unlocked = (studentData.quizzesPassed || 0) >= cert.requirement.value;
+                    break;
+                case 'score':
+                    unlocked = (studentData.highestScore || 0) >= cert.requirement.value;
+                    break;
+            }
+        }
+        
+        return { ...cert, unlocked };
+    });
+    
+    // Count unlocked certificates
+    const unlockedCount = updatedCertificates.filter(c => c.unlocked).length;
+    document.getElementById('certificatesCount').textContent = `${unlockedCount} Unlocked`;
+    
+    // Render certificates
+    grid.innerHTML = updatedCertificates.map(cert => `
+        <div class="certificate-card ${cert.unlocked ? 'unlocked' : 'locked'}" onclick="${cert.unlocked ? `viewCertificate('${cert.id}')` : ''}">
+            ${!cert.unlocked ? '<i class="fas fa-lock certificate-lock-icon"></i>' : ''}
+            <div class="certificate-icon">
+                <i class="${cert.icon}"></i>
+            </div>
+            <h4>${cert.name}</h4>
+            <p>${cert.description}</p>
+            <span class="certificate-requirement">
+                ${cert.unlocked ? '<i class="fas fa-check"></i> Unlocked' : `Req: ${cert.requirement.type === 'level' ? 'Level ' + cert.requirement.value : cert.requirement.value + '%'}`}
+            </span>
+        </div>
+    `).join('');
+}
+
+// Check for newly unlocked certificates
+function checkNewCertificates(level) {
+    const newlyUnlocked = certificates.filter(cert => 
+        cert.requirement.type === 'level' && 
+        cert.requirement.value === level
+    );
+    
+    newlyUnlocked.forEach(cert => {
+        showToast(`New Certificate Unlocked: ${cert.name}!`, 'success');
+    });
+}
+
+// View certificate details
+function viewCertificate(certId) {
+    const cert = certificates.find(c => c.id === certId);
+    if (!cert || !cert.unlocked) return;
+    
+    const studentData = JSON.parse(localStorage.getItem('studentData') || '{}');
+    const studentName = studentData.name || 'Student';
+    const currentDate = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+        <div class="modal-content certificate-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-certificate" style="color: #f59e0b;"></i> Certificate</h3>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="certificate-display">
+                    <div class="certificate-border">
+                        <div class="certificate-seal">
+                            <i class="${cert.icon}"></i>
+                        </div>
+                        <div style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 3px; opacity: 0.8; margin-bottom: 0.5rem;">Certificate of Achievement</div>
+                        <div class="certificate-title">${cert.name}</div>
+                        <p style="opacity: 0.9; margin: 1rem 0;">${cert.description}</p>
+                        <div style="margin: 1.5rem 0;">
+                            <div style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 0.5rem;">This certifies that</div>
+                            <div class="certificate-recipient">${studentName}</div>
+                        </div>
+                        <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 2rem;">
+                            <div style="text-align: center;">
+                                <div style="width: 100px; height: 2px; background: rgba(251, 191, 36, 0.5); margin: 0 auto 0.5rem;"></div>
+                                <div style="font-size: 0.8rem; opacity: 0.8;">EduBot Academy</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="width: 100px; height: 2px; background: rgba(251, 191, 36, 0.5); margin: 0 auto 0.5rem;"></div>
+                                <div style="font-size: 0.8rem; opacity: 0.8;">${currentDate}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                    <button class="btn-secondary" onclick="this.closest('.modal').remove()">Close</button>
+                    <button class="btn-primary" onclick="downloadCertificate('${cert.id}')">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Download certificate (placeholder)
+function downloadCertificate(certId) {
+    showToast('Certificate download started...', 'success');
+    // In a real implementation, this would generate a PDF
 }
