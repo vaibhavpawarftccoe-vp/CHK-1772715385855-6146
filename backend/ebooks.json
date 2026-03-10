@@ -1,0 +1,143 @@
+{
+  "EBK202600001": {
+    "ebookId": "EBK202600001",
+    "title": "Data Structures and Algorithms",
+    "author": "Thomas H. Cormen",
+    "subject": "Computer Science",
+    "course": "btech-cse",
+    "totalPages": 5,
+    "description": "A comprehensive guide to data structures and algorithms with practical examples",
+    "coverImage": "/static/images/ebooks/dsa-cover.jpg",
+    "fileUrl": "/api/ebook/sample-pdf/EBK202600001",
+    "downloadUrl": "/api/ebook/download/EBK202600001",
+    "uploadedDate": "2026-03-01T10:00:00.000000",
+    "isbnNumber": "978-0262033848",
+    "publisher": "MIT Press",
+    "publicationYear": 2009,
+    "categories": ["algorithms", "data-structures", "programming"],
+    "difficulty": "intermediate",
+    "duration": "40 hours",
+    "rating": 4.8,
+    "reviews": 245,
+    "downloadCount": 1250,
+    "chapters": [
+      {
+        "chapterId": 1,
+        "title": "Introduction to Algorithms",
+        "pageStart": 1,
+        "pageEnd": 25,
+        "duration": "2 hours"
+      },
+      {
+        "chapterId": 2,
+        "title": "Arrays and Linked Lists",
+        "pageStart": 26,
+        "pageEnd": 75,
+        "duration": "4 hours"
+      },
+      {
+        "chapterId": 3,
+        "title": "Sorting Algorithms",
+        "pageStart": 76,
+        "pageEnd": 150,
+        "duration": "6 hours"
+      },
+      {
+        "chapterId": 4,
+        "title": "Tree Structures",
+        "pageStart": 151,
+        "pageEnd": 250,
+        "duration": "8 hours"
+      },
+      {
+        "chapterId": 5,
+        "title": "Graph Algorithms",
+        "pageStart": 251,
+        "pageEnd": 352,
+        "duration": "10 hours"
+      }
+    ]
+  },
+  "EBK202600002": {
+    "ebookId": "EBK202600002",
+    "title": "Database Management Systems",
+    "author": "Raghu Ramakrishnan",
+    "subject": "Database",
+    "course": "btech-cse",
+    "totalPages": 456,
+    "description": "Complete guide to relational database management systems",
+    "coverImage": "/static/images/ebooks/dbms-cover.jpg",
+    "fileUrl": "/uploads/ebooks/dbms.pdf",
+    "downloadUrl": "/api/ebook/download/EBK202600002",
+    "uploadedDate": "2026-03-02T10:00:00.000000",
+    "isbnNumber": "978-0072465631",
+    "publisher": "McGraw-Hill",
+    "publicationYear": 2002,
+    "categories": ["database", "sql", "relational-db"],
+    "difficulty": "intermediate",
+    "duration": "50 hours",
+    "rating": 4.6,
+    "reviews": 189,
+    "downloadCount": 980,
+    "chapters": [
+      {
+        "chapterId": 1,
+        "title": "Introduction to Databases",
+        "pageStart": 1,
+        "pageEnd": 40,
+        "duration": "3 hours"
+      },
+      {
+        "chapterId": 2,
+        "title": "Relational Model",
+        "pageStart": 41,
+        "pageEnd": 100,
+        "duration": "5 hours"
+      },
+      {
+        "chapterId": 3,
+        "title": "SQL Basics",
+        "pageStart": 101,
+        "pageEnd": 200,
+        "duration": "10 hours"
+      },
+      {
+        "chapterId": 4,
+        "title": "Normalization",
+        "pageStart": 201,
+        "pageEnd": 300,
+        "duration": "12 hours"
+      },
+      {
+        "chapterId": 5,
+        "title": "Query Optimization",
+        "pageStart": 301,
+        "pageEnd": 456,
+        "duration": "15 hours"
+      }
+    ]
+  },
+  "EBK202600003": {
+    "ebookId": "EBK202600003",
+    "title": "Web Development with Python",
+    "author": "Miguel Grinberg",
+    "subject": "Web Development",
+    "course": "btech-cse",
+    "totalPages": 520,
+    "description": "Learn Flask and modern web development practices",
+    "coverImage": "/static/images/ebooks/webdev-cover.jpg",
+    "fileUrl": "/uploads/ebooks/webdev.pdf",
+    "downloadUrl": "/api/ebook/download/EBK202600003",
+    "uploadedDate": "2026-03-03T10:00:00.000000",
+    "isbnNumber": "978-1491927281",
+    "publisher": "O'Reilly",
+    "publicationYear": 2018,
+    "categories": ["web-development", "python", "flask"],
+    "difficulty": "intermediate",
+    "duration": "60 hours",
+    "rating": 4.7,
+    "reviews": 312,
+    "downloadCount": 1450,
+    "chapters": []
+  }
+}

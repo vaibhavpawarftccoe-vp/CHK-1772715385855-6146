@@ -320,11 +320,11 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="parent-info">
-                <div class="parent-avatar-container" style="position: relative; display: inline-block;">
+                <div class="parent-avatar-container">
                     <div class="parent-avatar" id="parentAvatar">
                         <i class="fas fa-user-friends"></i>
                     </div>
-                    <button class="edit-profile-btn" onclick="openParentEditProfileModal()" title="Edit Profile" style="position: absolute; bottom: 0; right: 0; width: 32px; height: 32px; background: linear-gradient(135deg, #10b981, #059669); border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; color: white; font-size: 0.8rem;">
+                    <button class="edit-profile-btn" onclick="openParentEditProfileModal()" title="Edit Profile">
                         <i class="fas fa-pencil-alt"></i>
                     </button>
                 </div>
@@ -369,16 +369,30 @@
         <main class="main-content">
             <!-- Header -->
             <header class="dashboard-header">
-                <h1 class="page-title">Teacher Dashboard</h1>
+                <h1 class="page-title">Parent Dashboard</h1>
                 <div class="header-actions">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
                         <input type="text" placeholder="Search students..." id="searchStudents">
                     </div>
-                    <button class="notification-btn">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
-                    </button>
+                    <div class="notification-container">
+                        <button class="notification-btn" onclick="toggleNotificationsDropdown()">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge" data-count="0"></span>
+                        </button>
+                        <div class="notification-dropdown" id="notificationsDropdown">
+                            <div class="notification-header">
+                                <h4>Notifications</h4>
+                                <button class="mark-read-btn" onclick="markNotificationsRead(event)">Mark all read</button>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                <div class="notification-empty">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p>No notifications yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -386,11 +400,11 @@
             <section id="overview" class="content-section active">
                 <div class="dashboard-grid">
                     <!-- Welcome Card -->
-                    <div class="dashboard-card" style="grid-column: 1 / -1;">
+                    <div class="dashboard-card full-width">
                         <div class="welcome-banner">
                             <div class="welcome-content">
-                                <h2>Welcome back, <span id="welcomeTeacherName">Teacher</span>!</h2>
-                                <p>Manage student attendance and track academic progress.</p>
+                                <h2>Welcome back, <span id="welcomeTeacherName">Parent</span>!</h2>
+                                <p>Monitor your child's progress and performance.</p>
                             </div>
                             <div class="welcome-icon">
                                 <i class="fas fa-chalkboard-teacher"></i>
@@ -430,7 +444,7 @@
                     </div>
 
                     <!-- Quick Actions -->
-                    <div class="dashboard-card" style="grid-column: 1 / -1;">
+                    <div class="dashboard-card full-width">
                         <div class="card-header">
                             <h3>Quick Actions</h3>
                         </div>
@@ -470,53 +484,51 @@
                     </div>
 
                     <!-- Child Info Card -->
-                    <div class="child-info-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="child-info-card">
+                        <div class="child-info-inner">
                             <div class="child-avatar-large" style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
                                 <i class="fas fa-user-graduate"></i>
                             </div>
                             <div>
-                                <h3 id="childNameDisplay" style="font-size: 1.25rem; margin-bottom: 0.25rem;">Loading...</h3>
-                                <p id="childIdDisplay" style="opacity: 0.9; font-size: 0.875rem;">Student ID: Loading...</p>
+                                <h3 id="childNameDisplay">Loading...</h3>
+                                <p id="childIdDisplay">Student ID: Loading...</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Live Stats Grid -->
-                    <div class="live-stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                        <div class="live-stat-card" style="background: #f0fdf4; padding: 1.25rem; border-radius: 10px; border-left: 4px solid #10b981;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                                <i class="fas fa-percentage" style="color: #10b981; font-size: 1.25rem;"></i>
-                                <span style="color: #64748b; font-size: 0.875rem;">Overall Progress</span>
+                    <div class="live-stats-grid">
+                        <div class="live-stat-card" style="border-left-color: #10b981;">
+                            <div class="live-stat-header">
+                                <i class="fas fa-percentage" style="color: #10b981;"></i>
+                                <span class="stats-label">Overall Progress</span>
                             </div>
-                            <div id="liveProgressPercent" style="font-size: 1.75rem; font-weight: 700; color: #059669;">--%</div>
-                            <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">
-                                <i class="fas fa-arrow-up"></i> Updated now
-                            </div>
+                            <div id="liveProgressPercent" class="stat-value">--%</div>
+                            <div class="stat-note"><i class="fas fa-arrow-up"></i> Updated now</div>
                         </div>
 
-                        <div class="live-stat-card" style="background: #eff6ff; padding: 1.25rem; border-radius: 10px; border-left: 4px solid #3b82f6;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                                <i class="fas fa-book-open" style="color: #3b82f6; font-size: 1.25rem;"></i>
-                                <span style="color: #64748b; font-size: 0.875rem;">Courses Active</span>
+                        <div class="live-stat-card" style="border-left-color: #3b82f6;">
+                            <div class="live-stat-header">
+                                <i class="fas fa-book-open" style="color: #3b82f6;"></i>
+                                <span class="stats-label">Courses Active</span>
                             </div>
-                            <div id="liveCoursesCount" style="font-size: 1.75rem; font-weight: 700; color: #2563eb;">--</div>
-                            <div style="font-size: 0.75rem; color: #3b82f6; margin-top: 0.25rem;">In progress</div>
+                            <div id="liveCoursesCount" class="stat-value">--</div>
+                            <div class="stat-note">In progress</div>
                         </div>
 
-                        <div class="live-stat-card" style="background: #fef3c7; padding: 1.25rem; border-radius: 10px; border-left: 4px solid #f59e0b;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                                <i class="fas fa-tasks" style="color: #f59e0b; font-size: 1.25rem;"></i>
-                                <span style="color: #64748b; font-size: 0.875rem;">Assignments</span>
+                        <div class="live-stat-card" style="border-left-color: #f59e0b;">
+                            <div class="live-stat-header">
+                                <i class="fas fa-tasks" style="color: #f59e0b;"></i>
+                                <span class="stats-label">Assignments</span>
                             </div>
-                            <div id="liveAssignmentsCount" style="font-size: 1.75rem; font-weight: 700; color: #d97706;">--</div>
-                            <div style="font-size: 0.75rem; color: #f59e0b; margin-top: 0.25rem;">Pending</div>
+                            <div id="liveAssignmentsCount" class="stat-value">--</div>
+                            <div class="stat-note">Pending</div>
                         </div>
 
-                        <div class="live-stat-card" style="background: #f3e8ff; padding: 1.25rem; border-radius: 10px; border-left: 4px solid #8b5cf6;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                                <i class="fas fa-trophy" style="color: #8b5cf6; font-size: 1.25rem;"></i>
-                                <span style="color: #64748b; font-size: 0.875rem;">Current Rank</span>
+                        <div class="live-stat-card" style="border-left-color: #8b5cf6;">
+                            <div class="live-stat-header">
+                                <i class="fas fa-trophy" style="color: #8b5cf6;"></i>
+                                <span class="stats-label">Current Rank</span>
                             </div>
                             <div id="liveRank" style="font-size: 1.75rem; font-weight: 700; color: #7c3aed;">--</div>
                             <div style="font-size: 0.75rem; color: #8b5cf6; margin-top: 0.25rem;">In class</div>
@@ -546,6 +558,52 @@
                     <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; padding: 0.75rem; background: #f0fdf4; border-radius: 8px;">
                         <i class="fas fa-sync-alt" id="refreshIcon" style="color: #10b981;"></i>
                         <span style="font-size: 0.875rem; color: #059669;">Auto-refreshing every 10 seconds</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Grades & Certificates Section -->
+            <section id="grades" class="content-section">
+                <div class="dashboard-card">
+                    <div class="section-header">
+                        <h2 class="section-title">Grades & Certificates</h2>
+                        <p style="color: #64748b; margin-top: 0.25rem;">Track academic performance and collect achievements.</p>
+                    </div>
+
+                    <div class="grade-cert-grid">
+                        <div class="grade-summary-card">
+                            <div class="grade-header">
+                                <div>
+                                    <h3 class="grade-title">Grade Overview</h3>
+                                    <p class="grade-subtitle">Overall GPA and progress</p>
+                                </div>
+                                <div class="grade-score" id="cgpaScore">--</div>
+                            </div>
+                            <div class="grade-details">
+                                <div class="grade-item">
+                                    <span>CGPA</span>
+                                    <span id="cgpaDisplay">--</span>
+                                </div>
+                                <div class="grade-item">
+                                    <span>Completed Credits</span>
+                                    <span id="creditsDisplay">--</span>
+                                </div>
+                                <div class="grade-item">
+                                    <span>Rank</span>
+                                    <span id="gradeRank">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="certificates-panel">
+                            <div class="certificates-header">
+                                <h3>My Certificates</h3>
+                                <span class="certificate-count" id="certificateCount">0 Unlocked</span>
+                            </div>
+                            <div class="certificate-grid" id="certificateGrid">
+                                <!-- Certificates will be rendered here -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -730,21 +788,27 @@
             `;
         }
 
-        // Check authentication
+        // Check authentication (Parent)
         async function checkAuth() {
             try {
-                const response = await fetch('/api/teacher/info');
+                const response = await fetch('/api/parent/info');
                 const data = await response.json();
-                
+
                 if (data.success) {
-                    currentTeacher = data.teacher;
-                    updateTeacherUI(data.teacher);
-                    loadStudents();
+                    const parent = data.parent;
+                    // Update welcome message
+                    const welcomeEl = document.getElementById('welcomeTeacherName');
+                    if (welcomeEl) {
+                        welcomeEl.textContent = parent.name ? parent.name.split(' ')[0] : 'Parent';
+                    }
+
+                    // Load parent + child data
+                    loadParentChildInfo();
                 } else {
-                    window.location.href = '/teacher-login';
+                    window.location.href = '/parent-login';
                 }
             } catch (error) {
-                window.location.href = '/teacher-login';
+                window.location.href = '/parent-login';
             }
         }
 
@@ -998,23 +1062,10 @@
         async function handleLogout() {
             try {
                 await fetch('/api/logout', { method: 'POST' });
-                window.location.href = '/teacher-login';
+                window.location.href = '/parent-login';
             } catch (error) {
-                window.location.href = '/teacher-login';
+                window.location.href = '/parent-login';
             }
-        }
-
-        // Show toast notification
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-            
-            toastMessage.textContent = message;
-            toast.className = 'toast show ' + type;
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
         }
 
         // Search students
@@ -1112,8 +1163,139 @@
                 card.classList.add('live-update-pulse');
                 setTimeout(() => card.classList.remove('live-update-pulse'), 1000);
             });
+
+            // Update grade summary + certificates
+            renderGradeSummary(child, metrics.currentRank);
+            renderCertificates(child);
         }
         
+        // Render grade summary section
+        function renderGradeSummary(child, rankValue) {
+            if (!child) return;
+
+            const cgpa = (child.grades && typeof child.grades.cgpa === 'number') ? child.grades.cgpa : null;
+            const totalCredits = (child.grades && typeof child.grades.totalCredits === 'number') ? child.grades.totalCredits : null;
+            const rank = document.getElementById('gradeRank');
+
+            document.getElementById('cgpaScore').textContent = cgpa !== null && cgpa > 0 ? cgpa.toFixed(2) : '--';
+            document.getElementById('cgpaDisplay').textContent = cgpa !== null && cgpa > 0 ? cgpa.toFixed(2) : 'N/A';
+            document.getElementById('creditsDisplay').textContent = totalCredits !== null ? totalCredits : 'N/A';
+
+            if (rank) {
+                rank.textContent = rankValue || 'N/A';
+            }
+        }
+
+        // Render certificates grid
+        function renderCertificates(child) {
+            const grid = document.getElementById('certificateGrid');
+            const countEl = document.getElementById('certificateCount');
+            if (!grid || !countEl) return;
+
+            const assignments = (child.assignments || {});
+            const submittedCount = (assignments.submitted || []).length;
+            const attendance = (child.attendance || {});
+            const present = attendance.present || 0;
+            const absent = attendance.absent || 0;
+            const totalDays = present + absent;
+            const attendancePct = totalDays > 0 ? (present / totalDays) * 100 : 0;
+
+            const quizzes = child.quizzes || [];
+            const quizHighScores = quizzes.filter(q => (q.percentage || 0) >= 90).length;
+            const quizPerfect = quizzes.some(q => (q.percentage || 0) === 100);
+
+            const levelProgress = (child.level && child.level.progress) ? child.level.progress : 0;
+            const cgpa = (child.grades && typeof child.grades.cgpa === 'number') ? child.grades.cgpa : 0;
+
+            const certificates = [
+                {
+                    id: 'first-steps',
+                    title: 'First Steps',
+                    description: 'Complete your first assignment',
+                    icon: 'fas fa-shoe-prints',
+                    unlocked: submittedCount > 0
+                },
+                {
+                    id: 'rising-star',
+                    title: 'Rising Star',
+                    description: 'Reach Level 2',
+                    icon: 'fas fa-star',
+                    unlocked: levelProgress >= 20
+                },
+                {
+                    id: 'knowledge-hunter',
+                    title: 'Knowledge Hunter',
+                    description: 'Reach Level 3',
+                    icon: 'fas fa-search',
+                    unlocked: levelProgress >= 40
+                },
+                {
+                    id: 'perfect-attendance',
+                    title: 'Perfect Attendance',
+                    description: 'Maintain 95%+ attendance',
+                    icon: 'fas fa-calendar-check',
+                    unlocked: attendancePct >= 95
+                },
+                {
+                    id: 'quiz-master',
+                    title: 'Quiz Master',
+                    description: 'Score 90%+ in a quiz',
+                    icon: 'fas fa-question-circle',
+                    unlocked: quizHighScores > 0
+                },
+                {
+                    id: 'academic-excellence',
+                    title: 'Academic Excellence',
+                    description: 'Reach Level 5',
+                    icon: 'fas fa-graduation-cap',
+                    unlocked: levelProgress >= 50
+                },
+                {
+                    id: 'dedicated-learner',
+                    title: 'Dedicated Learner',
+                    description: 'Complete 10 assignments',
+                    icon: 'fas fa-list-check',
+                    unlocked: submittedCount >= 10
+                },
+                {
+                    id: 'master-scholar',
+                    title: 'Master Scholar',
+                    description: 'Reach Level 8',
+                    icon: 'fas fa-crown',
+                    unlocked: levelProgress >= 80
+                },
+                {
+                    id: 'legend-status',
+                    title: 'Legend Status',
+                    description: 'Reach Level 10',
+                    icon: 'fas fa-gem',
+                    unlocked: levelProgress >= 100
+                },
+                {
+                    id: 'perfect-score',
+                    title: 'Perfect Score',
+                    description: 'Get 100% in any exam',
+                    icon: 'fas fa-trophy',
+                    unlocked: quizPerfect
+                }
+            ];
+
+            const unlockedCount = certificates.filter(c => c.unlocked).length;
+            countEl.textContent = `${unlockedCount} Unlocked`;
+
+            grid.innerHTML = certificates.map(cert => {
+                const statusText = cert.unlocked ? 'Unlocked' : 'Locked';
+                return `
+                    <div class="certificate-card ${cert.unlocked ? 'unlocked' : ''}">
+                        <div class="certificate-icon"><i class="${cert.icon}"></i></div>
+                        <h4 class="certificate-title">${cert.title}</h4>
+                        <p class="certificate-desc">${cert.description}</p>
+                        <div class="certificate-status">${statusText}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         // Animate number value
         function animateValue(elementId, value, suffix) {
             const element = document.getElementById(elementId);
@@ -1206,9 +1388,130 @@
             }
         }
         
-        // Load parent info on page load
-        document.addEventListener('DOMContentLoaded', loadParentChildInfo);
-        
+        // Load parent info and notifications on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadParentChildInfo();
+            loadNotifications();
+        });
+
+        // Close notifications dropdown when clicking outside
+        function handleDocumentClick(event) {
+            const dropdown = document.getElementById('notificationsDropdown');
+            const button = document.querySelector('.notification-btn');
+            if (!dropdown || !button) return;
+
+            if (dropdown.classList.contains('show') && !dropdown.contains(event.target) && !button.contains(event.target)) {
+                closeNotificationsDropdown();
+            }
+        }
+
+        document.addEventListener('click', handleDocumentClick);
+
+        // Notification helpers
+        let notificationsCache = [];
+
+        function updateNotificationBadge(count) {
+            const badge = document.querySelector('.notification-btn .badge');
+            if (!badge) return;
+            badge.textContent = count > 0 ? count : '';
+            badge.dataset.count = count;
+        }
+
+        function renderNotifications(notifications) {
+            const list = document.getElementById('notificationList');
+            if (!list) return;
+            notificationsCache = notifications || [];
+
+            if (!notificationsCache.length) {
+                list.innerHTML = `
+                    <div class="notification-empty">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>No notifications yet</p>
+                    </div>
+                `;
+                updateNotificationBadge(0);
+                return;
+            }
+
+            updateNotificationBadge(notificationsCache.filter(n => !n.read).length);
+
+            list.innerHTML = notificationsCache.map(notification => {
+                const isUnread = !notification.read;
+                const iconType = notification.type || 'info';
+                const title = notification.title || 'Notification';
+                const message = notification.message || '';
+                const time = notification.timestamp ? formatTimeAgo(notification.timestamp) : '';
+
+                return `
+                    <div class="notification-item ${isUnread ? 'unread' : ''}" onclick="toggleNotificationRead('${notification.id}')">
+                        <div class="notification-icon ${iconType}">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="notification-content">
+                            <h5>${title}${isUnread ? '<span class="unread-dot"></span>' : ''}</h5>
+                            <p>${message}</p>
+                            <div class="notification-time">${time}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/parent/notifications');
+                const data = await response.json();
+                if (data.success) {
+                    renderNotifications(data.notifications || []);
+                } else {
+                    updateNotificationBadge(0);
+                }
+            } catch (err) {
+                console.error('Failed to load notifications', err);
+                updateNotificationBadge(0);
+            }
+        }
+
+        function toggleNotificationsDropdown() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            if (!dropdown) return;
+            const isOpen = dropdown.classList.contains('show');
+            if (isOpen) {
+                closeNotificationsDropdown();
+            } else {
+                dropdown.classList.add('show');
+            }
+        }
+
+        function closeNotificationsDropdown() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            if (!dropdown) return;
+            dropdown.classList.remove('show');
+        }
+
+        async function markNotificationsRead(event) {
+            if (event) event.stopPropagation();
+            try {
+                const response = await fetch('/api/parent/notifications/read-all', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    notificationsCache = notificationsCache.map(n => ({ ...n, read: true }));
+                    renderNotifications(notificationsCache);
+                }
+            } catch (err) {
+                console.error('Failed to mark notifications read', err);
+            }
+        }
+
+        function toggleNotificationRead(notificationId) {
+            const notification = notificationsCache.find(n => n.id === notificationId);
+            if (!notification) return;
+            notification.read = true;
+            renderNotifications(notificationsCache);
+        }
+
         // Add CSS animation for live updates
         const style = document.createElement('style');
         style.textContent = `
@@ -1419,7 +1722,7 @@
                     showToast('Profile updated successfully!', 'success');
                     closeParentEditProfileModal();
                     // Refresh parent info on dashboard
-                    loadParentInfo();
+                    loadParentChildInfo();
                 } else {
                     showToast(data.message || 'Failed to update profile', 'error');
                 }

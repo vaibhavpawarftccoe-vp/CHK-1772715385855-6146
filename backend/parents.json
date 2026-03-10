@@ -1,0 +1,58 @@
+{
+  "parent1@edubot.edu": {
+    "name": "Mr. Rajesh Sharma",
+    "email": "parent1@edubot.edu",
+    "password": "parent123",
+    "parent_id": "PRT20260001",
+    "child_name": "Rahul Sharma",
+    "child_id": "STU20260001",
+    "phone": "+91 9876543210",
+    "relationship": "Father"
+  },
+  "parent2@edubot.edu": {
+    "name": "Mrs. Priya Patel",
+    "email": "parent2@edubot.edu",
+    "password": "parent123",
+    "parent_id": "PRT20260002",
+    "child_name": "Neha Patel",
+    "child_id": "STU20260002",
+    "phone": "+91 9876543211",
+    "relationship": "Mother"
+  },
+  "parent3@edubot.edu": {
+    "name": "Mr. Amit Kumar",
+    "email": "parent3@edubot.edu",
+    "password": "parent123",
+    "parent_id": "PRT20260003",
+    "child_name": "Vikram Kumar",
+    "child_id": "STU20260003",
+    "phone": "+91 9876543212",
+    "relationship": "Father"
+  },
+  "avirajmaske5@gmail.com": {
+    "name": "dad dy",
+    "email": "avirajmaske5@gmail.com",
+    "password": "pASS@123",
+    "parent_id": "PRT20260004",
+    "child_name": "Unknown",
+    "child_id": "EDU2026000002",
+    "phone": "8329173840",
+    "relationship": "Parent",
+    "first_name": "dad",
+    "last_name": "dy",
+    "registered_at": "2026-03-11T01:22:18.673773"
+  },
+  "shivaadada14@gmail.com": {
+    "name": "shivaa howal",
+    "email": "shivaadada14@gmail.com",
+    "password": "Pass@123",
+    "parent_id": "PRT20260005",
+    "child_name": "Unknown",
+    "child_id": "EDU2026000001",
+    "phone": "8080935616",
+    "relationship": "Parent",
+    "first_name": "shivaa",
+    "last_name": "howal",
+    "registered_at": "2026-03-11T02:15:01.778743"
+  }
+}

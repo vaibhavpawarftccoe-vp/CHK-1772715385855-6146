@@ -140,6 +140,11 @@
                     <p><strong>Parent 1:</strong> <code>parent1@edubot.edu</code> / <code>parent123</code></p>
                     <p><strong>Parent 2:</strong> <code>parent2@edubot.edu</code> / <code>parent123</code></p>
                     <p><strong>Parent 3:</strong> <code>parent3@edubot.edu</code> / <code>parent123</code></p>
+                    <hr style="margin: 0.75rem 0; border: none; border-top: 1px solid #a7f3d0;">
+                    <h4><i class="fas fa-id-card"></i> Registered Student IDs</h4>
+                    <p><strong>Student 1:</strong> <code>EDU2026000001</code> (Rahul Sharma)</p>
+                    <p><strong>Student 2:</strong> <code>EDU2026000002</code> (Neha Patel)</p>
+                    <p><strong>Student 3:</strong> <code>EDU2026000003</code> (Vikram Kumar)</p>
                 </div>
             </div>
 
@@ -181,7 +186,7 @@
                         <label for="studentId"><i class="fas fa-id-card" style="color: #667eea;"></i> Child's Student ID</label>
                         <div class="input-group">
                             <i class="fas fa-graduation-cap"></i>
-                            <input type="text" id="studentId" name="studentId" placeholder="Enter your child's Student ID (e.g., EDU202600001)" required>
+                            <input type="text" id="studentId" name="studentId" placeholder="Enter your child's Student ID (e.g., EDU2026000001)" required>
                         </div>
                         <small style="color: #64748b; font-size: 0.8rem; margin-top: 0.25rem; display: block;">
                             <i class="fas fa-info-circle"></i> You can find this ID in your child's dashboard
@@ -342,8 +347,8 @@
             }
             
             // Validate student ID format
-            if (!studentId.match(/^EDU\d{9}$/)) {
-                showToast('Invalid Student ID format. Should be like EDU202600001', 'error');
+            if (!studentId.match(/^EDU\d{10}$/)) {
+                showToast('Invalid Student ID format. Should be like EDU2026000001', 'error');
                 return;
             }
             

@@ -1,0 +1,51 @@
+{
+  "EDU2026000001": {
+    "ebookReadingProgress": {
+      "EBK202600001": {
+        "ebookId": "EBK202600001",
+        "title": "Data Structures and Algorithms",
+        "currentPage": 45,
+        "totalPages": 352,
+        "progressPercentage": 12.7,
+        "status": "in-progress",
+        "startedDate": "2026-03-05T09:30:00.000000",
+        "lastReadDate": "2026-03-10T14:25:00.000000",
+        "readingTime": 285,
+        "bookmarks": [25, 45, 67],
+        "notes": [
+          {
+            "pageNumber": 25,
+            "note": "Important concept about array optimization",
+            "timestamp": "2026-03-05T10:00:00.000000"
+          },
+          {
+            "pageNumber": 45,
+            "note": "Review this section again - linked lists implementation",
+            "timestamp": "2026-03-06T15:30:00.000000"
+          }
+        ],
+        "currentChapter": 2,
+        "chaptersCompleted": [1],
+        "rating": null,
+        "completionDate": null
+      },
+      "EBK202600002": {
+        "ebookId": "EBK202600002",
+        "title": "Database Management Systems",
+        "currentPage": 120,
+        "totalPages": 456,
+        "progressPercentage": 26.3,
+        "status": "in-progress",
+        "startedDate": "2026-03-01T08:00:00.000000",
+        "lastReadDate": "2026-03-10T16:45:00.000000",
+        "readingTime": 450,
+        "bookmarks": [40, 100, 120],
+        "notes": [],
+        "currentChapter": 3,
+        "chaptersCompleted": [1, 2],
+        "rating": null,
+        "completionDate": null
+      }
+    }
+  }
+}

@@ -1027,34 +1027,44 @@ function loadResourcesSection() {
 // ============================================
 function loadQuizSection() {
     if (!studentData) return;
-    
+
     // Update today's date
     const todayDate = document.getElementById('todayDate');
     if (todayDate) {
         todayDate.textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     }
-    
-    // Load quiz history
+
+    // Reset quiz view to subject selection
+    resetQuizView();
+
+    // Render subject cards and quiz history
+    renderQuizSubjectGrid();
+    updateQuizHeader();
+    updateQuizHistory();
+}
+
+function updateQuizHistory() {
     const quizHistory = document.getElementById('quizHistory');
     const quizzes = studentData.quizzes || [];
-    
+
     if (quizCount) quizCount.textContent = quizzes.length;
-    
+
+    if (!quizHistory) return;
+
     if (quizzes.length === 0) {
-        if (quizHistory) quizHistory.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No quizzes attempted yet</p>';
-    } else {
-        if (quizHistory) {
-            quizHistory.innerHTML = quizzes.slice(-5).reverse().map(quiz => `
-                <div class="history-item">
-                    <div class="history-info">
-                        <h4>${quiz.subject}</h4>
-                        <span>${new Date(quiz.date).toLocaleDateString()}</span>
-                    </div>
-                    <span class="history-score">${quiz.score}/${quiz.total}</span>
-                </div>
-            `).join('');
-        }
+        quizHistory.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No quizzes attempted yet</p>';
+        return;
     }
+
+    quizHistory.innerHTML = quizzes.slice(-5).reverse().map(quiz => `
+        <div class="history-item">
+            <div class="history-info">
+                <h4>${quiz.subject}</h4>
+                <span>${new Date(quiz.date).toLocaleDateString()}</span>
+            </div>
+            <span class="history-score">${quiz.score}/${quiz.total}</span>
+        </div>
+    `).join('');
 }
 
 // ============================================
@@ -1062,35 +1072,10 @@ function loadQuizSection() {
 // ============================================
 let currentQuiz = null;
 let quizTimer = null;
+let selectedQuizSubject = 'Computer Science';
 
-function startWeeklyQuiz() {
-    const quizContent = document.getElementById('quizContent');
-    const quizQuestions = document.getElementById('quizQuestions');
-    
-    if (quizContent) quizContent.style.display = 'none';
-    if (quizQuestions) {
-        quizQuestions.style.display = 'block';
-        quizQuestions.innerHTML = generateQuizQuestions();
-    }
-    
-    // Start timer
-    let timeLeft = 45 * 60; // 45 minutes
-    quizTimer = setInterval(() => {
-        timeLeft--;
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        const timerEl = document.getElementById('quizTimer');
-        if (timerEl) timerEl.textContent = `Time Left: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-        
-        if (timeLeft <= 0) {
-            clearInterval(quizTimer);
-            submitQuiz();
-        }
-    }, 1000);
-}
-
-function generateQuizQuestions() {
-    const questions = [
+const quizBanks = {
+    'Computer Science': [
         {
             question: "What is the time complexity of binary search?",
             options: ["O(n)", "O(log n)", "O(n²)", "O(1)"],
@@ -1116,10 +1101,244 @@ function generateQuizQuestions() {
             options: ["Simple Query Language", "Structured Query Language", "Standard Query Language", "System Query Language"],
             correct: 1
         }
-    ];
-    
+    ],
+    'Mathematics': [
+        {
+            question: "What is the derivative of sin(x)?",
+            options: ["cos(x)", "-sin(x)", "sin(x)", "-cos(x)"],
+            correct: 0
+        },
+        {
+            question: "What is the value of π (pi) approximately?",
+            options: ["2.14", "3.14", "4.14", "3.41"],
+            correct: 1
+        },
+        {
+            question: "What is 12 × 15?",
+            options: ["160", "170", "180", "190"],
+            correct: 2
+        },
+        {
+            question: "Solve for x: 2x + 5 = 15.",
+            options: ["4", "5", "6", "7"],
+            correct: 0
+        },
+        {
+            question: "What is the area of a circle with radius r?",
+            options: ["πr²", "2πr", "πr", "r²"],
+            correct: 0
+        }
+    ],
+    'Physics': [
+        {
+            question: "What is the SI unit of force?",
+            options: ["Newton", "Joule", "Watt", "Pascal"],
+            correct: 0
+        },
+        {
+            question: "What is the acceleration due to gravity on Earth (approx)?",
+            options: ["9.8 m/s²", "8.9 m/s²", "10.8 m/s²", "7.5 m/s²"],
+            correct: 0
+        },
+        {
+            question: "Which law states that energy cannot be created or destroyed?",
+            options: ["Newton's Second Law", "Law of Conservation of Energy", "Ohm's Law", "Hooke's Law"],
+            correct: 1
+        },
+        {
+            question: "What is the speed of light in vacuum (approx)?",
+            options: ["3×10^6 m/s", "3×10^7 m/s", "3×10^8 m/s", "3×10^9 m/s"],
+            correct: 2
+        },
+        {
+            question: "What is the unit of electric current?",
+            options: ["Volt", "Ampere", "Ohm", "Watt"],
+            correct: 1
+        }
+    ],
+    'Chemistry': [
+        {
+            question: "What is the chemical symbol for water?",
+            options: ["HO", "O2", "H2O", "OH"],
+            correct: 2
+        },
+        {
+            question: "What is the pH of a neutral solution at 25°C?",
+            options: ["5", "6", "7", "8"],
+            correct: 2
+        },
+        {
+            question: "Which gas is most abundant in Earth’s atmosphere?",
+            options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+            correct: 1
+        },
+        {
+            question: "What type of bond involves sharing of electron pairs?",
+            options: ["Ionic bond", "Covalent bond", "Hydrogen bond", "Metallic bond"],
+            correct: 1
+        },
+        {
+            question: "What is the atomic number of Carbon?",
+            options: ["4", "6", "8", "12"],
+            correct: 1
+        }
+    ],
+    'English': [
+        {
+            question: "What is the antonym of 'happy'?",
+            options: ["Sad", "Glad", "Joyful", "Pleasant"],
+            correct: 0
+        },
+        {
+            question: "Which is a noun?",
+            options: ["Run", "Beautiful", "Apple", "Quickly"],
+            correct: 2
+        },
+        {
+            question: "Which sentence is grammatically correct?",
+            options: ["She don't like ice cream.", "They is going to school.", "He has finished his work.", "I am go to the park."],
+            correct: 2
+        },
+        {
+            question: "What is the past tense of 'go'?",
+            options: ["Goed", "Went", "Gone", "Goes"],
+            correct: 1
+        },
+        {
+            question: "Choose the correct spelling:",
+            options: ["Accomodate", "Acommodate", "Accommodate", "Acommadate"],
+            correct: 2
+        }
+    ],
+    'IKS': [
+        {
+            question: "Which element is known as the 'King of Chemicals'?",
+            options: ["Sulfuric Acid", "Hydrochloric Acid", "Nitric Acid", "Acetic Acid"],
+            correct: 0
+        },
+        {
+            question: "What does IKS stand for in a learning context?",
+            options: ["Integrated Knowledge System", "Interactive Knowledge Source", "Intelligent Knowledge Service", "Information Knowledge Skills"],
+            correct: 0
+        },
+        {
+            question: "Which is a common study technique?",
+            options: ["Passive reading", "Active recall", "Ignoring notes", "Skipping practice"],
+            correct: 1
+        },
+        {
+            question: "What is the main benefit of spaced repetition?",
+            options: ["Cramming faster", "Better long-term retention", "Avoiding practice", "More distractions"],
+            correct: 1
+        },
+        {
+            question: "Which of the following is a good study habit?",
+            options: ["Studying with no breaks", "Multitasking while studying", "Setting clear goals", "Studying only once"],
+            correct: 2
+        }
+    ]
+};
+
+function hasAttemptedQuiz(subject) {
+    if (!studentData || !Array.isArray(studentData.quizzes)) return false;
+    return studentData.quizzes.some(q => q.subject === subject);
+}
+
+function updateQuizButtonState() {
+    const startBtn = document.querySelector('.btn-quiz-start');
+    if (!startBtn) return;
+
+    if (hasAttemptedQuiz(selectedQuizSubject)) {
+        startBtn.textContent = 'Already Attempted';
+        startBtn.disabled = true;
+        startBtn.classList.add('disabled');
+    } else {
+        startBtn.textContent = 'Start Quiz';
+        startBtn.disabled = false;
+        startBtn.classList.remove('disabled');
+    }
+}
+
+function updateQuizHeader() {
+    const header = document.querySelector('.quiz-card .card-header h3');
+    if (header) {
+        header.textContent = `${selectedQuizSubject} Quiz`;
+    }
+}
+
+function resetQuizView() {
+    const quizContent = document.getElementById('quizContent');
+    const quizQuestions = document.getElementById('quizQuestions');
+    const quizResults = document.getElementById('quizResults');
+
+    if (quizContent) quizContent.style.display = 'block';
+    if (quizQuestions) quizQuestions.style.display = 'none';
+    if (quizResults) quizResults.style.display = 'none';
+
+    renderQuizSubjectGrid();
+    updateQuizHeader();
+}
+
+function renderQuizSubjectGrid() {
+    const grid = document.getElementById('quizSubjectGrid');
+    if (!grid) return;
+
+    const subjects = Object.keys(quizBanks);
+    grid.innerHTML = subjects.map(subject => {
+        const attempted = hasAttemptedQuiz(subject);
+        return `
+            <div class="quiz-subject-card ${attempted ? 'attempted' : ''}">
+                <div class="subject-name">${subject}</div>
+                <button class="btn-quiz-start ${attempted ? 'disabled' : ''}" ${attempted ? 'disabled' : ''} onclick="startWeeklyQuiz('${subject}')">
+                    <i class="fas fa-play"></i> ${attempted ? 'Attempted' : 'Start'}
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function startWeeklyQuiz(subject) {
+    const selectedSubject = subject || selectedQuizSubject;
+
+    // Prevent multiple attempts per subject
+    if (hasAttemptedQuiz(selectedSubject)) {
+        showToast(`You have already attempted the ${selectedSubject} quiz.`, 'info');
+        return;
+    }
+
+    selectedQuizSubject = selectedSubject;
+    updateQuizHeader();
+
+    const quizContent = document.getElementById('quizContent');
+    const quizQuestions = document.getElementById('quizQuestions');
+
+    if (quizContent) quizContent.style.display = 'none';
+    if (quizQuestions) {
+        quizQuestions.style.display = 'block';
+        quizQuestions.innerHTML = generateQuizQuestions();
+    }
+
+    // Start timer
+    let timeLeft = 45 * 60; // 45 minutes
+    quizTimer = setInterval(() => {
+        timeLeft--;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const timerEl = document.getElementById('quizTimer');
+        if (timerEl) timerEl.textContent = `Time Left: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(quizTimer);
+            submitQuiz();
+        }
+    }, 1000);
+}
+
+function generateQuizQuestions() {
+    const questions = quizBanks[selectedQuizSubject] || quizBanks['Computer Science'];
+
     currentQuiz = { questions, answers: [] };
-    
+
     return questions.map((q, idx) => `
         <div class="question-item">
             <h4>Question ${idx + 1}: ${q.question}</h4>
@@ -1168,8 +1387,8 @@ function submitQuiz() {
             <div class="result-score">${score}/${currentQuiz.questions.length}</div>
             <div class="result-message">${percentage >= 80 ? 'Excellent! 🎉' : percentage >= 60 ? 'Good Job! 👍' : 'Keep Practicing! 💪'}</div>
             <p>You scored ${percentage.toFixed(0)}%</p>
-            <button class="btn-quiz-start" onclick="resetQuiz()" style="margin-top: 1rem;">
-                <i class="fas fa-redo"></i> Try Again
+            <button class="btn-quiz-start" onclick="resetQuizView()" style="margin-top: 1rem;">
+                <i class="fas fa-arrow-left"></i> Back to Subjects
             </button>
         `;
     }
@@ -1179,28 +1398,30 @@ function submitQuiz() {
 }
 
 function resetQuiz() {
-    const quizContent = document.getElementById('quizContent');
-    const quizResults = document.getElementById('quizResults');
-    
-    if (quizContent) quizContent.style.display = 'block';
-    if (quizResults) quizResults.style.display = 'none';
-    
-    const timerEl = document.getElementById('quizTimer');
-    if (timerEl) timerEl.textContent = 'Time Left: 45:00';
-    
-    currentQuiz = null;
+    resetQuizView();
 }
 
 function saveQuizResult(score, total) {
+    const quizResult = {
+        subject: selectedQuizSubject,
+        score: score,
+        total: total,
+        date: new Date().toISOString()
+    };
+
+    // Save locally for immediate UI update
+    if (!studentData.quizzes) studentData.quizzes = [];
+    studentData.quizzes.push(quizResult);
+
+    // Update the subject cards and history (disable repeat attempts)
+    renderQuizSubjectGrid();
+    updateQuizHistory();
+
+    // Persist to server
     fetch('/api/student/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            subject: 'Weekly Quiz',
-            score: score,
-            total: total,
-            date: new Date().toISOString()
-        })
+        body: JSON.stringify(quizResult)
     }).catch(error => console.error('Error saving quiz:', error));
 }
 
@@ -2192,6 +2413,11 @@ function showSection(sectionId) {
         'settings': 'Account Settings'
     };
     document.getElementById('pageTitle').textContent = titles[sectionId] || 'Dashboard';
+
+    // Trigger section-specific load logic
+    if (sectionId === 'quiz') {
+        loadQuizSection();
+    }
     
     // Update active nav item
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -3602,7 +3828,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // E-Book Download System with Local Storage
 // ============================================
 
-// E-Book database
+// E-Book database (real PDF downloads)
 const ebooksDatabase = {
     'python': {
         id: 'python',
@@ -3613,7 +3839,7 @@ const ebooksDatabase = {
         pages: 450,
         color: 'linear-gradient(135deg, #3776ab, #ffd43b)',
         icon: 'fab fa-python',
-        content: 'Python is a versatile programming language...',
+        fileUrl: '/static/ebooks/python.pdf',
         fileSize: '12.5 MB',
         format: 'PDF'
     },
@@ -3626,7 +3852,7 @@ const ebooksDatabase = {
         pages: 380,
         color: 'linear-gradient(135deg, #f7df1e, #323330)',
         icon: 'fab fa-js',
-        content: 'JavaScript is the language of the web...',
+        fileUrl: '/static/ebooks/javascript.pdf',
         fileSize: '8.3 MB',
         format: 'PDF'
     },
@@ -3639,7 +3865,7 @@ const ebooksDatabase = {
         pages: 520,
         color: 'linear-gradient(135deg, #667eea, #764ba2)',
         icon: 'fas fa-code',
-        content: 'Data structures are fundamental to computer science...',
+        fileUrl: '/static/ebooks/algorithms.pdf',
         fileSize: '15.2 MB',
         format: 'PDF'
     },
@@ -3652,7 +3878,7 @@ const ebooksDatabase = {
         pages: 480,
         color: 'linear-gradient(135deg, #ff6b6b, #ee5a6f)',
         icon: 'fas fa-brain',
-        content: 'Machine learning is transforming industries...',
+        fileUrl: '/static/ebooks/machine-learning.pdf',
         fileSize: '18.7 MB',
         format: 'PDF'
     }
@@ -3665,33 +3891,37 @@ async function downloadEbook(bookId) {
         showToast('Book not found', 'error');
         return;
     }
-    
+
     // Check if already downloaded
     const downloadedBooks = getDownloadedBooks();
     if (downloadedBooks.some(b => b.id === bookId)) {
         showToast('This book is already in your downloads!', 'info');
         return;
     }
-    
-    // Show download progress
-    showDownloadProgress(book);
-    
-    // Simulate download progress
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-        progress += Math.random() * 15;
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(progressInterval);
-            
-            // Complete download
-            setTimeout(() => {
-                completeDownload(book);
-                hideDownloadProgress();
-            }, 500);
-        }
-        updateDownloadProgress(progress, book.title);
-    }, 300);
+
+    try {
+        // Show download progress UI briefly
+        showDownloadProgress(book);
+
+        const fileUrl = book.fileUrl || `/static/ebooks/${book.id}.pdf`;
+
+        // Trigger browser download
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.download = `${book.title.replace(/\s+/g, '_')}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        // Save metadata locally
+        completeDownload(book);
+        showToast(`"${book.title}" downloaded successfully!`, 'success');
+    } catch (err) {
+        console.error(err);
+        showToast('Download failed. Please try again.', 'error');
+    } finally {
+        hideDownloadProgress();
+    }
 }
 
 // Show download progress UI
@@ -3748,23 +3978,21 @@ function hideDownloadProgress() {
 
 // Complete download and save to localStorage
 function completeDownload(book) {
-    // Add download timestamp and local URL
+    // Add download timestamp and mark as downloaded
     const downloadedBook = {
         ...book,
         downloadDate: new Date().toISOString(),
-        localUrl: `local-ebook://${book.id}`,
         isDownloaded: true
     };
-    
+
     // Save to localStorage
     let downloadedBooks = getDownloadedBooks();
     downloadedBooks.push(downloadedBook);
     localStorage.setItem('downloadedEbooks', JSON.stringify(downloadedBooks));
-    
+
     // Update UI
     updateDownloadButton(book.id, true);
     renderDownloadsList();
-    showToast(`"${book.title}" downloaded successfully!`, 'success');
 }
 
 // Get downloaded books from localStorage
@@ -3849,37 +4077,9 @@ function readEbook(bookId) {
         showToast('Book not found', 'error');
         return;
     }
-    
-    // Create a modal to display book content
-    const modal = document.createElement('div');
-    modal.className = 'modal active';
-    modal.innerHTML = `
-        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
-        <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
-            <div class="modal-header" style="background: ${book.color}; color: white;">
-                <h3><i class="${book.icon}"></i> ${book.title}</h3>
-                <button class="modal-close" onclick="this.closest('.modal').remove()" style="color: white;">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body" style="padding: 2rem;">
-                <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0;">
-                    <div style="font-weight: 600; color: #1e293b;">Author: ${book.author}</div>
-                    <div style="color: #64748b; font-size: 0.875rem;">${book.pages} pages • ${book.category}</div>
-                </div>
-                <div style="line-height: 1.8; color: #374151;">
-                    <h4 style="color: #1e293b; margin-bottom: 1rem;">Chapter 1: Introduction</h4>
-                    <p style="margin-bottom: 1rem;">${book.content}</p>
-                    <p style="margin-bottom: 1rem;">This is a sample content from the e-book. In a real implementation, this would display the full PDF content or redirect to a PDF viewer.</p>
-                    <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 1rem; margin-top: 1.5rem;">
-                        <i class="fas fa-info-circle" style="color: #16a34a;"></i>
-                        <span style="color: #166534; font-size: 0.875rem;"> This e-book is available offline. You can read it anytime!</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
+
+    const fileUrl = book.fileUrl || `/static/ebooks/${book.id}.pdf`;
+    window.open(fileUrl, '_blank');
 }
 
 // Delete downloaded e-book
