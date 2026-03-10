@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - EduBot</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-page">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="nav-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>EduBot</span>
+            </a>
+        </div>
+        
+        <div class="student-profile">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="profile-info">
+                <h4 id="studentName">Loading...</h4>
+                <p id="studentId">Loading...</p>
+            </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#overview" class="nav-item active" onclick="showSection('overview')">
+                <i class="fas fa-home"></i>
+                <span>Overview</span>
+            </a>
+            <a href="#courses" class="nav-item" onclick="showSection('courses')">
+                <i class="fas fa-book"></i>
+                <span>My Courses</span>
+            </a>
+            <a href="#assignments" class="nav-item" onclick="showSection('assignments')">
+                <i class="fas fa-tasks"></i>
+                <span>Assignments</span>
+            </a>
+            <a href="#grades" class="nav-item" onclick="showSection('grades')">
+                <i class="fas fa-chart-line"></i>
+                <span>Grades</span>
+            </a>
+            <a href="#schedule" class="nav-item" onclick="showSection('schedule')">
+                <i class="fas fa-calendar"></i>
+                <span>Schedule</span>
+            </a>
+            <a href="#quiz" class="nav-item" onclick="showSection('quiz')">
+                <i class="fas fa-question-circle"></i>
+                <span>Weekly Quiz</span>
+            </a>
+            <a href="#attendance" class="nav-item" onclick="showSection('attendance')">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Attendance</span>
+            </a>
+            <a href="#calendar" class="nav-item" onclick="showSection('calendar')">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Academic Calendar</span>
+            </a>
+            <a href="#resources" class="nav-item" onclick="showSection('resources')">
+                <i class="fas fa-folder-open"></i>
+                <span>Resources</span>
+            </a>
+            <a href="#chat" class="nav-item" onclick="showSection('chat')">
+                <i class="fas fa-comments"></i>
+                <span>Chat with EduBot</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="#settings" class="nav-item" onclick="showSection('settings')">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <button class="nav-item logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Header -->
+        <header class="dashboard-header">
+            <h2 id="pageTitle">Dashboard Overview</h2>
+            <div class="header-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Overview Section -->
+        <section id="overview" class="content-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>6</h3>
+                        <p>Active Courses</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>24</h3>
+                        <p>Completed</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>8</h3>
+                        <p>Pending</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>85%</h3>
+                        <p>Average Score</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Recent Activity</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="activity-info">
+                                <p>Submitted Assignment: Data Structures</p>
+                                <span>2 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-video"></i>
+                            </div>
+                            <div class="activity-info">
+                                <p>Watched: Introduction to AI</p>
+                                <span>Yesterday</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div class="activity-info">
+                                <p>Completed Quiz: Database Management</p>
+                                <span>2 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Upcoming Deadlines</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="deadline-list">
+                        <div class="deadline-item">
+                            <div class="deadline-date">
+                                <span class="day">15</span>
+                                <span class="month">MAR</span>
+                            </div>
+                            <div class="deadline-info">
+                                <p>Machine Learning Project</p>
+                                <span>11:59 PM</span>
+                            </div>
+                        </div>
+                        <div class="deadline-item">
+                            <div class="deadline-date">
+                                <span class="day">18</span>
+                                <span class="month">MAR</span>
+                            </div>
+                            <div class="deadline-info">
+                                <p>Web Development Assignment</p>
+                                <span>5:00 PM</span>
+                            </div>
+                        </div>
+                        <div class="deadline-item">
+                            <div class="deadline-date">
+                                <span class="day">22</span>
+                                <span class="month">MAR</span>
+                            </div>
+                            <div class="deadline-info">
+                                <p>Mid-term Examination</p>
+                                <span>10:00 AM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card student-id-card">
+                <div class="id-header">
+                    <i class="fas fa-id-card"></i>
+                    <h3>Your Student ID</h3>
+                </div>
+                <div class="id-display">
+                    <span id="displayStudentId">-</span>
+                    <button class="btn-copy" onclick="copyStudentId()">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <p class="id-note">Use this ID for all academic purposes and queries</p>
+            </div>
+        </section>
+
+        <!-- Courses Section -->
+        <section id="courses" class="content-section">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>My Courses</h3>
+                    <span class="badge" id="courseCount">0 Courses</span>
+                </div>
+                <div id="coursesList" class="courses-list">
+                    <p style="text-align: center; color: #64748b; padding: 2rem;">Loading courses...</p>
+                </div>
+            </div>
+            
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h3>Academic Information</h3>
+                </div>
+                <div class="academic-info">
+                    <div class="info-row">
+                        <span>Department:</span>
+                        <strong id="deptName">-</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Program:</span>
+                        <strong id="programName">-</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Current Semester:</span>
+                        <strong id="currentSemester">-</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Roll Number:</span>
+                        <strong id="rollNumber">-</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Batch:</span>
+                        <strong id="batchYear">-</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Assignments Section -->
+        <section id="assignments" class="content-section">
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Pending Assignments</h3>
+                        <span class="badge badge-warning" id="pendingCount">0</span>
+                    </div>
+                    <div id="pendingAssignments" class="assignments-list">
+                        <p style="text-align: center; color: #64748b; padding: 1rem;">No pending assignments</p>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Submitted Assignments</h3>
+                        <span class="badge badge-success" id="submittedCount">0</span>
+                    </div>
+                    <div id="submittedAssignments" class="assignments-list">
+                        <p style="text-align: center; color: #64748b; padding: 1rem;">No submitted assignments</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Grades Section -->
+        <section id="grades" class="content-section">
+            <div class="dashboard-grid">
+                <!-- Level & Progress Card -->
+                <div class="dashboard-card level-card">
+                    <div class="card-header">
+                        <h3>Student Level</h3>
+                        <span class="badge level-badge" id="levelBadge">Level 1</span>
+                    </div>
+                    <div class="level-display">
+                        <div class="level-icon">
+                            <i class="fas fa-user-graduate" id="levelIcon"></i>
+                        </div>
+                        <div class="level-info">
+                            <h4 id="levelTitle">Freshman</h4>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="levelProgress" style="width: 0%"></div>
+                            </div>
+                            <p class="level-stats">
+                                <span id="totalCreditPoints">0</span> Credit Points | 
+                                <span id="pointsToNext">100</span> to next level
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Summary Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Performance Summary</h3>
+                    </div>
+                    <div class="grades-summary">
+                        <div class="grade-item">
+                            <span class="grade-label">CGPA</span>
+                            <span class="grade-value" id="cgpaValue">0.00</span>
+                        </div>
+                        <div class="grade-item">
+                            <span class="grade-label">Total Credits</span>
+                            <span class="grade-value" id="totalCredits">0</span>
+                        </div>
+                        <div class="grade-item">
+                            <span class="grade-label">Earned Credits</span>
+                            <span class="grade-value" id="earnedCredits">0</span>
+                        </div>
+                        <div class="grade-item">
+                            <span class="grade-label">Overall %</span>
+                            <span class="grade-value" id="overallPercent">0%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Semester-wise Grades Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Semester-wise Grades</h3>
+                    </div>
+                    <div id="semesterGrades" class="semester-grades">
+                        <p style="text-align: center; color: #64748b; padding: 1rem;">No grades recorded yet</p>
+                    </div>
+                </div>
+
+                <!-- Certificates Card -->
+                <div class="dashboard-card certificates-card">
+                    <div class="card-header">
+                        <h3>Certificates & Achievements</h3>
+                        <span class="badge" id="certCount">0</span>
+                    </div>
+                    <div id="certificatesList" class="certificates-list">
+                        <p style="text-align: center; color: #64748b; padding: 1rem;">Complete semesters to unlock certificates!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz" class="content-section">
+            <div class="dashboard-grid">
+                <!-- Weekly Quiz Card -->
+                <div class="dashboard-card quiz-card">
+                    <div class="card-header">
+                        <h3>Weekly Quiz</h3>
+                        <span class="badge badge-warning" id="quizTimer">Time Left: 45:00</span>
+                    </div>
+                    <div class="quiz-container">
+                        <div id="quizContent">
+                            <div class="quiz-info">
+                                <div class="quiz-stat">
+                                    <i class="fas fa-question-circle"></i>
+                                    <span>10 Questions</span>
+                                </div>
+                                <div class="quiz-stat">
+                                    <i class="fas fa-clock"></i>
+                                    <span>45 Minutes</span>
+                                </div>
+                                <div class="quiz-stat">
+                                    <i class="fas fa-trophy"></i>
+                                    <span>100 Points</span>
+                                </div>
+                            </div>
+                            <div class="quiz-subjects">
+                                <h4>This Week's Topics</h4>
+                                <div class="subject-tags">
+                                    <span class="subject-tag">Data Structures</span>
+                                    <span class="subject-tag">Algorithms</span>
+                                    <span class="subject-tag">Database</span>
+                                </div>
+                            </div>
+                            <button class="btn-quiz-start" onclick="startWeeklyQuiz()">
+                                <i class="fas fa-play"></i> Start Quiz
+                            </button>
+                        </div>
+                        <div id="quizQuestions" class="quiz-questions" style="display: none;">
+                            <!-- Quiz questions will be loaded here -->
+                        </div>
+                        <div id="quizResults" class="quiz-results" style="display: none;">
+                            <!-- Quiz results will be shown here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz History Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Quiz History</h3>
+                        <span class="badge badge-success" id="quizCount">0</span>
+                    </div>
+                    <div id="quizHistory" class="quiz-history">
+                        <p style="text-align: center; color: #64748b; padding: 1rem;">No quizzes attempted yet</p>
+                    </div>
+                </div>
+
+                <!-- Quiz Leaderboard Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Quiz Leaderboard</h3>
+                        <span class="badge">Top 10</span>
+                    </div>
+                    <div id="quizLeaderboard" class="quiz-leaderboard">
+                        <div class="leaderboard-item top">
+                            <span class="rank">1</span>
+                            <span class="name">You</span>
+                            <span class="score">850 pts</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Attendance Section -->
+        <section id="attendance" class="content-section">
+            <div class="dashboard-grid">
+                <!-- Daily Attendance Card -->
+                <div class="dashboard-card attendance-card">
+                    <div class="card-header">
+                        <h3>Today's Lectures</h3>
+                        <span class="badge" id="todayDate"></span>
+                    </div>
+                    <div class="attendance-container">
+                        <div class="attendance-summary">
+                            <div class="attendance-stat">
+                                <span class="stat-value" id="presentCount">0</span>
+                                <span class="stat-label">Present</span>
+                            </div>
+                            <div class="attendance-stat">
+                                <span class="stat-value" id="absentCount">0</span>
+                                <span class="stat-label">Absent</span>
+                            </div>
+                            <div class="attendance-stat">
+                                <span class="stat-value" id="todayPercentage">0%</span>
+                                <span class="stat-label">Attendance</span>
+                            </div>
+                        </div>
+                        <div id="todayLectures" class="lectures-list">
+                            <!-- Today's lectures will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Attendance Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Weekly Attendance</h3>
+                    </div>
+                    <div class="weekly-attendance">
+                        <div class="week-days">
+                            <div class="day-attendance" data-day="mon">
+                                <span class="day-name">Mon</span>
+                                <div class="day-bar">
+                                    <div class="day-fill" id="monBar" style="height: 0%"></div>
+                                </div>
+                                <span class="day-percent" id="monPercent">0%</span>
+                            </div>
+                            <div class="day-attendance" data-day="tue">
+                                <span class="day-name">Tue</span>
+                                <div class="day-bar">
+                                    <div class="day-fill" id="tueBar" style="height: 0%"></div>
+                                </div>
+                                <span class="day-percent" id="tuePercent">0%</span>
+                            </div>
+                            <div class="day-attendance" data-day="wed">
+                                <span class="day-name">Wed</span>
+                                <div class="day-bar">
+                                    <div class="day-fill" id="wedBar" style="height: 0%"></div>
+                                </div>
+                                <span class="day-percent" id="wedPercent">0%</span>
+                            </div>
+                            <div class="day-attendance" data-day="thu">
+                                <span class="day-name">Thu</span>
+                                <div class="day-bar">
+                                    <div class="day-fill" id="thuBar" style="height: 0%"></div>
+                                </div>
+                                <span class="day-percent" id="thuPercent">0%</span>
+                            </div>
+                            <div class="day-attendance" data-day="fri">
+                                <span class="day-name">Fri</span>
+                                <div class="day-bar">
+                                    <div class="day-fill" id="friBar" style="height: 0%"></div>
+                                </div>
+                                <span class="day-percent" id="friPercent">0%</span>
+                            </div>
+                            <div class="day-attendance" data-day="sat">
+                                <span class="day-name">Sat</span>
+                                <div class="day-bar">
+                                    <div class="day-fill" id="satBar" style="height: 0%"></div>
+                                </div>
+                                <span class="day-percent" id="satPercent">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overall Attendance Stats -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Overall Attendance</h3>
+                        <span class="badge badge-success" id="overallAttendanceBadge">0%</span>
+                    </div>
+                    <div class="overall-attendance">
+                        <div class="attendance-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="circle-bg" cx="50" cy="50" r="45"/>
+                                <circle class="circle-progress" id="attendanceCircle" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="283"/>
+                            </svg>
+                            <div class="circle-text">
+                                <span id="overallAttendanceText">0%</span>
+                            </div>
+                        </div>
+                        <div class="attendance-legend">
+                            <div class="legend-item">
+                                <span class="legend-color present"></span>
+                                <span>Present: <strong id="totalPresent">0</strong></span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color absent"></span>
+                                <span>Absent: <strong id="totalAbsent">0</strong></span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color leave"></span>
+                                <span>Leave: <strong id="totalLeave">0</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Academic Calendar Section -->
+        <section id="calendar" class="content-section">
+            <div class="dashboard-grid">
+                <!-- Calendar View Card -->
+                <div class="dashboard-card calendar-card">
+                    <div class="card-header">
+                        <h3>Academic Calendar</h3>
+                        <div class="calendar-nav">
+                            <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                            <span id="currentMonth">March 2026</span>
+                            <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="calendar-container">
+                        <div class="calendar-weekdays">
+                            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                        </div>
+                        <div id="calendarGrid" class="calendar-grid">
+                            <!-- Calendar days will be generated here -->
+                        </div>
+                    </div>
+                    <div class="calendar-legend">
+                        <span class="legend-dot exam"></span> Exam
+                        <span class="legend-dot event"></span> Event
+                        <span class="legend-dot holiday"></span> Holiday
+                        <span class="legend-dot deadline"></span> Deadline
+                    </div>
+                </div>
+
+                <!-- Upcoming Events Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Upcoming Events</h3>
+                        <span class="badge" id="eventsCount">0</span>
+                    </div>
+                    <div id="upcomingEvents" class="events-list">
+                        <p style="text-align: center; color: #64748b; padding: 1rem;">No upcoming events</p>
+                    </div>
+                </div>
+
+                <!-- Event Categories Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Event Categories</h3>
+                    </div>
+                    <div class="event-categories">
+                        <div class="category-item" onclick="filterEvents('all')">
+                            <span class="category-dot all"></span>
+                            <span>All Events</span>
+                            <span class="category-count" id="allEventsCount">0</span>
+                        </div>
+                        <div class="category-item" onclick="filterEvents('exam')">
+                            <span class="category-dot exam"></span>
+                            <span>Exams</span>
+                            <span class="category-count" id="examCount">0</span>
+                        </div>
+                        <div class="category-item" onclick="filterEvents('event')">
+                            <span class="category-dot event"></span>
+                            <span>Events</span>
+                            <span class="category-count" id="eventCount">0</span>
+                        </div>
+                        <div class="category-item" onclick="filterEvents('holiday')">
+                            <span class="category-dot holiday"></span>
+                            <span>Holidays</span>
+                            <span class="category-count" id="holidayCount">0</span>
+                        </div>
+                        <div class="category-item" onclick="filterEvents('deadline')">
+                            <span class="category-dot deadline"></span>
+                            <span>Deadlines</span>
+                            <span class="category-count" id="deadlineCount">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Schedule Section -->
+        <section id="schedule" class="content-section">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>Weekly Class Schedule</h3>
+                </div>
+                <div class="schedule-container">
+                    <div class="schedule-day">
+                        <h4>Monday</h4>
+                        <div class="schedule-slots">
+                            <div class="schedule-slot">
+                                <span class="time">09:00 - 10:30</span>
+                                <span class="subject">Data Structures</span>
+                                <span class="room">Room 301</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">11:00 - 12:30</span>
+                                <span class="subject">Database Management</span>
+                                <span class="room">Lab 2</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="schedule-day">
+                        <h4>Tuesday</h4>
+                        <div class="schedule-slots">
+                            <div class="schedule-slot">
+                                <span class="time">09:00 - 10:30</span>
+                                <span class="subject">Web Development</span>
+                                <span class="room">Lab 1</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">11:00 - 12:30</span>
+                                <span class="subject">Machine Learning</span>
+                                <span class="room">Room 302</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources Section -->
+        <section id="resources" class="content-section">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>Study Resources</h3>
+                </div>
+                <div class="resources-grid">
+                    <div class="resource-card">
+                        <i class="fas fa-book"></i>
+                        <h4>E-Books</h4>
+                        <p>Access 50,000+ digital books</p>
+                    </div>
+                    <div class="resource-card">
+                        <i class="fas fa-video"></i>
+                        <h4>Video Lectures</h4>
+                        <p>Recorded classes & tutorials</p>
+                    </div>
+                    <div class="resource-card">
+                        <i class="fas fa-file-pdf"></i>
+                        <h4>Study Notes</h4>
+                        <p>Downloadable PDF notes</p>
+                    </div>
+                    <div class="resource-card">
+                        <i class="fas fa-question-circle"></i>
+                        <h4>Practice Tests</h4>
+                        <p>Mock exams & quizzes</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h3>Library Status</h3>
+                </div>
+                <div class="library-status">
+                    <div class="info-row">
+                        <span>Books Issued:</span>
+                        <strong id="booksIssued">0</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Books Returned:</span>
+                        <strong id="booksReturned">0</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Library Fines:</span>
+                        <strong id="libraryFines">₹0</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="chat" class="content-section">
+            <div class="dashboard-card chat-card">
+                <h3>Chat with EduBot</h3>
+                <div class="chat-widget">
+                    <div id="chatbox" class="chat-messages-main">
+                        <div class="welcome-message">
+                            <p>Hello! I'm EduBot. How can I help you today?</p>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <div class="input-wrapper">
+                            <input type="text" id="userInput" placeholder="Type your message...">
+                            <button class="send-btn" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="settings" class="content-section">
+            <div class="dashboard-card">
+                <h3>Account Settings</h3>
+                <p>Settings options will be displayed here...</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-info-circle"></i>
+        <span id="toastMessage">Message</span>
+    </div>
+
+    <script src="/static/auth.js"></script>
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>

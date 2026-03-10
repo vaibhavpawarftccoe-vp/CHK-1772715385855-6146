@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduBot - AI Chatbot for Education</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>EduBot</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#benefits">Benefits</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="/login" class="btn-secondary">Student Login</a></li>
+                <li><a href="#chat-section" class="btn-primary">Try Chatbot</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>AI Chatbot for <span class="gradient-text">Education</span></h1>
+                <p>Automate your communication and admission process to quickly recruit and help students. Provide 24/7 instant support for admissions, courses, and campus queries.</p>
+                <div class="hero-buttons">
+                    <a href="#chat-section" class="btn-primary">Try Our Chatbot</a>
+                    <a href="#features" class="btn-secondary">Learn More</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Support</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">95%</span>
+                        <span class="stat-label">Accuracy</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">Instant</span>
+                        <span class="stat-label">Responses</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="chat-preview">
+                    <div class="chat-header">
+                        <i class="fas fa-robot"></i>
+                        <span>EduBot Assistant</span>
+                    </div>
+                    <div class="chat-messages">
+                        <div class="message bot">
+                            <div class="message-content">
+                                Hello! Welcome to our college. How can I help you today?
+                            </div>
+                        </div>
+                        <div class="message user">
+                            <div class="message-content">
+                                Tell me about admissions
+                            </div>
+                        </div>
+                        <div class="message bot">
+                            <div class="message-content">
+                                Admissions open in June! We offer various programs in Engineering, AI, and Data Science.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-wave">
+            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="white"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Trusted By Section -->
+    <section class="trusted-by">
+        <div class="container">
+            <p class="trusted-text">Trusted by leading educational institutions</p>
+            <div class="logos">
+                <div class="logo"><i class="fas fa-university"></i> State University</div>
+                <div class="logo"><i class="fas fa-school"></i> Tech Institute</div>
+                <div class="logo"><i class="fas fa-graduation-cap"></i> Global College</div>
+                <div class="logo"><i class="fas fa-book-open"></i> Academy Plus</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Features</span>
+                <h2>Streamline Your Educational Communication</h2>
+                <p>Our AI-powered chatbot handles repetitive queries so your staff can focus on what matters most.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h3>Streamline Recruitment</h3>
+                    <p>Promote courses, open days, and easily explain admission procedures to prospective students.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>24/7 Student Support</h3>
+                    <p>Automate FAQ responses and gather unique queries using conversational contact forms.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>Innovation Ready</h3>
+                    <p>Leverage technology students love. Provide instant and relevant answers anytime.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Analytics Dashboard</h3>
+                    <p>Track conversations, popular queries, and student engagement metrics in real-time.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-plug"></i>
+                    </div>
+                    <h3>Easy Integration</h3>
+                    <p>Simply add the chat widget to your website. No complex coding required.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Data Collection</h3>
+                    <p>Automatically save user data and build better relationships with students.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section id="benefits" class="benefits">
+        <div class="container">
+            <div class="benefit-row">
+                <div class="benefit-content">
+                    <span class="section-tag">Benefits</span>
+                    <h2>Reduce Workload, Increase Efficiency</h2>
+                    <p>Handle thousands of student queries simultaneously without adding staff. Our AI understands context and provides accurate responses about admissions, courses, fees, and campus life.</p>
+                    <ul class="benefit-list">
+                        <li><i class="fas fa-check"></i> Answer FAQs automatically</li>
+                        <li><i class="fas fa-check"></i> Guide students through applications</li>
+                        <li><i class="fas fa-check"></i> Schedule campus tours</li>
+                        <li><i class="fas fa-check"></i> Provide course recommendations</li>
+                    </ul>
+                </div>
+                <div class="benefit-image">
+                    <div class="floating-card">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <span class="card-number">80%</span>
+                            <span class="card-text">Faster Response Time</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">How It Works</span>
+                <h2>Get Started in 3 Simple Steps</h2>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Ask Your Question</h3>
+                        <p>Type your query about admissions, courses, fees, or campus facilities.</p>
+                    </div>
+                </div>
+                <div class="step-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>AI Processing</h3>
+                        <p>Our intelligent bot analyzes your query and finds the most relevant information.</p>
+                    </div>
+                </div>
+                <div class="step-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Instant Answer</h3>
+                        <p>Receive accurate, helpful responses in seconds, 24 hours a day.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Section -->
+    <section id="chat-section" class="chat-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Try It Now</span>
+                <h2>Chat with EduBot</h2>
+                <p>Experience our AI assistant. Ask about admissions, courses, placements, and more!</p>
+            </div>
+            <div class="chat-wrapper">
+                <div class="chat-container">
+                    <div class="chat-header-main">
+                        <div class="bot-info">
+                            <div class="bot-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="bot-details">
+                                <h4>EduBot Assistant</h4>
+                                <span class="status"><span class="status-dot"></span> Online</span>
+                            </div>
+                        </div>
+                        <div class="chat-actions">
+                            <button class="action-btn" onclick="clearChat()" title="Clear chat">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="chatbox" class="chat-messages-main">
+                        <div class="welcome-message">
+                            <div class="bot-avatar-large">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h3>Welcome to EduBot!</h3>
+                            <p>I'm here to help you with:</p>
+                            <div class="quick-replies">
+                                <button class="quick-reply" onclick="sendQuickReply('Tell me about admissions')">Admissions</button>
+                                <button class="quick-reply" onclick="sendQuickReply('What courses do you offer?')">Courses</button>
+                                <button class="quick-reply" onclick="sendQuickReply('Placement information')">Placements</button>
+                                <button class="quick-reply" onclick="sendQuickReply('Campus facilities')">Facilities</button>
+                                <button class="quick-reply" onclick="sendQuickReply('Fee structure')">Fees</button>
+                                <button class="quick-reply" onclick="sendQuickReply('Contact information')">Contact</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <div class="input-wrapper">
+                            <input type="text" id="userInput" placeholder="Type your message here..." autocomplete="off">
+                            <button class="send-btn" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Transform Your Educational Communication?</h2>
+                <p>Join hundreds of institutions already using EduBot to enhance student experience.</p>
+                <a href="#chat-section" class="btn-primary btn-large">Get Started Free</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="nav-brand">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>EduBot</span>
+                    </div>
+                    <p>AI-powered chatbot solution for educational institutions. Making student communication smarter and more efficient.</p>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/share/1XA9D2gf2u/" target="_blank"><i class="fab fa-facebook"></i></a>
+                        <a href="www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.linkedin.com/in/shubham-howal-1192723a1?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://www.instagram.com/prathmesh_ingale_5555?igsh=djlpMXYwajVtenNx" target="_blank"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#benefits">Benefits</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#chat-section">Try Chatbot</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Topics</h4>
+                    <ul>
+                        <li><a href="#" onclick="sendQuickReply('Admissions'); return false;">Admissions</a></li>
+                        <li><a href="#" onclick="sendQuickReply('Courses'); return false;">Courses</a></li>
+                        <li><a href="#" onclick="sendQuickReply('Placements'); return false;">Placements</a></li>
+                        <li><a href="#" onclick="sendQuickReply('Fees'); return false;">Fee Structure</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-envelope"></i> info@edubot.edu</p>
+                    <p><i class="fas fa-phone"></i> 1234567890</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Pandharpur Smart City</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 EduBot. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

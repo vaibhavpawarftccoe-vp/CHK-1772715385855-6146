@@ -1,0 +1,84 @@
+{
+  "EDU2026000001": {
+    "studentId": "EDU2026000001",
+    "firstName": "shivaa",
+    "lastName": "howal",
+    "email": "shivadada14@gmail.com",
+    "phone": "8329173840",
+    "course": "btech-cse",
+    "password": "Pass@123",
+    "createdAt": "2026-03-10T10:52:46.416889",
+    "status": "active",
+    "academic": {
+      "enrollmentYear": 2026,
+      "currentSemester": 1,
+      "department": "Computer Science & Engineering",
+      "program": "Bachelor of Technology",
+      "rollNumber": "260001",
+      "batch": "2026-2030"
+    },
+    "courses": {
+      "enrolled": [],
+      "completed": [],
+      "current": []
+    },
+    "grades": {
+      "semesterWise": {},
+      "cgpa": 0.0,
+      "sgpa": {},
+      "totalCredits": 0,
+      "earnedCredits": 0
+    },
+    "assignments": {
+      "pending": [],
+      "submitted": [],
+      "graded": []
+    },
+    "attendance": {
+      "overall": 0,
+      "subjectWise": {},
+      "monthly": {}
+    },
+    "exams": {
+      "internal": {},
+      "external": {},
+      "practical": {}
+    },
+    "achievements": [],
+    "certifications": [],
+    "fees": {
+      "totalFees": 0,
+      "paid": 0,
+      "scholarships": [],
+      "status": "FREE - No fees applicable"
+    },
+    "library": {
+      "booksIssued": [],
+      "booksReturned": [],
+      "fines": 0
+    },
+    "hostel": {
+      "allotted": false,
+      "roomNumber": null,
+      "block": null,
+      "mess": null
+    },
+    "activityLog": [
+      {
+        "action": "Account Created",
+        "timestamp": "2026-03-10T10:52:46.416931",
+        "details": "Student registered successfully"
+      }
+    ],
+    "profile": {
+      "avatar": null,
+      "bio": "",
+      "interests": [],
+      "skills": [],
+      "languages": [
+        "English"
+      ],
+      "socialLinks": {}
+    }
+  }
+}
