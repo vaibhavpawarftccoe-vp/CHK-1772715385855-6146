@@ -1,16 +1,33 @@
 
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, send_file
 from chatbot import get_response
 import json
 import os
 from datetime import datetime
 from contextlib import suppress
+from werkzeug.utils import secure_filename
 
-app = Flask(__name__)
+# Get the backend directory path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(__name__, 
+            template_folder=os.path.join(BASE_DIR, '..', 'frontend', 'templates'),
+            static_folder=os.path.join(BASE_DIR, '..', 'frontend', 'static'))
 app.secret_key = "edubot_secret_key_2026"
 
+# File upload configuration
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+ALLOWED_EXTENSIONS = {"pdf", "doc", "docx", "ppt", "pptx", "zip", "rar", "7z", "py", "java", "cpp", "c", "html", "css", "js", "txt", "jpg", "jpeg", "png", "gif"}
+MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB max file size
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
+
+# Create uploads directory if not exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 # Student database file
-STUDENTS_FILE = "students.json"
+STUDENTS_FILE = os.path.join(BASE_DIR, "students.json")
 
 # Initialize students database
 def init_students_db():
@@ -236,7 +253,13 @@ def register():
             "skills": [],
             "languages": ["English"],
             "socialLinks": {}
-        }
+        },
+        
+        # Lecture Store Data
+        "lectures": [],
+        "downloadedLectures": [],
+        "completedLectures": [],
+        "lectureProgress": {}
     }
     
     save_students(students)
@@ -962,6 +985,408 @@ def add_academic_event():
         return jsonify({"success": True, "message": "Event added successfully"})
     
     return jsonify({"success": False, "message": "Student not found"})
+
+
+def allowed_file(filename):
+    """Check if file extension is allowed"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# API: Upload Project Files
+@app.route("/api/student/projects/upload", methods=["POST"])
+def upload_project():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id not in students:
+        return jsonify({"success": False, "message": "Student not found"})
+    
+    # Check if files are present
+    if "files" not in request.files:
+        return jsonify({"success": False, "message": "No files provided"})
+    
+    files = request.files.getlist("files")
+    
+    if not files or files[0].filename == "":
+        return jsonify({"success": False, "message": "No files selected"})
+    
+    # Create student upload directory
+    student_upload_dir = os.path.join(app.config["UPLOAD_FOLDER"], student_id)
+    os.makedirs(student_upload_dir, exist_ok=True)
+    
+    # Generate project ID
+    project_id = f"proj_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    
+    # Save files
+    saved_files = []
+    for file in files:
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            # Add timestamp to filename to avoid conflicts
+            name, ext = os.path.splitext(filename)
+            unique_filename = f"{name}_{datetime.now().strftime('%H%M%S')}{ext}"
+            filepath = os.path.join(student_upload_dir, unique_filename)
+            file.save(filepath)
+            
+            saved_files.append({
+                "filename": filename,
+                "stored_name": unique_filename,
+                "size": os.path.getsize(filepath),
+                "path": filepath
+            })
+    
+    if not saved_files:
+        return jsonify({"success": False, "message": "No valid files uploaded"})
+    
+    # Create project record
+    project = {
+        "id": project_id,
+        "title": request.form.get("title"),
+        "description": request.form.get("description", ""),
+        "subject": request.form.get("subject"),
+        "type": request.form.get("type", "assignment"),
+        "files": saved_files,
+        "uploadDate": datetime.now().isoformat(),
+        "status": "submitted"
+    }
+    
+    # Add to student's projects
+    if "projects" not in students[student_id]:
+        students[student_id]["projects"] = []
+    
+    students[student_id]["projects"].append(project)
+    
+    # Log activity
+    students[student_id]["activityLog"].append({
+        "action": "Project Uploaded",
+        "timestamp": datetime.now().isoformat(),
+        "details": f"Uploaded project: {project['title']} ({len(saved_files)} file(s))"
+    })
+    
+    save_students(students)
+    
+    return jsonify({
+        "success": True,
+        "message": "Project uploaded successfully",
+        "project": project
+    })
+
+
+# API: Get Student Projects
+@app.route("/api/student/projects", methods=["GET"])
+def get_projects():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        projects = students[student_id].get("projects", [])
+        return jsonify({"success": True, "projects": projects})
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+# API: Download Project File
+@app.route("/api/student/projects/download/<project_id>/<int:file_index>")
+def download_project_file(project_id, file_index):
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"}), 401
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id not in students:
+        return jsonify({"success": False, "message": "Student not found"}), 404
+    
+    projects = students[student_id].get("projects", [])
+    project = next((p for p in projects if p["id"] == project_id), None)
+    
+    if not project:
+        return jsonify({"success": False, "message": "Project not found"}), 404
+    
+    if file_index >= len(project.get("files", [])):
+        return jsonify({"success": False, "message": "File not found"}), 404
+    
+    file_info = project["files"][file_index]
+    filepath = file_info.get("path")
+    
+    if not filepath or not os.path.exists(filepath):
+        return jsonify({"success": False, "message": "File not found on server"}), 404
+    
+    return send_file(filepath, as_attachment=True, download_name=file_info["filename"])
+
+
+# API: Delete Project
+@app.route("/api/student/projects/delete/<project_id>", methods=["DELETE"])
+def delete_project(project_id):
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id not in students:
+        return jsonify({"success": False, "message": "Student not found"})
+    
+    projects = students[student_id].get("projects", [])
+    project = next((p for p in projects if p["id"] == project_id), None)
+    
+    if not project:
+        return jsonify({"success": False, "message": "Project not found"})
+    
+    # Delete files from storage
+    for file_info in project.get("files", []):
+        filepath = file_info.get("path")
+        if filepath and os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+            except OSError:
+                pass
+    
+    # Remove project from list
+    students[student_id]["projects"] = [p for p in projects if p["id"] != project_id]
+    
+    # Log activity
+    students[student_id]["activityLog"].append({
+        "action": "Project Deleted",
+        "timestamp": datetime.now().isoformat(),
+        "details": f"Deleted project: {project['title']}"
+    })
+    
+    save_students(students)
+    
+    return jsonify({"success": True, "message": "Project deleted successfully"})
+
+
+# API: Get Storage Stats
+@app.route("/api/student/storage", methods=["GET"])
+def get_storage_stats():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id not in students:
+        return jsonify({"success": False, "message": "Student not found"})
+    
+    projects = students[student_id].get("projects", [])
+    total_size = 0
+    file_count = 0
+    
+    for project in projects:
+        for file_info in project.get("files", []):
+            total_size += file_info.get("size", 0)
+            file_count += 1
+    
+    max_size = 50 * 1024 * 1024  # 50MB
+    
+    return jsonify({
+        "success": True,
+        "storage": {
+            "used": total_size,
+            "max": max_size,
+            "percentage": round((total_size / max_size) * 100, 2),
+            "file_count": file_count
+        }
+    })
+
+
+# API: Save Lecture Progress
+@app.route("/api/student/lectures/progress", methods=["POST"])
+def save_lecture_progress():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    data = request.json
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        if "lectureProgress" not in students[student_id]:
+            students[student_id]["lectureProgress"] = {}
+        
+        students[student_id]["lectureProgress"][data["lectureId"]] = data["progress"]
+        save_students(students)
+        return jsonify({"success": True})
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+# API: Mark Lecture Downloaded
+@app.route("/api/student/lectures/download", methods=["POST"])
+def download_lecture():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    data = request.json
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        if "downloadedLectures" not in students[student_id]:
+            students[student_id]["downloadedLectures"] = []
+        
+        lecture_id = data["lectureId"]
+        if lecture_id not in students[student_id]["downloadedLectures"]:
+            students[student_id]["downloadedLectures"].append(lecture_id)
+            
+            # Log activity
+            students[student_id]["activityLog"].append({
+                "action": "Lecture Downloaded",
+                "timestamp": datetime.now().isoformat(),
+                "details": f"Downloaded lecture: {lecture_id}"
+            })
+        
+        save_students(students)
+        return jsonify({"success": True})
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+# API: Remove Downloaded Lecture
+@app.route("/api/student/lectures/download/<lecture_id>", methods=["DELETE"])
+def remove_downloaded_lecture(lecture_id):
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        if "downloadedLectures" in students[student_id]:
+            students[student_id]["downloadedLectures"] = [
+                id for id in students[student_id]["downloadedLectures"] if id != lecture_id
+            ]
+            save_students(students)
+        return jsonify({"success": True})
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+# API: Mark Lecture Complete
+@app.route("/api/student/lectures/complete", methods=["POST"])
+def complete_lecture():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    data = request.json
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        if "completedLectures" not in students[student_id]:
+            students[student_id]["completedLectures"] = []
+        
+        lecture_id = data["lectureId"]
+        if lecture_id not in students[student_id]["completedLectures"]:
+            students[student_id]["completedLectures"].append(lecture_id)
+            
+            # Log activity
+            students[student_id]["activityLog"].append({
+                "action": "Lecture Completed",
+                "timestamp": datetime.now().isoformat(),
+                "details": f"Completed lecture: {lecture_id}"
+            })
+        
+        save_students(students)
+        return jsonify({"success": True})
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+# API: Get Available Lectures
+@app.route("/api/student/lectures", methods=["GET"])
+def get_lectures():
+    if "student_id" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    students = load_students()
+    student_id = session["student_id"]
+    
+    if student_id in students:
+        # Return default lectures if none exist
+        lectures = students[student_id].get("lectures", get_default_lectures())
+        return jsonify({
+            "success": True,
+            "lectures": lectures,
+            "downloaded": students[student_id].get("downloadedLectures", []),
+            "completed": students[student_id].get("completedLectures", []),
+            "progress": students[student_id].get("lectureProgress", {})
+        })
+    
+    return jsonify({"success": False, "message": "Student not found"})
+
+
+def get_default_lectures():
+    """Get default lecture list"""
+    return [
+        {
+            "id": "lec_001",
+            "title": "Introduction to Data Structures",
+            "subject": "Data Structures",
+            "duration": "45:30",
+            "size": 125 * 1024 * 1024,
+            "videoUrl": "/static/lectures/ds_intro.mp4",
+            "thumbnail": "/static/images/lecture1.jpg",
+            "description": "Overview of data structures and their importance in programming"
+        },
+        {
+            "id": "lec_002",
+            "title": "Arrays and Linked Lists",
+            "subject": "Data Structures",
+            "duration": "52:15",
+            "size": 148 * 1024 * 1024,
+            "videoUrl": "/static/lectures/ds_arrays.mp4",
+            "thumbnail": "/static/images/lecture2.jpg",
+            "description": "Deep dive into arrays and linked lists implementation"
+        },
+        {
+            "id": "lec_003",
+            "title": "Sorting Algorithms",
+            "subject": "Algorithms",
+            "duration": "48:45",
+            "size": 132 * 1024 * 1024,
+            "videoUrl": "/static/lectures/algo_sorting.mp4",
+            "thumbnail": "/static/images/lecture3.jpg",
+            "description": "Bubble sort, quick sort, merge sort and their complexities"
+        },
+        {
+            "id": "lec_004",
+            "title": "SQL Basics",
+            "subject": "Database",
+            "duration": "38:20",
+            "size": 98 * 1024 * 1024,
+            "videoUrl": "/static/lectures/db_sql.mp4",
+            "thumbnail": "/static/images/lecture4.jpg",
+            "description": "Introduction to SQL queries and database operations"
+        },
+        {
+            "id": "lec_005",
+            "title": "HTML & CSS Fundamentals",
+            "subject": "Web Development",
+            "duration": "55:00",
+            "size": 165 * 1024 * 1024,
+            "videoUrl": "/static/lectures/web_html_css.mp4",
+            "thumbnail": "/static/images/lecture5.jpg",
+            "description": "Building responsive web pages with HTML5 and CSS3"
+        },
+        {
+            "id": "lec_006",
+            "title": "Introduction to Machine Learning",
+            "subject": "Machine Learning",
+            "duration": "42:30",
+            "size": 118 * 1024 * 1024,
+            "videoUrl": "/static/lectures/ml_intro.mp4",
+            "thumbnail": "/static/images/lecture6.jpg",
+            "description": "Overview of ML concepts and applications"
+        }
+    ]
 
 
 if __name__ == "__main__":

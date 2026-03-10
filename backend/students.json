@@ -36,8 +36,9 @@
     },
     "attendance": {
       "overall": 0,
-      "subjectWise": {},
-      "monthly": {}
+      "present": 0,
+      "absent": 2,
+      "leave": 0
     },
     "exams": {
       "internal": {},
@@ -68,6 +69,11 @@
         "action": "Account Created",
         "timestamp": "2026-03-10T10:52:46.416931",
         "details": "Student registered successfully"
+      },
+      {
+        "action": "Quiz Completed",
+        "timestamp": "2026-03-10T12:29:52.401789",
+        "details": "Scored 2/5 in Weekly Quiz"
       }
     ],
     "profile": {
@@ -79,6 +85,21 @@
         "English"
       ],
       "socialLinks": {}
+    },
+    "quizzes": [
+      {
+        "subject": "Weekly Quiz",
+        "score": 2,
+        "total": 5,
+        "date": "2026-03-10T06:59:52.389Z",
+        "percentage": 40.0
+      }
+    ],
+    "dailyAttendance": {
+      "2026-03-10": {
+        "0": "absent",
+        "1": "absent"
+      }
     }
   }
 }

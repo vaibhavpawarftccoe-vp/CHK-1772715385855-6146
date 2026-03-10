@@ -939,8 +939,750 @@ showSection = function(sectionId) {
     if (sectionId === 'quiz') loadQuizSection();
     if (sectionId === 'attendance') loadAttendanceSection();
     if (sectionId === 'calendar') loadCalendarSection();
+    if (sectionId === 'projects') loadProjectsSection();
     if (sectionId === 'resources') loadResourcesSection();
 };
+
+// ============================================
+// Projects & File Upload Functions
+// ============================================
+let selectedFiles = [];
+const MAX_STORAGE_MB = 50;
+
+function loadProjectsSection() {
+    if (!studentData) return;
+    
+    // Load projects
+    const projects = studentData.projects || [];
+    displayProjects(projects);
+    
+    // Update storage stats
+    updateStorageStats();
+    
+    // Update recent uploads
+    updateRecentUploads(projects);
+}
+
+// Drag and Drop Handlers
+function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('dragover');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('dragover');
+    
+    const files = Array.from(e.dataTransfer.files);
+    addFiles(files);
+}
+
+function handleFileSelect(e) {
+    const files = Array.from(e.target.files);
+    addFiles(files);
+}
+
+function addFiles(files) {
+    const allowedTypes = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'zip', 'rar', '7z', 'py', 'java', 'cpp', 'c', 'html', 'css', 'js', 'txt', 'jpg', 'jpeg', 'png', 'gif'];
+    
+    files.forEach(file => {
+        const extension = file.name.split('.').pop().toLowerCase();
+        if (allowedTypes.includes(extension)) {
+            if (!selectedFiles.find(f => f.name === file.name)) {
+                selectedFiles.push(file);
+            }
+        } else {
+            showToast(`File type .${extension} not allowed`, 'error');
+        }
+    });
+    
+    if (selectedFiles.length > 0) {
+        document.getElementById('uploadDetails').style.display = 'block';
+        displaySelectedFiles();
+    }
+}
+
+function displaySelectedFiles() {
+    const container = document.getElementById('selectedFiles');
+    container.innerHTML = selectedFiles.map((file, index) => `
+        <div class="file-item">
+            <i class="fas ${getFileIcon(file.name)}"></i>
+            <div class="file-info">
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${formatFileSize(file.size)}</div>
+            </div>
+            <button class="file-remove" onclick="removeFile(${index})">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    if (selectedFiles.length === 0) {
+        document.getElementById('uploadDetails').style.display = 'none';
+    } else {
+        displaySelectedFiles();
+    }
+}
+
+function getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const icons = {
+        pdf: 'fa-file-pdf',
+        doc: 'fa-file-word', docx: 'fa-file-word',
+        ppt: 'fa-file-powerpoint', pptx: 'fa-file-powerpoint',
+        zip: 'fa-file-archive', rar: 'fa-file-archive', '7z': 'fa-file-archive',
+        py: 'fa-file-code', java: 'fa-file-code', cpp: 'fa-file-code', c: 'fa-file-code',
+        html: 'fa-file-code', css: 'fa-file-code', js: 'fa-file-code',
+        txt: 'fa-file-alt',
+        jpg: 'fa-file-image', jpeg: 'fa-file-image', png: 'fa-file-image', gif: 'fa-file-image'
+    };
+    return icons[ext] || 'fa-file';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function cancelUpload() {
+    selectedFiles = [];
+    document.getElementById('uploadDetails').style.display = 'none';
+    document.getElementById('projectTitle').value = '';
+    document.getElementById('projectDescription').value = '';
+    document.getElementById('projectSubject').value = '';
+    document.getElementById('projectType').value = 'assignment';
+}
+
+async function uploadFiles() {
+    const title = document.getElementById('projectTitle').value.trim();
+    const subject = document.getElementById('projectSubject').value;
+    
+    if (!title) {
+        showToast('Please enter a project title', 'error');
+        return;
+    }
+    if (!subject) {
+        showToast('Please select a subject', 'error');
+        return;
+    }
+    if (selectedFiles.length === 0) {
+        showToast('Please select files to upload', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', document.getElementById('projectDescription').value);
+    formData.append('subject', subject);
+    formData.append('type', document.getElementById('projectType').value);
+    
+    selectedFiles.forEach(file => {
+        formData.append('files', file);
+    });
+    
+    // Show progress
+    document.getElementById('uploadProgress').style.display = 'block';
+    
+    try {
+        const response = await fetch('/api/student/projects/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Files uploaded successfully!', 'success');
+            cancelUpload();
+            // Reload projects
+            await loadStudentData();
+            loadProjectsSection();
+        } else {
+            showToast(result.message || 'Upload failed', 'error');
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        showToast('Upload failed', 'error');
+    } finally {
+        document.getElementById('uploadProgress').style.display = 'none';
+        document.getElementById('progressBarFill').style.width = '0%';
+        document.getElementById('progressText').textContent = '0%';
+    }
+}
+
+function displayProjects(projects) {
+    const container = document.getElementById('projectsList');
+    const countEl = document.getElementById('projectsCount');
+    
+    if (countEl) countEl.textContent = projects.length;
+    
+    if (projects.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem;">No projects uploaded yet</p>';
+        return;
+    }
+    
+    container.innerHTML = projects.slice().reverse().map(project => `
+        <div class="project-item" data-type="${project.type}">
+            <div class="project-icon">
+                <i class="fas ${project.files && project.files[0] ? getFileIcon(project.files[0].filename) : 'fa-folder'}"></i>
+            </div>
+            <div class="project-info">
+                <h4>${project.title}</h4>
+                <p>${project.subject} • ${project.files ? project.files.length : 0} file(s)</p>
+            </div>
+            <div class="project-meta">
+                <span class="project-type">${project.type}</span>
+                <span class="project-date">${new Date(project.uploadDate).toLocaleDateString()}</span>
+            </div>
+            <div class="project-actions">
+                ${project.files ? project.files.map((file, idx) => `
+                    <button class="btn-download" onclick="downloadFile('${project.id}', ${idx})" title="Download ${file.filename}">
+                        <i class="fas fa-download"></i>
+                    </button>
+                `).join('') : ''}
+                <button class="btn-delete" onclick="deleteProject('${project.id}')" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function filterProjects(type) {
+    // Update active button
+    document.querySelectorAll('.projects-filter .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Filter projects
+    const projects = studentData.projects || [];
+    const filtered = type === 'all' ? projects : projects.filter(p => p.type === type);
+    displayProjects(filtered);
+}
+
+function updateStorageStats() {
+    const projects = studentData.projects || [];
+    let totalSize = 0;
+    const typeSizes = {};
+    
+    projects.forEach(project => {
+        if (project.files) {
+            project.files.forEach(file => {
+                totalSize += file.size || 0;
+                const ext = file.filename.split('.').pop().toLowerCase();
+                const category = getFileCategory(ext);
+                typeSizes[category] = (typeSizes[category] || 0) + (file.size || 0);
+            });
+        }
+    });
+    
+    const totalMB = totalSize / (1024 * 1024);
+    const percent = Math.min(100, (totalMB / MAX_STORAGE_MB) * 100);
+    const freeMB = Math.max(0, MAX_STORAGE_MB - totalMB);
+    
+    // Update circle
+    const circle = document.getElementById('storageCircle');
+    if (circle) {
+        const circumference = 2 * Math.PI * 45;
+        const offset = circumference - (percent / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+    }
+    
+    // Update text
+    const percentEl = document.getElementById('storagePercent');
+    const usedEl = document.getElementById('storageUsed');
+    const freeEl = document.getElementById('storageFree');
+    
+    if (percentEl) percentEl.textContent = Math.round(percent) + '%';
+    if (usedEl) usedEl.textContent = totalMB.toFixed(1) + ' MB';
+    if (freeEl) freeEl.textContent = freeMB.toFixed(1) + ' MB';
+    
+    // Update type bars
+    const typeContainer = document.getElementById('storageByType');
+    if (typeContainer && Object.keys(typeSizes).length > 0) {
+        const colors = { documents: '#6366f1', images: '#10b981', archives: '#f59e0b', code: '#8b5cf6', other: '#94a3b8' };
+        typeContainer.innerHTML = Object.entries(typeSizes).map(([type, size]) => {
+            const typePercent = totalSize > 0 ? (size / totalSize) * 100 : 0;
+            return `
+                <div class="type-bar-item">
+                    <span class="type-bar-label">${type}</span>
+                    <div class="type-bar-track">
+                        <div class="type-bar-fill" style="width: ${typePercent}%; background: ${colors[type] || colors.other}"></div>
+                    </div>
+                    <span class="type-bar-value">${formatFileSize(size)}</span>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+function getFileCategory(ext) {
+    const categories = {
+        documents: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt'],
+        images: ['jpg', 'jpeg', 'png', 'gif'],
+        archives: ['zip', 'rar', '7z'],
+        code: ['py', 'java', 'cpp', 'c', 'html', 'css', 'js']
+    };
+    
+    for (const [cat, exts] of Object.entries(categories)) {
+        if (exts.includes(ext)) return cat;
+    }
+    return 'other';
+}
+
+function updateRecentUploads(projects) {
+    const container = document.getElementById('recentUploads');
+    
+    if (projects.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No recent uploads</p>';
+        return;
+    }
+    
+    const recent = projects.slice().reverse().slice(0, 5);
+    container.innerHTML = recent.map(project => `
+        <div class="recent-upload-item">
+            <i class="fas ${project.files && project.files[0] ? getFileIcon(project.files[0].filename) : 'fa-folder'}"></i>
+            <div class="recent-upload-info">
+                <h5>${project.title}</h5>
+                <span>${new Date(project.uploadDate).toLocaleDateString()}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function downloadFile(projectId, fileIndex) {
+    try {
+        const response = await fetch(`/api/student/projects/download/${projectId}/${fileIndex}`);
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            showToast('Download failed', 'error');
+        }
+    } catch (error) {
+        console.error('Download error:', error);
+        showToast('Download failed', 'error');
+    }
+}
+
+async function deleteProject(projectId) {
+    if (!confirm('Are you sure you want to delete this project?')) return;
+    
+    try {
+        const response = await fetch(`/api/student/projects/delete/${projectId}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Project deleted successfully', 'success');
+            await loadStudentData();
+            loadProjectsSection();
+        } else {
+            showToast(result.message || 'Delete failed', 'error');
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        showToast('Delete failed', 'error');
+    }
+}
+
+// ============================================
+// Lecture Store Functions
+// ============================================
+let currentLecture = null;
+let lecturesData = [];
+const MAX_LECTURE_STORAGE_MB = 500;
+
+// Sample lectures data - in production, this would come from the server
+const sampleLectures = [
+    {
+        id: 'lec_001',
+        title: 'Introduction to Data Structures',
+        subject: 'Data Structures',
+        duration: '45:30',
+        size: 125 * 1024 * 1024,
+        videoUrl: '/static/lectures/ds_intro.mp4',
+        thumbnail: '/static/images/lecture1.jpg',
+        description: 'Overview of data structures and their importance in programming'
+    },
+    {
+        id: 'lec_002',
+        title: 'Arrays and Linked Lists',
+        subject: 'Data Structures',
+        duration: '52:15',
+        size: 148 * 1024 * 1024,
+        videoUrl: '/static/lectures/ds_arrays.mp4',
+        thumbnail: '/static/images/lecture2.jpg',
+        description: 'Deep dive into arrays and linked lists implementation'
+    },
+    {
+        id: 'lec_003',
+        title: 'Sorting Algorithms',
+        subject: 'Algorithms',
+        duration: '48:45',
+        size: 132 * 1024 * 1024,
+        videoUrl: '/static/lectures/algo_sorting.mp4',
+        thumbnail: '/static/images/lecture3.jpg',
+        description: 'Bubble sort, quick sort, merge sort and their complexities'
+    },
+    {
+        id: 'lec_004',
+        title: 'SQL Basics',
+        subject: 'Database',
+        duration: '38:20',
+        size: 98 * 1024 * 1024,
+        videoUrl: '/static/lectures/db_sql.mp4',
+        thumbnail: '/static/images/lecture4.jpg',
+        description: 'Introduction to SQL queries and database operations'
+    },
+    {
+        id: 'lec_005',
+        title: 'HTML & CSS Fundamentals',
+        subject: 'Web Development',
+        duration: '55:00',
+        size: 165 * 1024 * 1024,
+        videoUrl: '/static/lectures/web_html_css.mp4',
+        thumbnail: '/static/images/lecture5.jpg',
+        description: 'Building responsive web pages with HTML5 and CSS3'
+    },
+    {
+        id: 'lec_006',
+        title: 'Introduction to Machine Learning',
+        subject: 'Machine Learning',
+        duration: '42:30',
+        size: 118 * 1024 * 1024,
+        videoUrl: '/static/lectures/ml_intro.mp4',
+        thumbnail: '/static/images/lecture6.jpg',
+        description: 'Overview of ML concepts and applications'
+    }
+];
+
+function loadLecturesSection() {
+    if (!studentData) return;
+    
+    lecturesData = studentData.lectures || sampleLectures;
+    displayLectures(lecturesData);
+    updateDownloadedList();
+    updateWatchHistory();
+    updateLectureStorageInfo();
+    setupVideoPlayer();
+    updateOnlineStatus();
+    
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+}
+
+function displayLectures(lectures) {
+    const container = document.getElementById('lecturesList');
+    const downloadedLectures = studentData.downloadedLectures || [];
+    const completedLectures = studentData.completedLectures || [];
+    const lectureProgress = studentData.lectureProgress || {};
+    
+    if (lectures.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem;">No lectures available</p>';
+        return;
+    }
+    
+    container.innerHTML = lectures.map(lecture => {
+        const isDownloaded = downloadedLectures.includes(lecture.id);
+        const isCompleted = completedLectures.includes(lecture.id);
+        const progress = lectureProgress[lecture.id] || 0;
+        
+        let statusClass = '';
+        let statusIcon = 'fa-circle';
+        if (isCompleted) {
+            statusClass = 'completed';
+            statusIcon = 'fa-check-circle';
+        } else if (isDownloaded) {
+            statusClass = 'downloaded';
+            statusIcon = 'fa-download';
+        }
+        
+        return `
+            <div class="lecture-item ${statusClass}" onclick="selectLectureById('${lecture.id}')" data-subject="${lecture.subject}">
+                <div class="lecture-thumbnail">
+                    <i class="fas fa-play-circle"></i>
+                    <span class="duration">${lecture.duration}</span>
+                </div>
+                <div class="lecture-details">
+                    <h4>${lecture.title}</h4>
+                    <p>${lecture.subject} • ${formatFileSize(lecture.size)}</p>
+                </div>
+                <div class="lecture-meta">
+                    <div class="lecture-status-icon ${isDownloaded ? 'downloaded' : isCompleted ? 'completed' : 'pending'}">
+                        <i class="fas ${statusIcon}"></i>
+                    </div>
+                    ${progress > 0 ? `<span class="lecture-size">${Math.round(progress)}%</span>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function selectLectureById(lectureId) {
+    const lecture = lecturesData.find(l => l.id === lectureId);
+    if (!lecture) return;
+    
+    currentLecture = lecture;
+    
+    document.querySelectorAll('.lecture-item').forEach(item => item.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    const videoInfo = document.getElementById('videoInfo');
+    if (videoInfo) {
+        videoInfo.innerHTML = `
+            <h4>${lecture.title}</h4>
+            <p>${lecture.description}</p>
+        `;
+    }
+    
+    document.getElementById('downloadBtn').disabled = false;
+    document.getElementById('markCompleteBtn').disabled = false;
+    
+    loadVideo(lecture);
+}
+
+function loadVideo(lecture) {
+    const video = document.getElementById('lectureVideo');
+    const downloadedLectures = studentData.downloadedLectures || [];
+    const isDownloaded = downloadedLectures.includes(lecture.id);
+    
+    if (!navigator.onLine && !isDownloaded) {
+        showToast('This lecture is not available offline. Please download it first.', 'error');
+        return;
+    }
+    
+    video.src = lecture.videoUrl;
+    showOfflineOverlay(isDownloaded && !navigator.onLine);
+    
+    const progress = studentData.lectureProgress?.[lecture.id] || 0;
+    if (video.duration) {
+        video.currentTime = (progress / 100) * video.duration;
+    }
+    updateVideoProgress(progress);
+    
+    video.play().catch(() => {});
+}
+
+function showOfflineOverlay(show) {
+    const overlay = document.getElementById('videoOverlay');
+    if (overlay) overlay.style.display = show ? 'flex' : 'none';
+}
+
+function setupVideoPlayer() {
+    const video = document.getElementById('lectureVideo');
+    if (!video) return;
+    
+    video.addEventListener('timeupdate', () => {
+        if (!currentLecture || !video.duration) return;
+        const progress = (video.currentTime / video.duration) * 100;
+        updateVideoProgress(progress);
+        if (Math.floor(video.currentTime) % 5 === 0) {
+            saveLectureProgress(currentLecture.id, progress);
+        }
+    });
+    
+    video.addEventListener('ended', () => {
+        if (currentLecture) {
+            saveLectureProgress(currentLecture.id, 100);
+            updateVideoProgress(100);
+        }
+    });
+}
+
+function updateVideoProgress(percent) {
+    const fill = document.getElementById('videoProgressFill');
+    const text = document.getElementById('progressPercent');
+    if (fill) fill.style.width = percent + '%';
+    if (text) text.textContent = Math.round(percent) + '%';
+}
+
+function saveLectureProgress(lectureId, progress) {
+    if (!studentData.lectureProgress) studentData.lectureProgress = {};
+    studentData.lectureProgress[lectureId] = progress;
+    fetch('/api/student/lectures/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lectureId, progress })
+    }).catch(() => {});
+}
+
+async function downloadCurrentLecture() {
+    if (!currentLecture) return;
+    const btn = document.getElementById('downloadBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+    
+    try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        if (!studentData.downloadedLectures) studentData.downloadedLectures = [];
+        if (!studentData.downloadedLectures.includes(currentLecture.id)) {
+            studentData.downloadedLectures.push(currentLecture.id);
+        }
+        await fetch('/api/student/lectures/download', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lectureId: currentLecture.id })
+        });
+        showToast('Lecture downloaded for offline viewing!', 'success');
+        updateDownloadedList();
+        updateLectureStorageInfo();
+        displayLectures(lecturesData);
+    } catch (error) {
+        showToast('Download failed. Please try again.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-download"></i> Download for Offline';
+    }
+}
+
+async function markLectureComplete() {
+    if (!currentLecture) return;
+    if (!studentData.completedLectures) studentData.completedLectures = [];
+    if (!studentData.completedLectures.includes(currentLecture.id)) {
+        studentData.completedLectures.push(currentLecture.id);
+        await fetch('/api/student/lectures/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lectureId: currentLecture.id })
+        });
+        showToast('Lecture marked as complete!', 'success');
+        displayLectures(lecturesData);
+        updateWatchHistory();
+    }
+}
+
+function updateDownloadedList() {
+    const container = document.getElementById('downloadedList');
+    const countEl = document.getElementById('downloadedCount');
+    const downloadedIds = studentData.downloadedLectures || [];
+    const downloaded = lecturesData.filter(l => downloadedIds.includes(l.id));
+    
+    if (countEl) countEl.textContent = downloaded.length;
+    if (downloaded.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No lectures downloaded yet</p>';
+        return;
+    }
+    
+    container.innerHTML = downloaded.map(lecture => `
+        <div class="downloaded-item">
+            <i class="fas fa-video"></i>
+            <div class="downloaded-info">
+                <h5>${lecture.title}</h5>
+                <span>${formatFileSize(lecture.size)}</span>
+            </div>
+            <div class="downloaded-actions">
+                <button onclick="playDownloadedLecture('${lecture.id}')" title="Play"><i class="fas fa-play"></i></button>
+                <button class="btn-delete" onclick="removeDownloadedLecture('${lecture.id}')" title="Remove"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function playDownloadedLecture(lectureId) {
+    const lecture = lecturesData.find(l => l.id === lectureId);
+    if (lecture) {
+        currentLecture = lecture;
+        loadVideo(lecture);
+    }
+}
+
+async function removeDownloadedLecture(lectureId) {
+    if (!confirm('Remove this lecture from offline storage?')) return;
+    studentData.downloadedLectures = (studentData.downloadedLectures || []).filter(id => id !== lectureId);
+    await fetch(`/api/student/lectures/download/${lectureId}`, { method: 'DELETE' });
+    showToast('Lecture removed from downloads', 'success');
+    updateDownloadedList();
+    updateLectureStorageInfo();
+    displayLectures(lecturesData);
+}
+
+function updateWatchHistory() {
+    const container = document.getElementById('watchHistory');
+    const progress = studentData.lectureProgress || {};
+    const watched = Object.entries(progress).filter(([_, p]) => p > 0).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    
+    if (watched.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No lectures watched yet</p>';
+        return;
+    }
+    
+    container.innerHTML = watched.map(([lectureId, prog]) => {
+        const lecture = lecturesData.find(l => l.id === lectureId);
+        if (!lecture) return '';
+        return `
+            <div class="history-item">
+                <i class="fas fa-history"></i>
+                <div class="history-info">
+                    <h5>${lecture.title}</h5>
+                    <span>${lecture.subject}</span>
+                </div>
+                <span class="history-progress">${Math.round(prog)}%</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateLectureStorageInfo() {
+    const downloadedIds = studentData.downloadedLectures || [];
+    const downloaded = lecturesData.filter(l => downloadedIds.includes(l.id));
+    const usedBytes = downloaded.reduce((sum, l) => sum + (l.size || 0), 0);
+    const usedMB = usedBytes / (1024 * 1024);
+    const percent = Math.min(100, (usedMB / MAX_LECTURE_STORAGE_MB) * 100);
+    
+    const fill = document.getElementById('lectureStorageFill');
+    const text = document.getElementById('lectureStorageText');
+    if (fill) fill.style.width = percent + '%';
+    if (text) text.textContent = `${usedMB.toFixed(1)} MB / ${MAX_LECTURE_STORAGE_MB} MB used`;
+}
+
+function filterLectures() {
+    const subjectFilter = document.getElementById('subjectFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const downloadedIds = studentData.downloadedLectures || [];
+    const completedIds = studentData.completedLectures || [];
+    
+    let filtered = lecturesData;
+    if (subjectFilter) filtered = filtered.filter(l => l.subject === subjectFilter);
+    if (statusFilter) {
+        filtered = filtered.filter(l => {
+            if (statusFilter === 'downloaded') return downloadedIds.includes(l.id);
+            if (statusFilter === 'completed') return completedIds.includes(l.id);
+            if (statusFilter === 'pending') return !downloadedIds.includes(l.id) && !completedIds.includes(l.id);
+            return true;
+        });
+    }
+    displayLectures(filtered);
+}
+
+function updateOnlineStatus() {
+    const isOnline = navigator.onLine;
+    const statusBadge = document.getElementById('watchStatus');
+    if (statusBadge) {
+        statusBadge.textContent = isOnline ? 'Online' : 'Offline Mode';
+        statusBadge.className = isOnline ? 'badge' : 'badge badge-warning';
+    }
+}
 
 // ============================================
 // Show Section
@@ -961,6 +1703,10 @@ function showSection(sectionId) {
         'assignments': 'Assignments',
         'grades': 'Grades',
         'schedule': 'Class Schedule',
+        'quiz': 'Weekly Quiz',
+        'attendance': 'Daily Attendance',
+        'calendar': 'Academic Calendar',
+        'projects': 'Projects & Uploads',
         'resources': 'Study Resources',
         'chat': 'Chat with EduBot',
         'settings': 'Account Settings'

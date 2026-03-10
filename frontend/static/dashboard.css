@@ -752,6 +752,25 @@
     border-radius: 4px;
 }
 
+.schedule-slot.practical {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-left: 4px solid #f59e0b;
+}
+
+.schedule-slot.practical .time {
+    color: #d97706;
+}
+
+.schedule-slot.practical .subject {
+    font-weight: 600;
+    color: #92400e;
+}
+
+.schedule-slot.practical .room {
+    background: #fbbf24;
+    color: #78350f;
+}
+
 /* Resources Grid */
 .resources-grid {
     display: grid;
@@ -1747,6 +1766,905 @@
     font-weight: 600;
 }
 
+/* ============================================
+   Projects & File Upload Styles
+   ============================================ */
+.upload-card {
+    grid-column: span 2;
+}
+
+.upload-area {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+    border-color: #6366f1;
+    background: #f8fafc;
+}
+
+.upload-area i {
+    font-size: 3rem;
+    color: #6366f1;
+    margin-bottom: 1rem;
+}
+
+.upload-area h4 {
+    font-size: 1.25rem;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.upload-area p {
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+.upload-area p span {
+    color: #6366f1;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.upload-formats {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.upload-formats span {
+    background: #e0e7ff;
+    color: #6366f1;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.upload-details {
+    margin-top: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.selected-files {
+    margin: 1rem 0;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.file-item i {
+    font-size: 1.25rem;
+    color: #6366f1;
+}
+
+.file-info {
+    flex: 1;
+}
+
+.file-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.file-size {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.file-remove {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+.upload-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.btn-primary {
+    background: #6366f1;
+    color: white;
+    border: none;
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary:hover {
+    background: #4f46e5;
+}
+
+.upload-progress {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.progress-bar-container {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+/* Projects List Styles */
+.projects-card {
+    grid-column: span 2;
+}
+
+.projects-filter {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: #f1f5f9;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: #6366f1;
+    color: white;
+}
+
+.projects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.project-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+.project-item:hover {
+    background: #e0e7ff;
+}
+
+.project-icon {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.project-info {
+    flex: 1;
+}
+
+.project-info h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.project-info p {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.project-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.project-type {
+    background: #e0e7ff;
+    color: #6366f1;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.project-date {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.project-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.project-actions button {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.project-actions .btn-download {
+    color: #10b981;
+}
+
+.project-actions .btn-download:hover {
+    background: #d1fae5;
+}
+
+.project-actions .btn-delete {
+    color: #ef4444;
+}
+
+.project-actions .btn-delete:hover {
+    background: #fee2e2;
+}
+
+/* Storage Stats Styles */
+.storage-card {
+    grid-column: span 2;
+}
+
+.storage-stats {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.storage-circle {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.storage-circle svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.storage-circle .circle-bg {
+    fill: none;
+    stroke: #e2e8f0;
+    stroke-width: 8;
+}
+
+.storage-circle .circle-progress {
+    fill: none;
+    stroke: url(#gradient);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+.storage-circle .circle-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.storage-circle .circle-text span {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.storage-circle .circle-text small {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.storage-info {
+    flex: 1;
+}
+
+.storage-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.storage-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.storage-color.used {
+    background: #6366f1;
+}
+
+.storage-color.free {
+    background: #e2e8f0;
+}
+
+.storage-by-type {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.storage-by-type h4 {
+    font-size: 0.9rem;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.type-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.type-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.type-bar-label {
+    min-width: 60px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.type-bar-track {
+    flex: 1;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.type-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.type-bar-value {
+    min-width: 50px;
+    text-align: right;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+/* Recent Uploads Styles */
+.recent-uploads {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.recent-upload-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.recent-upload-item i {
+    font-size: 1.25rem;
+    color: #6366f1;
+}
+
+.recent-upload-info {
+    flex: 1;
+}
+
+.recent-upload-info h5 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.recent-upload-info span {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* ============================================
+   Lecture Store & Video Player Styles
+   ============================================ */
+.video-player-card {
+    grid-column: span 2;
+}
+
+.video-container {
+    position: relative;
+    background: #1e293b;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.video-container video {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    display: block;
+}
+
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+}
+
+.video-overlay i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #f59e0b;
+}
+
+.video-info {
+    margin-bottom: 1rem;
+}
+
+.video-info h4 {
+    font-size: 1.1rem;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.video-info p {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.video-progress {
+    margin-bottom: 1rem;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.video-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-action {
+    flex: 1;
+    background: #f1f5f9;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-action:hover:not(:disabled) {
+    background: #e2e8f0;
+}
+
+.btn-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-action.primary {
+    background: #6366f1;
+    color: white;
+}
+
+.btn-action.primary:hover:not(:disabled) {
+    background: #4f46e5;
+}
+
+.btn-action.success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-action.success:hover:not(:disabled) {
+    background: #059669;
+}
+
+/* Lectures List Styles */
+.lectures-list-card {
+    grid-column: span 2;
+}
+
+.lecture-filters {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.lecture-filters select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background: white;
+}
+
+.lectures-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.lecture-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.lecture-item:hover {
+    background: #e0e7ff;
+    border-color: #6366f1;
+}
+
+.lecture-item.active {
+    background: #e0e7ff;
+    border-color: #6366f1;
+}
+
+.lecture-item.downloaded {
+    border-left: 4px solid #10b981;
+}
+
+.lecture-item.completed {
+    border-left: 4px solid #6366f1;
+}
+
+.lecture-thumbnail {
+    width: 80px;
+    height: 50px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    position: relative;
+}
+
+.lecture-thumbnail .duration {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 0.65rem;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+.lecture-details {
+    flex: 1;
+}
+
+.lecture-details h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.lecture-details p {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.lecture-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.lecture-status-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+}
+
+.lecture-status-icon.downloaded {
+    background: #d1fae5;
+    color: #10b981;
+}
+
+.lecture-status-icon.completed {
+    background: #e0e7ff;
+    color: #6366f1;
+}
+
+.lecture-status-icon.pending {
+    background: #f1f5f9;
+    color: #94a3b8;
+}
+
+.lecture-size {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* Downloaded List Styles */
+.downloaded-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.downloaded-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.downloaded-item i {
+    color: #10b981;
+    font-size: 1.25rem;
+}
+
+.downloaded-info {
+    flex: 1;
+}
+
+.downloaded-info h5 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 0.125rem;
+}
+
+.downloaded-info span {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.downloaded-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.downloaded-actions button {
+    background: none;
+    border: none;
+    padding: 0.375rem;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s;
+}
+
+.downloaded-actions button:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.downloaded-actions .btn-delete:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+/* Storage Info for Lectures */
+.storage-info-lectures {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.storage-bar {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.storage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.storage-info-lectures span {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* Watch History Styles */
+.watch-history {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.history-item i {
+    color: #6366f1;
+    font-size: 1rem;
+}
+
+.history-info {
+    flex: 1;
+}
+
+.history-info h5 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 0.125rem;
+}
+
+.history-info span {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.history-progress {
+    font-size: 0.75rem;
+    color: #6366f1;
+    font-weight: 500;
+}
+
+/* Offline Indicator */
+.offline-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fef3c7;
+    color: #f59e0b;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.offline-indicator i {
+    font-size: 0.625rem;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .stats-grid {
@@ -1755,6 +2673,12 @@
     
     .dashboard-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .upload-card,
+    .projects-card,
+    .storage-card {
+        grid-column: span 1;
     }
 }
 

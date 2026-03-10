@@ -62,9 +62,17 @@
                 <i class="fas fa-calendar-alt"></i>
                 <span>Academic Calendar</span>
             </a>
+            <a href="#projects" class="nav-item" onclick="showSection('projects')">
+                <i class="fas fa-folder-plus"></i>
+                <span>Projects & Uploads</span>
+            </a>
             <a href="#resources" class="nav-item" onclick="showSection('resources')">
                 <i class="fas fa-folder-open"></i>
                 <span>Resources</span>
+            </a>
+            <a href="#lectures" class="nav-item" onclick="showSection('lectures')">
+                <i class="fas fa-video"></i>
+                <span>Lecture Store</span>
             </a>
             <a href="#chat" class="nav-item" onclick="showSection('chat')">
                 <i class="fas fa-comments"></i>
@@ -566,6 +574,136 @@
             </div>
         </section>
 
+        <!-- Projects & Submissions Section -->
+        <section id="projects" class="content-section">
+            <div class="dashboard-grid">
+                <!-- Upload New Project Card -->
+                <div class="dashboard-card upload-card">
+                    <div class="card-header">
+                        <h3>Upload Project / Assignment</h3>
+                    </div>
+                    <div class="upload-container">
+                        <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h4>Drag & Drop files here</h4>
+                            <p>or <span onclick="document.getElementById('fileInput').click()">browse</span> to upload</p>
+                            <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileSelect(event)">
+                            <div class="upload-formats">
+                                <span>PDF</span><span>DOC</span><span>PPT</span><span>ZIP</span><span>Images</span><span>Code</span>
+                            </div>
+                        </div>
+                        <div class="upload-details" id="uploadDetails" style="display: none;">
+                            <div class="form-group">
+                                <label>Project Title *</label>
+                                <input type="text" id="projectTitle" placeholder="Enter project title">
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="projectDescription" rows="3" placeholder="Brief description of your project"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Subject/Course *</label>
+                                <select id="projectSubject">
+                                    <option value="">Select Subject</option>
+                                    <option value="Data Structures">Data Structures</option>
+                                    <option value="Algorithms">Algorithms</option>
+                                    <option value="Database Systems">Database Systems</option>
+                                    <option value="Web Development">Web Development</option>
+                                    <option value="Machine Learning">Machine Learning</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Submission Type</label>
+                                <select id="projectType">
+                                    <option value="assignment">Assignment</option>
+                                    <option value="project">Project</option>
+                                    <option value="lab">Lab Work</option>
+                                    <option value="report">Report</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="selected-files" id="selectedFiles"></div>
+                            <div class="upload-actions">
+                                <button class="btn-secondary" onclick="cancelUpload()">Cancel</button>
+                                <button class="btn-primary" onclick="uploadFiles()">
+                                    <i class="fas fa-upload"></i> Upload
+                                </button>
+                            </div>
+                        </div>
+                        <div class="upload-progress" id="uploadProgress" style="display: none;">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="progressBarFill"></div>
+                            </div>
+                            <span id="progressText">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Projects Card -->
+                <div class="dashboard-card projects-card">
+                    <div class="card-header">
+                        <h3>My Projects & Submissions</h3>
+                        <span class="badge" id="projectsCount">0</span>
+                    </div>
+                    <div class="projects-filter">
+                        <button class="filter-btn active" onclick="filterProjects('all')">All</button>
+                        <button class="filter-btn" onclick="filterProjects('assignment')">Assignments</button>
+                        <button class="filter-btn" onclick="filterProjects('project')">Projects</button>
+                        <button class="filter-btn" onclick="filterProjects('lab')">Lab Work</button>
+                    </div>
+                    <div id="projectsList" class="projects-list">
+                        <p style="text-align: center; color: #64748b; padding: 2rem;">No projects uploaded yet</p>
+                    </div>
+                </div>
+
+                <!-- Storage Stats Card -->
+                <div class="dashboard-card storage-card">
+                    <div class="card-header">
+                        <h3>Storage Usage</h3>
+                    </div>
+                    <div class="storage-stats">
+                        <div class="storage-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="circle-bg" cx="50" cy="50" r="45"/>
+                                <circle class="circle-progress" id="storageCircle" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="283"/>
+                            </svg>
+                            <div class="circle-text">
+                                <span id="storagePercent">0%</span>
+                                <small>Used</small>
+                            </div>
+                        </div>
+                        <div class="storage-info">
+                            <div class="storage-item">
+                                <span class="storage-color used"></span>
+                                <span>Used: <strong id="storageUsed">0 MB</strong></span>
+                            </div>
+                            <div class="storage-item">
+                                <span class="storage-color free"></span>
+                                <span>Free: <strong id="storageFree">50 MB</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="storage-by-type">
+                        <h4>Storage by Type</h4>
+                        <div id="storageByType" class="type-bars">
+                            <p style="text-align: center; color: #64748b; padding: 1rem;">No files uploaded</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Uploads Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Recent Uploads</h3>
+                    </div>
+                    <div id="recentUploads" class="recent-uploads">
+                        <p style="text-align: center; color: #64748b; padding: 1rem;">No recent uploads</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Academic Calendar Section -->
         <section id="calendar" class="content-section">
             <div class="dashboard-grid">
@@ -647,37 +785,326 @@
             <div class="dashboard-card">
                 <div class="card-header">
                     <h3>Weekly Class Schedule</h3>
+                    <span class="badge">6 Days</span>
                 </div>
                 <div class="schedule-container">
+                    <!-- Monday -->
                     <div class="schedule-day">
                         <h4>Monday</h4>
                         <div class="schedule-slots">
                             <div class="schedule-slot">
-                                <span class="time">09:00 - 10:30</span>
+                                <span class="time">09:00 - 10:00</span>
                                 <span class="subject">Data Structures</span>
                                 <span class="room">Room 301</span>
                             </div>
                             <div class="schedule-slot">
-                                <span class="time">11:00 - 12:30</span>
-                                <span class="subject">Database Management</span>
-                                <span class="room">Lab 2</span>
+                                <span class="time">10:00 - 11:00</span>
+                                <span class="subject">Algorithms</span>
+                                <span class="room">Room 302</span>
                             </div>
-                        </div>
-                    </div>
-                    <div class="schedule-day">
-                        <h4>Tuesday</h4>
-                        <div class="schedule-slots">
                             <div class="schedule-slot">
-                                <span class="time">09:00 - 10:30</span>
+                                <span class="time">11:15 - 12:15</span>
+                                <span class="subject">Database Systems</span>
+                                <span class="room">Room 303</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">12:15 - 13:15</span>
                                 <span class="subject">Web Development</span>
                                 <span class="room">Lab 1</span>
                             </div>
                             <div class="schedule-slot">
-                                <span class="time">11:00 - 12:30</span>
+                                <span class="time">14:00 - 15:00</span>
                                 <span class="subject">Machine Learning</span>
-                                <span class="room">Room 302</span>
+                                <span class="room">Room 304</span>
+                            </div>
+                            <div class="schedule-slot practical">
+                                <span class="time">15:00 - 17:00</span>
+                                <span class="subject">Data Structures Lab (Practical)</span>
+                                <span class="room">Lab 3</span>
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- Tuesday -->
+                    <div class="schedule-day">
+                        <h4>Tuesday</h4>
+                        <div class="schedule-slots">
+                            <div class="schedule-slot">
+                                <span class="time">09:00 - 10:00</span>
+                                <span class="subject">Algorithms</span>
+                                <span class="room">Room 302</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">10:00 - 11:00</span>
+                                <span class="subject">Operating Systems</span>
+                                <span class="room">Room 305</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">11:15 - 12:15</span>
+                                <span class="subject">Computer Networks</span>
+                                <span class="room">Room 306</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">12:15 - 13:15</span>
+                                <span class="subject">Software Engineering</span>
+                                <span class="room">Room 307</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">14:00 - 15:00</span>
+                                <span class="subject">Database Systems</span>
+                                <span class="room">Room 303</span>
+                            </div>
+                            <div class="schedule-slot practical">
+                                <span class="time">15:00 - 17:00</span>
+                                <span class="subject">Web Development Lab (Practical)</span>
+                                <span class="room">Lab 1</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Wednesday -->
+                    <div class="schedule-day">
+                        <h4>Wednesday</h4>
+                        <div class="schedule-slots">
+                            <div class="schedule-slot">
+                                <span class="time">09:00 - 10:00</span>
+                                <span class="subject">Machine Learning</span>
+                                <span class="room">Room 304</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">10:00 - 11:00</span>
+                                <span class="subject">Data Structures</span>
+                                <span class="room">Room 301</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">11:15 - 12:15</span>
+                                <span class="subject">Artificial Intelligence</span>
+                                <span class="room">Room 308</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">12:15 - 13:15</span>
+                                <span class="subject">Cloud Computing</span>
+                                <span class="room">Room 309</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">14:00 - 15:00</span>
+                                <span class="subject">Cyber Security</span>
+                                <span class="room">Room 310</span>
+                            </div>
+                            <div class="schedule-slot practical">
+                                <span class="time">15:00 - 17:00</span>
+                                <span class="subject">Machine Learning Lab (Practical)</span>
+                                <span class="room">Lab 4</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Thursday -->
+                    <div class="schedule-day">
+                        <h4>Thursday</h4>
+                        <div class="schedule-slots">
+                            <div class="schedule-slot">
+                                <span class="time">09:00 - 10:00</span>
+                                <span class="subject">Computer Networks</span>
+                                <span class="room">Room 306</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">10:00 - 11:00</span>
+                                <span class="subject">Web Development</span>
+                                <span class="room">Lab 1</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">11:15 - 12:15</span>
+                                <span class="subject">Data Structures</span>
+                                <span class="room">Room 301</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">12:15 - 13:15</span>
+                                <span class="subject">Algorithms</span>
+                                <span class="room">Room 302</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">14:00 - 15:00</span>
+                                <span class="subject">Database Systems</span>
+                                <span class="room">Room 303</span>
+                            </div>
+                            <div class="schedule-slot practical">
+                                <span class="time">15:00 - 17:00</span>
+                                <span class="subject">Database Lab (Practical)</span>
+                                <span class="room">Lab 2</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Friday -->
+                    <div class="schedule-day">
+                        <h4>Friday</h4>
+                        <div class="schedule-slots">
+                            <div class="schedule-slot">
+                                <span class="time">09:00 - 10:00</span>
+                                <span class="subject">Software Engineering</span>
+                                <span class="room">Room 307</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">10:00 - 11:00</span>
+                                <span class="subject">Machine Learning</span>
+                                <span class="room">Room 304</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">11:15 - 12:15</span>
+                                <span class="subject">Operating Systems</span>
+                                <span class="room">Room 305</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">12:15 - 13:15</span>
+                                <span class="subject">Computer Networks</span>
+                                <span class="room">Room 306</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">14:00 - 15:00</span>
+                                <span class="subject">Artificial Intelligence</span>
+                                <span class="room">Room 308</span>
+                            </div>
+                            <div class="schedule-slot practical">
+                                <span class="time">15:00 - 17:00</span>
+                                <span class="subject">Networking Lab (Practical)</span>
+                                <span class="room">Lab 5</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Saturday -->
+                    <div class="schedule-day">
+                        <h4>Saturday</h4>
+                        <div class="schedule-slots">
+                            <div class="schedule-slot">
+                                <span class="time">09:00 - 10:00</span>
+                                <span class="subject">Cyber Security</span>
+                                <span class="room">Room 310</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">10:00 - 11:00</span>
+                                <span class="subject">Cloud Computing</span>
+                                <span class="room">Room 309</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">11:15 - 12:15</span>
+                                <span class="subject">Software Engineering</span>
+                                <span class="room">Room 307</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">12:15 - 13:15</span>
+                                <span class="subject">Operating Systems</span>
+                                <span class="room">Room 305</span>
+                            </div>
+                            <div class="schedule-slot">
+                                <span class="time">14:00 - 15:00</span>
+                                <span class="subject">Project Work</span>
+                                <span class="room">Lab 6</span>
+                            </div>
+                            <div class="schedule-slot practical">
+                                <span class="time">15:00 - 17:00</span>
+                                <span class="subject">Project Lab (Practical)</span>
+                                <span class="room">Lab 6</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lecture Store Section -->
+        <section id="lectures" class="content-section">
+            <div class="dashboard-grid">
+                <!-- Video Player Card -->
+                <div class="dashboard-card video-player-card">
+                    <div class="card-header">
+                        <h3>Now Playing</h3>
+                        <span class="badge" id="watchStatus">Online</span>
+                    </div>
+                    <div class="video-container">
+                        <video id="lectureVideo" controls poster="/static/images/video-poster.jpg">
+                            <source src="" type="video/mp4">
+                            <p>Your browser does not support the video tag. Please download the lecture to watch offline.</p>
+                        </video>
+                        <div class="video-overlay" id="videoOverlay" style="display: none;">
+                            <i class="fas fa-wifi-slash"></i>
+                            <p>You're offline. Playing downloaded lecture.</p>
+                        </div>
+                    </div>
+                    <div class="video-info" id="videoInfo">
+                        <h4>Select a lecture to start watching</h4>
+                        <p>Choose from available lectures below</p>
+                    </div>
+                    <div class="video-progress">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="videoProgressFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="video-actions">
+                        <button class="btn-action" id="downloadBtn" onclick="downloadCurrentLecture()" disabled>
+                            <i class="fas fa-download"></i> Download for Offline
+                        </button>
+                        <button class="btn-action" id="markCompleteBtn" onclick="markLectureComplete()" disabled>
+                            <i class="fas fa-check"></i> Mark Complete
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Available Lectures Card -->
+                <div class="dashboard-card lectures-list-card">
+                    <div class="card-header">
+                        <h3>Available Lectures</h3>
+                        <div class="lecture-filters">
+                            <select id="subjectFilter" onchange="filterLectures()">
+                                <option value="">All Subjects</option>
+                                <option value="Data Structures">Data Structures</option>
+                                <option value="Algorithms">Algorithms</option>
+                                <option value="Database">Database Systems</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Machine Learning">Machine Learning</option>
+                            </select>
+                            <select id="statusFilter" onchange="filterLectures()">
+                                <option value="">All Status</option>
+                                <option value="downloaded">Downloaded</option>
+                                <option value="pending">Not Downloaded</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="lecturesList" class="lectures-list">
+                        <p style="text-align: center; color: #64748b; padding: 2rem;">Loading lectures...</p>
+                    </div>
+                </div>
+
+                <!-- Downloaded Lectures Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Downloaded for Offline</h3>
+                        <span class="badge badge-success" id="downloadedCount">0</span>
+                    </div>
+                    <div id="downloadedList" class="downloaded-list">
+                        <p style="text-align: center; color: #64748b; padding: 1rem;">No lectures downloaded yet</p>
+                    </div>
+                    <div class="storage-info-lectures">
+                        <div class="storage-bar">
+                            <div class="storage-fill" id="lectureStorageFill" style="width: 0%"></div>
+                        </div>
+                        <span id="lectureStorageText">0 MB / 500 MB used</span>
+                    </div>
+                </div>
+
+                <!-- Watch History Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Watch History</h3>
+                    </div>
+                    <div id="watchHistory" class="watch-history">
+                        <p style="text-align: center; color: #64748b; padding: 1rem;">No lectures watched yet</p>
                     </div>
                 </div>
             </div>
